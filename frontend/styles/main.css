@@ -1,0 +1,85 @@
+@import "_fonts.css";
+@import "_resets.css";
+
+/* Definition of base styles. */
+:root {
+    /* colors */
+    --color-white: #ffffff;
+    --color-black: #000000;
+    --color-accent: #ff0000;
+    /* gaps & sizes */
+    --gap-around: 40px;
+    /* fonts */
+    --font-h1: normal 64px/120% serif;
+}
+
+/* Styling of all available layout components. */
+[data-layout="header"] {
+    padding: var(--gap-around);
+    background-color: var(--color-accent);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+}
+[data-layout="footer"] {
+    padding: var(--gap-around);
+    background-color: var(--color-accent);
+}
+
+/* Styling of all available page components. */
+[data-page] {
+    width: 100%;
+    height: 100%;
+}
+
+/* Styling of all available module components. */
+[data-module] {
+    overflow: clip;
+    position: relative;
+    width: 100%;
+}
+[data-module="example"] {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    & > .image {
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        inset: 0;
+    }
+    & > .title {
+        position: relative;
+        color: white;
+        font: var(--font-h1);
+        text-align: center;
+    }
+}
+
+/* Styling of all available teaser components. */
+
+/* Styling of utility classes, can be added anywhere in the project. */
+
+/* BREAKPOINT: 3xl */
+@media (max-width: 1514px) {}
+
+/* BREAKPOINT: xl */
+@media (max-width: 1280px) {}
+
+/* BREAKPOINT: lg */
+@media (max-width: 1024px) {}
+
+/* BREAKPOINT: md */
+@media (max-width: 768px) {}
+
+/* BREAKPOINT: sm */
+@media (max-width: 640px) {}
+
+/* BREAKPOINT: xs */
+@media (max-width: 425px) {}
+
+/* BREAKPOINT: xxs */
+@media (max-width: 400px) {}
