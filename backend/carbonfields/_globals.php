@@ -6,6 +6,10 @@ use Carbon_Fields\Field;
 Container::make('theme_options', 'Globales')
     ->add_fields([
         Field::make('image', 'logo', 'Logo'),
+        Field::make('text', 'logo_link', 'Logo Link')
+            ->set_default_value(home_url('/')),
+        Field::make('text', 'footer_copyright', 'Footer Copyright')
+            ->set_default_value('© MAX HUTMACHER'),
         Field::make('complex', 'socials', 'Socials')
             ->add_fields([
                 Field::make('text', 'title', 'Titel'),

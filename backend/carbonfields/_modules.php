@@ -12,7 +12,32 @@ Container::make('post_meta', 'Module')
                 Field::make('text', 'title', 'Titel')->set_required(),
                 Field::make('image', 'image', 'Bild')->set_required(),
             ])
-            // todo: add new modules here
+            ->add_fields('home_intro', 'Startseite Intro', [
+                Field::make('text', 'eyebrow', 'Eyebrow')->set_default_value('Portfolio'),
+                Field::make('text', 'title', 'Titel')->set_required(),
+                Field::make('textarea', 'description', 'Beschreibung'),
+            ])
+            ->add_fields('home_gallery', 'Startseite Galerie', [
+                Field::make('complex', 'items', 'Galerie')
+                    ->add_fields([
+                        Field::make('text', 'title', 'Titel')->set_required(),
+                        Field::make('text', 'meta', 'Zusatzinformation'),
+                        Field::make('image', 'image', 'Bild')->set_required(),
+                        Field::make('text', 'link', 'Link'),
+                    ])
+                    ->set_header_template('<% if (title) { %><%- title %><% } %>')
+                    ->set_layout('tabbed-vertical'),
+            ])
+            ->add_fields('home_logos', 'Startseite Logos', [
+                Field::make('complex', 'items', 'Logos')
+                    ->add_fields([
+                        Field::make('text', 'title', 'Name')->set_required(),
+                        Field::make('image', 'logo', 'Logo')->set_required(),
+                        Field::make('text', 'link', 'Link'),
+                    ])
+                    ->set_header_template('<% if (title) { %><%- title %><% } %>')
+                    ->set_layout('tabbed-vertical'),
+            ])
             // -> SETTINGS
             ->set_layout('tabbed-vertical')
     ]);
@@ -29,7 +54,18 @@ function render_modules (): void {
             case 'example':
                 $module['image'] = get_media_by_id($module['image'], 'full');
                 break;
-                // todo: add data modifications for modules here as a new case
+            case 'home_gallery':
+                foreach ($module['items'] as &$item) {
+                    $item['image'] = get_media_by_id($item['image'] ?? 0, 'l');
+                }
+                unset($item);
+                break;
+            case 'home_logos':
+                foreach ($module['items'] as &$item) {
+                    $item['logo'] = get_media_by_id($item['logo'] ?? 0, 'm');
+                }
+                unset($item);
+                break;
         }
         // -> Laden des Templates basierend auf dem Modultyp und weitergeben der Daten
         get_template_part(

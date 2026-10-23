@@ -18,6 +18,10 @@ function js_log(mixed ...$content): void
 function get_media_by_id(int|string $id, string $size = 'm'): false|array
 {
     $id = (int) $id;
+    if ($id <= 0) {
+        return false;
+    }
+
     $data = [
         'title' => get_the_title($id),
         'alt' => get_post_meta($id, '_wp_attachment_image_alt', true) ?: get_the_title($id),

@@ -16,12 +16,16 @@
 
 <?php
 $logo = get_global_logo();
+$logo_link = get_global_logo_link();
 $menu = get_menu_by_slug('main');
-js_log($logo);
 ?>
 
 <header data-layout="header">
-    <img class="logo" src="<?= $logo['src'] ?>" alt="<?= $logo['alt'] ?>">
+    <?php if ($logo) : ?>
+        <a class="logo-link" href="<?= esc_url($logo_link) ?>">
+            <img class="logo" src="<?= esc_url($logo['src']) ?>" alt="<?= esc_attr($logo['alt']) ?>">
+        </a>
+    <?php endif; ?>
     <nav class="nav-container"
         data-menu="<?php echo $menu->slug; ?>">
         <ul class="nav">
