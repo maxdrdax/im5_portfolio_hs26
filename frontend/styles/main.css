@@ -30,6 +30,11 @@
     top: 0;
     z-index: 100;
 
+    .logo {
+        width: 280px;
+        height: auto;
+    }
+
     .header-name {
     font-family: var(--logo-nav);
     color: var(--color-white);
@@ -55,6 +60,11 @@
 [data-layout="footer"] {
     padding: var(--gap-around);
     background-color: var(--color-black);
+    .logo {
+                width: 150px;
+                height: auto;
+            }
+
     .nav-container {
         .nav {
             font: var(--font-nav);
@@ -64,6 +74,7 @@
             justify-content: flex-end;
             align-self: center;
             gap: 10px;
+
             a{
                 text-decoration: none;
                 color: var(--color-white);

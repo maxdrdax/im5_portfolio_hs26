@@ -15,11 +15,13 @@
 <body>
 
 <?php
+$logo = get_global_logo();
 $menu = get_menu_by_slug('main');
+js_log($logo);
 ?>
 
 <header data-layout="header">
-    <span class="header-name">MAX HUTMACHER</span>
+    <img class="logo" src="<?= $logo['src'] ?>" alt="<?= $logo['alt'] ?>">
     <nav class="nav-container"
         data-menu="<?php echo $menu->slug; ?>">
         <ul class="nav">
