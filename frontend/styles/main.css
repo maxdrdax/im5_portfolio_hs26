@@ -65,6 +65,17 @@
                 height: auto;
             }
 
+    .socials {
+        display: flex;
+        flex-direction: row;
+        justify-content: flex-end;
+        align-self: center;
+        gap: 20px;
+        a {
+            text-decoration: none;
+        }
+    }
+
     .nav-container {
         .nav {
             font: var(--font-nav);
