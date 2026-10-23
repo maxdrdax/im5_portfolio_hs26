@@ -7,3 +7,15 @@
     font-display: swap;
     src: url('../assets/fonts/filename.woff2') format('woff2');
 }*/
+
+/*--- Google Fonts ---*/
+
+/* <weight>: Use a value from 400 to 900 */
+/* <uniquifier>: Use a unique and descriptive class name*/
+
+.playfair-display-<uniquifier> {
+  font-family: "Playfair Display", serif;
+  font-optical-sizing: auto;
+  font-weight: <weight>;
+  font-style: normal;
+}

@@ -4,26 +4,72 @@
 /* Definition of base styles. */
 :root {
     /* colors */
-    --color-white: #ffffff;
-    --color-black: #000000;
-    --color-accent: #ff0000;
+    --color-white: #FEFEFC;
+    --color-black: #1D1C1C;
+    --color-accent: #649D6D;
     /* gaps & sizes */
     --gap-around: 40px;
     /* fonts */
     --font-h1: normal 64px/120% serif;
+    --font-nav: normal 16px/120% sans-serif;
+    --logo-nav: 'Playfair Display', serif;
 }
 
 /* Styling of all available layout components. */
 [data-layout="header"] {
-    padding: var(--gap-around);
-    background-color: var(--color-accent);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 24px;
+    width: 100%;
+    min-height: 100px;
+    padding: 30px 32px;
+    box-sizing: border-box;
+    background-color: var(--color-black);
     position: sticky;
     top: 0;
     z-index: 100;
+
+    .header-name {
+    font-family: var(--logo-nav);
+    color: var(--color-white);
+    font-size: 24px;
+    font-weight: 400;
+}
+    .nav-container {
+        .nav {
+            font: var(--font-nav);
+            list-style: none;
+            display: flex;
+            flex-direction: row;
+            justify-content: flex-end;
+            align-self: center;
+            gap: 10px;
+            a{
+                text-decoration: none;
+                color: var(--color-white);
+            }
+        }
+   }
 }
 [data-layout="footer"] {
     padding: var(--gap-around);
-    background-color: var(--color-accent);
+    background-color: var(--color-black);
+    .nav-container {
+        .nav {
+            font: var(--font-nav);
+            list-style: none;
+            display: flex;
+            flex-direction: row;
+            justify-content: flex-end;
+            align-self: center;
+            gap: 10px;
+            a{
+                text-decoration: none;
+                color: var(--color-white);
+            }
+        }
+   }
 }
 
 /* Styling of all available page components. */
