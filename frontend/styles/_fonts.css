@@ -1,21 +1,5 @@
-/*--- My Font ---*/
-/*regular*/
-/*@font-face {
-    font-family: 'Name';
-    font-style: normal;
-    font-weight: 400;
-    font-display: swap;
-    src: url('../assets/fonts/filename.woff2') format('woff2');
-}*/
-
-/*--- Google Fonts ---*/
-
-/* <weight>: Use a value from 400 to 900 */
-/* <uniquifier>: Use a unique and descriptive class name*/
-
-.playfair-display-<uniquifier> {
-  font-family: "Playfair Display", serif;
-  font-optical-sizing: auto;
-  font-weight: <weight>;
-  font-style: normal;
+/* Typography is loaded in the document head; these stacks provide fallbacks. */
+:root {
+    --font-sans: "Geist", Arial, Helvetica, sans-serif;
+    --font-brand-family: "Playfair Display", Georgia, serif;
 }

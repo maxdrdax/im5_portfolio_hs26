@@ -12,9 +12,26 @@
     /* gaps & sizes */
     --gap-around: 40px;
     /* fonts */
-    --font-h1: normal 64px/120% serif;
-    --font-nav: normal 16px/120% sans-serif;
-    --logo-nav: 'Playfair Display', serif;
+    --font-h1: 500 80px/88px var(--font-sans);
+    --font-h2: 500 48px/56px var(--font-sans);
+    --font-h3: 500 20px/28px var(--font-sans);
+    --font-nav: 400 20px/28px var(--font-sans);
+    --font-body: 400 16px/24px var(--font-sans);
+    --font-caption: 400 12px/16px var(--font-sans);
+    --font-button: 500 16px/24px var(--font-sans);
+    --font-brand: 400 32px/40px var(--font-brand-family);
+}
+
+h1 {
+    font: var(--font-h1);
+}
+
+h2 {
+    font: var(--font-h2);
+}
+
+h3 {
+    font: var(--font-h3);
 }
 
 /* Styling of all available layout components. */
@@ -46,11 +63,9 @@
     }
 
     .header-name {
-    font-family: var(--logo-nav);
-    color: var(--color-white);
-    font-size: 24px;
-    font-weight: 400;
-}
+        color: var(--color-white);
+        font: var(--font-brand);
+    }
     .nav-container {
         .nav {
             font: var(--font-nav);
@@ -178,7 +193,7 @@
 [data-module="home-logos"] {
     .home-eyebrow {
         color: var(--color-muted);
-        font: var(--font-nav);
+        font: var(--font-caption);
         letter-spacing: .08em;
         text-transform: uppercase;
     }
@@ -197,8 +212,9 @@
     h1 {
         grid-column: 2;
         max-width: 1000px;
-        font: normal clamp(56px, 11vw, 180px)/.88 'Playfair Display', Georgia, serif;
-        letter-spacing: -.055em;
+        font: var(--font-h1);
+        font-size: clamp(48px, 7vw, 80px);
+        line-height: clamp(56px, 7.7vw, 88px);
         text-wrap: balance;
     }
 
@@ -207,8 +223,7 @@
         max-width: 460px;
         margin-top: 34px;
         color: var(--color-muted);
-        font-size: clamp(18px, 2vw, 26px);
-        line-height: 1.35;
+        font: var(--font-body);
     }
 }
 
@@ -263,13 +278,12 @@
         border-top: 1px solid var(--color-black);
 
         h2 {
-            font-size: 18px;
-            font-weight: 400;
+            font: var(--font-h3);
         }
 
         p {
             color: var(--color-muted);
-            font-size: 14px;
+            font: var(--font-caption);
             text-align: right;
         }
     }
