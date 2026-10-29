@@ -4,11 +4,9 @@
 /* Definition of base styles. */
 :root {
     /* colors */
-    --color-white: #f7f6f1;
+    --color-white: #FEFEFC;
     --color-black: #1D1C1C;
     --color-accent: #649D6D;
-    --color-muted: #77756b;
-    --color-line: #d8d6ce;
     /* gaps & sizes */
     --gap-around: 40px;
     /* fonts */
@@ -191,8 +189,11 @@ h3 {
 [data-module="home-intro"],
 [data-module="home-gallery"],
 [data-module="home-logos"] {
+    background-color: var(--color-black);
+    color: var(--color-white);
+
     .home-eyebrow {
-        color: var(--color-muted);
+        color: var(--color-accent);
         font: var(--font-caption);
         letter-spacing: .08em;
         text-transform: uppercase;
@@ -222,7 +223,7 @@ h3 {
         grid-column: 2;
         max-width: 460px;
         margin-top: 34px;
-        color: var(--color-muted);
+        color: var(--color-white);
         font: var(--font-body);
     }
 }
@@ -254,7 +255,7 @@ h3 {
     .gallery-image {
         aspect-ratio: 4 / 5;
         overflow: hidden;
-        background: var(--color-line);
+        background: var(--color-black);
 
         img {
             width: 100%;
@@ -275,14 +276,15 @@ h3 {
         justify-content: space-between;
         gap: 16px;
         padding-top: 14px;
-        border-top: 1px solid var(--color-black);
+        border-top: 1px solid var(--color-white);
 
         h2 {
             font: var(--font-h3);
+            color: var(--color-white);
         }
 
         p {
-            color: var(--color-muted);
+            color: var(--color-white);
             font: var(--font-caption);
             text-align: right;
         }
@@ -291,7 +293,7 @@ h3 {
 
 [data-module="home-logos"] {
     padding: 32px var(--gap-around) 110px;
-    border-top: 1px solid var(--color-line);
+    border-top: 1px solid var(--color-white);
 
     .logo-grid {
         display: grid;
@@ -305,7 +307,7 @@ h3 {
         place-items: center;
         min-height: 100px;
         padding: 18px;
-        border: 1px solid var(--color-line);
+        border: 1px solid var(--color-white);
         transition: border-color 220ms ease, background-color 220ms ease;
 
         img {
@@ -320,8 +322,8 @@ h3 {
 
     .logo-grid a:hover .logo-item,
     .logo-grid a:focus-visible .logo-item {
-        border-color: var(--color-black);
-        background-color: #fff;
+        border-color: var(--color-white);
+        background-color: var(--color-white);
 
         img {
             filter: grayscale(0);
