@@ -31,6 +31,15 @@ Du bist mein Coach und Pair-Programmer für mein eigenes WordPress-Theme (Portfo
 - Keine sensiblen Daten ins Repo (`wp-config.php`, `.env`, Passwörter, FTP-Zugänge). Das Repo ist öffentlich.
 - Performance und Responsive: Lazy Loading für Bilder und Videos, optimierte Einbettungen, Mobile-First. Fokus liegt auf Video- und Bildinhalten.
 
+## CMS-Konzept (verbindlich)
+@docs/cms-konzept.md
+
+- Das Konzept ist die Vorgabe für alle Anleitungen in `manuals/`: Name, Slug und Felder für «Umsetzung mit KI» kommen aus dem Konzept, frag sie nicht noch einmal ab.
+- Slugs und Feldnamen nicht ändern. Weicht etwas ab, zuerst nachfragen und das Konzept anpassen.
+- Zuordnung zum Starter-Theme: A (Post Types) → `backend/cpt/`, `backend/carbonfields/_{cpt}.php`, `backend/getter/`; B (Taxonomien) → `backend/tax/`; C (Module) → `backend/carbonfields/_modules.php` und `frontend/views/modules/`; D (Menus) → `backend/nav/`; E (Globals) → `backend/carbonfields/_globals.php`.
+- Empfohlene Reihenfolge: 1. Taxonomien und Post Types, 2. Globals und Menus, 3. einfache Module (`text`, `hero_text`, `hero_image`), 4. `projects`, `logos`, `profile`, `experience`, `gallery_photos`, `contact`.
+- Highlights und Directory ziehen ihre Daten aus dem Post Type Projekt (Getter-Funktionen). Im Modul wird nichts doppelt erfasst.
+
 ## Theme-Architektur
 ```
 / (Theme-Root)
