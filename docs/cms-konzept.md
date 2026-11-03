@@ -20,11 +20,15 @@ Alle 7 Seiten (Startseite, Projekte, Fotos, Über mich, Kontakt, Impressum, Date
 | Rolle und Teamabgrenzung (Text) | role_text | rich_text |
 | Rolle und Teamabgrenzung (Bild) | role_image | image |
 | Bildergalerie | gallery | media_gallery |
+| Video (YouTube/Vimeo-Link) | video_url | text (type url) |
+| Ausgewähltes Projekt | featured | checkbox |
 
 - Alle Angaben werden nur hier erfasst. Highlights und Directory rufen sie ab und zeigen nur einen Teil.
 - `cover` ist Hero im Projektbeitrag, Karte im Highlights-Karussell und Hover-Vorschau im Directory. Der Schriftzug im Hero («Interaktiver Film») ist Teil des Bildes.
 - Kategorie kommt aus der Taxonomie `project_category`.
 - Rollen-Sektion ist optional: Text und Bild leer = nicht ausgeben.
+- `video_url` ist optional: wird per oEmbed eingebettet (nach dem Steckbrief), leer = nicht ausgeben.
+- `featured` markiert das Projekt für den Filter «Ausgewählte Projekte».
 
 ### Foto `photo`: gleichförmiger Aufbau
 | Name | Slug | Feldtyp |
@@ -40,7 +44,8 @@ Alle 7 Seiten (Startseite, Projekte, Fotos, Über mich, Kontakt, Impressum, Date
 | Projektkategorie | project_category | project | Video, Animation, Print, Fotos, Digital |
 | Fotokategorie | photo_category | photo | Menschen, Natur, Architektur, Street |
 
-- «Alle» und «Ausgewählte Projekte» sind Standardfilter im Theme (zeigen alles), keine Begriffe.
+- «Ausgewählte Projekte» und «Alle» sind Standardfilter im Theme, keine Begriffe. «Ausgewählte Projekte» zeigt Projekte mit `featured` und ist beim Laden aktiv (gibt es keine, ist «Alle» aktiv). «Alle» zeigt alles.
+- Schreibweise der Kategorie: «Fotos» (entschieden).
 
 ## C | Module
 
@@ -160,7 +165,7 @@ Impressum und Datenschutz.
 Scroll-Pfeil, ↗-Pfeile, Beschriftungen Jahr / Kontext / Kategorie / Meine Rolle, Zwischentitel «Projektbeschrieb» und «Meine Rolle und Teamabgrenzung», Button-Text Lebenslauf, Standardfilter, Karussell, Hover-Effekt (Chroma/Verflüssigen, Cursor), Streifen-Galerie, Foto-Raster.
 
 ## Offen
-- Video-Embed fehlt im Design: Feld `video_url` (url) im Projekt empfohlen.
+- Video-Embed: entschieden, Feld `video_url` im Projekt (Platzierung im Design noch offen).
 - Impressum und Datenschutz ohne Screen.
 - Platzhalter im Design: Lorem ipsum, email@gmail.com, «Projekt 04/05», Instagram-Link.
-- Kategorien uneinheitlich: «Foto» vs. «Fotos», «Digital» fehlt im Filter.
+- Kategorien: «Fotos» entschieden. «Digital» fehlt im Design-Filter (Filter wird automatisch aus den verwendeten Begriffen erzeugt).

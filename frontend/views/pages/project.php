@@ -4,6 +4,8 @@ $project = get_project_by_id(get_the_ID());
 $cover = $project['cover'];
 $has_role = !empty($project['role_text']) || !empty($project['role_image']);
 $category_names = implode(', ', array_column($project['categories'], 'name'));
+// Embed-Code ist bereits durch wp_kses() gefiltert und kann direkt ausgegeben werden
+$video = get_video_embed($project['video_url']);
 ?>
 
 <main data-page="project">
@@ -36,6 +38,12 @@ $category_names = implode(', ', array_column($project['categories'], 'name'));
             <?php endif; ?>
         </dl>
     </section>
+
+    <?php if ($video) : ?>
+        <section class="project-video" aria-label="Video">
+            <div class="video-wrapper"><?= $video ?></div>
+        </section>
+    <?php endif; ?>
 
     <?php if ($project['description']) : ?>
         <section class="project-description">

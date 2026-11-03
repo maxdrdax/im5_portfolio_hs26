@@ -111,3 +111,45 @@ function get_taxonomy_terms(string $taxonomy): array
         ];
     }, $terms);
 }
+
+// -> Video-Link (YouTube/Vimeo) in einen Embed-Code umwandeln (oEmbed)
+// oEmbed: WordPress fragt beim Anbieter den passenden <iframe>-Code ab.
+// Das Ergebnis wird 1 Woche zwischengespeichert (Transient), damit nicht jeder Seitenaufruf eine Anfrage auslöst.
+function get_video_embed(?string $url): string|false
+{
+    $url = esc_url_raw(trim($url ?? ''));
+    if (empty($url)) {
+        return false;
+    }
+
+    $cache_key = 'video_embed_' . md5($url);
+    $html = get_transient($cache_key);
+
+    if ($html === false) {
+        $html = wp_oembed_get($url, ['width' => 1600]);
+        if (!$html) {
+            return false;
+        }
+        set_transient($cache_key, $html, WEEK_IN_SECONDS);
+    }
+
+    // YouTube ohne Tracking-Cookies (Datenschutz)
+    $html = str_replace('youtube.com/embed/', 'youtube-nocookie.com/embed/', $html);
+    // Lazy Loading: Video wird erst geladen, wenn es in die Nähe des Bildschirms kommt
+    $html = str_replace('<iframe ', '<iframe loading="lazy" ', $html);
+
+    // Nur ein <iframe> mit diesen Attributen erlauben (Escaping)
+    return wp_kses($html, [
+        'iframe' => [
+            'src' => true,
+            'width' => true,
+            'height' => true,
+            'title' => true,
+            'frameborder' => true,
+            'allow' => true,
+            'allowfullscreen' => true,
+            'referrerpolicy' => true,
+            'loading' => true,
+        ],
+    ]);
+}

@@ -21,6 +21,9 @@ function get_project_by_id(int $id): array
         'role_text' => carbon_get_post_meta($id, 'role_text'),
         'role_image' => get_media_by_id(carbon_get_post_meta($id, 'role_image'), 'l'),
         'gallery' => array_values(array_filter($gallery)),
+        // Nur der Link; eingebettet wird erst auf der Detailseite (spart Anfragen in Liste/Karussell)
+        'video_url' => carbon_get_post_meta($id, 'video_url'),
+        'featured' => (bool) carbon_get_post_meta($id, 'featured'),
         'categories' => get_term_list($id, 'project_category'),
     ];
 }

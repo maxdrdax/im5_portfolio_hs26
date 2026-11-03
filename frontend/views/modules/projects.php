@@ -7,6 +7,9 @@ $layout = ($data['layout'] ?? 'carousel') === 'list' ? 'list' : 'carousel';
 if (empty($projects)) {
     return;
 }
+
+// Gibt es mindestens ein ausgewähltes Projekt? Sonst ist «Alle» der Standardfilter.
+$has_featured = in_array(true, array_column($projects, 'featured'), true);
 ?>
 
 <section data-module="projects" data-layout-type="<?= esc_attr($layout) ?>"<?php if ($layout === 'list') : ?> data-filter-group<?php endif; ?>>
@@ -34,16 +37,18 @@ if (empty($projects)) {
         </ul>
 
     <?php else : ?>
-        <?php if (!empty($data['categories'])) : ?>
-            <div class="filter" role="group" aria-label="Projekte filtern">
-                <button type="button" data-filter="all" aria-pressed="true">Alle</button>
-                <?php foreach ($data['categories'] as $category) : ?>
-                    <button type="button" data-filter="<?= esc_attr($category['slug']) ?>" aria-pressed="false">
-                        <?= esc_html($category['name']) ?>
-                    </button>
-                <?php endforeach; ?>
-            </div>
-        <?php endif; ?>
+        <div class="filter" role="group" aria-label="Projekte filtern">
+            <?php // Standardfilter (statisch im Theme), der aktive Button hat aria-pressed="true" ?>
+            <?php if ($has_featured) : ?>
+                <button type="button" data-filter="featured" aria-pressed="true">Ausgewählte Projekte</button>
+            <?php endif; ?>
+            <button type="button" data-filter="all" aria-pressed="<?= $has_featured ? 'false' : 'true' ?>">Alle</button>
+            <?php foreach ($data['categories'] ?? [] as $category) : ?>
+                <button type="button" data-filter="<?= esc_attr($category['slug']) ?>" aria-pressed="false">
+                    <?= esc_html($category['name']) ?>
+                </button>
+            <?php endforeach; ?>
+        </div>
 
         <table class="directory">
             <thead>
@@ -55,7 +60,8 @@ if (empty($projects)) {
             </thead>
             <tbody>
                 <?php foreach ($projects as $project) : ?>
-                    <tr data-categories="<?= esc_attr(implode(' ', array_column($project['categories'], 'slug'))) ?>">
+                    <tr data-categories="<?= esc_attr(implode(' ', array_column($project['categories'], 'slug'))) ?>"
+                        data-featured="<?= $project['featured'] ? 'true' : 'false' ?>">
                         <td>
                             <a href="<?= esc_url($project['url']) ?>"><?= esc_html($project['title']) ?> <span aria-hidden="true">↗</span></a>
                             <?php if ($project['cover']) : ?>
