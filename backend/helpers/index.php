@@ -30,6 +30,9 @@ function get_media_by_id(int|string $id, string $size = 'm'): false|array
     if ($image) {
         $data['src'] = $image[0];
         $data['type'] = 'image';
+        // Breite/Höhe: verhindert Layout-Sprünge und ergibt das Bildformat (Foto-Raster)
+        $data['width'] = (int) $image[1];
+        $data['height'] = (int) $image[2];
     } else {
         $data['src'] = wp_get_attachment_url($id);
         $data['type'] = get_post_mime_type($id);
@@ -56,4 +59,55 @@ function get_menu_by_slug(string $slug): array
         ];
     }
     return $items;
+}
+
+// -> Titel mit kursivem Akzent: *Wort* wird zu <em>Wort</em>
+// Zuerst escapen, dann Sternchen ersetzen. Die Rückgabe ist sicher und kann direkt ausgegeben werden.
+function format_accent(?string $text): string
+{
+    $safe = esc_html($text ?? '');
+    return preg_replace('/\*(.+?)\*/', '<em>$1</em>', $safe);
+}
+
+// -> Rich-Text-Feld (Carbon Fields) sicher ausgeben: Absätze ergänzen, nur erlaubtes HTML
+function format_rich_text(?string $html): string
+{
+    if (empty($html)) {
+        return '';
+    }
+    return wp_kses_post(wpautop($html));
+}
+
+// -> Begriffe einer Taxonomie für einen Beitrag laden (Name + Slug)
+// get_the_terms() liefert false oder WP_Error, wenn nichts zugewiesen ist. Darum zuerst prüfen.
+function get_term_list(int $post_id, string $taxonomy): array
+{
+    $terms = get_the_terms($post_id, $taxonomy);
+    if (empty($terms) || is_wp_error($terms)) {
+        return [];
+    }
+    return array_map(function ($term) {
+        return [
+            'name' => $term->name,
+            'slug' => $term->slug,
+        ];
+    }, $terms);
+}
+
+// -> Alle verwendeten Begriffe einer Taxonomie laden (für Filterlisten)
+function get_taxonomy_terms(string $taxonomy): array
+{
+    $terms = get_terms([
+        'taxonomy' => $taxonomy,
+        'hide_empty' => true,
+    ]);
+    if (empty($terms) || is_wp_error($terms)) {
+        return [];
+    }
+    return array_map(function ($term) {
+        return [
+            'name' => $term->name,
+            'slug' => $term->slug,
+        ];
+    }, $terms);
 }

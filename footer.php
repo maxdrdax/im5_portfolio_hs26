@@ -1,4 +1,4 @@
-<script src="<?php bloginfo('template_directory'); ?>/frontend/scripts/main.js" type="module"></script>
+<?php // Scripts werden über wp_footer() ausgegeben (siehe backend/init/_theme.php) ?>
 <?php wp_footer(); ?>
 </body>
 </html>

@@ -1,23 +1,38 @@
 <?php
+// -> Getter für die globalen Einstellungen (Globales)
 
-// todo: Hier die Getter für die Globalen Informationen definieren
-function get_global_logo() {
-    $logo_id = carbon_get_theme_option('logo');
-    return $logo_id ? get_media_by_id($logo_id) : false;
+// Logo = Schriftzug im Header
+function get_global_logo(): string
+{
+    return carbon_get_theme_option('logo') ?: get_bloginfo('name');
 }
 
-function get_global_logo_link() {
-    return carbon_get_theme_option('logo_link') ?: home_url('/');
+// Copyright im Footer
+function get_global_copyright(): string
+{
+    return carbon_get_theme_option('copyright') ?: '';
 }
 
-function get_global_footer_copyright() {
-    return carbon_get_theme_option('footer_copyright');
+// E-Mail-Adresse; false, wenn leer oder ungültig
+function get_global_email(): string|false
+{
+    $email = sanitize_email(carbon_get_theme_option('email') ?: '');
+    return is_email($email) ? $email : false;
 }
 
-function get_global_socials() {
+// Socials; mit $only_with_icon = true nur Einträge mit Icon (für den Footer)
+function get_global_socials(bool $only_with_icon = false): array
+{
     $socials = carbon_get_theme_option('socials') ?: [];
-    return array_map(function ($item) {
-        $item ['icon'] = get_media_by_id($item['icon']);
+    $socials = array_map(function ($item) {
+        $item['icon'] = get_media_by_id($item['icon'] ?? 0, 'xxs');
         return $item;
-        }, $socials);
+    }, $socials);
+
+    if ($only_with_icon) {
+        $socials = array_filter($socials, function ($item) {
+            return !empty($item['icon']);
+        });
+    }
+    return array_values($socials);
 }

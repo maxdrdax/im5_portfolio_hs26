@@ -1,34 +1,36 @@
 <?php
+// -> Footer: Rechtliches, Copyright und Socials mit Icon
 $menu = get_menu_by_slug('legals');
-$logo = get_global_logo();
-$logo_link = get_global_logo_link();
-$copyright = get_global_footer_copyright();
-$socials = get_global_socials();
+$copyright = get_global_copyright();
+$socials = get_global_socials(true);
 ?>
 
 <footer data-layout="footer">
-    <?php if ($logo) : ?>
-        <a class="logo-link" href="<?= esc_url($logo_link) ?>">
-            <img class="logo" src="<?= esc_url($logo['src']) ?>" alt="<?= esc_attr($logo['alt']) ?>">
-        </a>
+    <?php if (!empty($menu)) : ?>
+        <nav class="nav-container" aria-label="Rechtliches">
+            <ul class="nav">
+                <?php foreach ($menu as $item) : ?>
+                    <li class="nav-item">
+                        <a href="<?= esc_url($item['url']) ?>"<?php if ($item['target'] === '_blank') : ?> target="_blank" rel="noopener"<?php endif; ?>>
+                            <?= esc_html($item['title']) ?>
+                        </a>
+                    </li>
+                <?php endforeach; ?>
+            </ul>
+        </nav>
     <?php endif; ?>
-    <nav class="nav-container">
-        <ul class="nav">
-            <?php foreach ($menu as $item) : ?>
-                <li class="nav-item">
-                    <a target="<?= $item['target'] ?>" href="<?= $item['url'] ?>">
-                        <?= $item['title'] ?>
-                    </a>
-                </li>
+
+    <?php if ($copyright) : ?>
+        <p class="copyright"><?= esc_html($copyright) ?></p>
+    <?php endif; ?>
+
+    <?php if (!empty($socials)) : ?>
+        <div class="socials">
+            <?php foreach ($socials as $social) : ?>
+                <a href="<?= esc_url($social['url']) ?>" target="_blank" rel="noopener" aria-label="<?= esc_attr($social['title']) ?>">
+                    <img src="<?= esc_url($social['icon']['src']) ?>" alt="" width="48" height="48" loading="lazy">
+                </a>
             <?php endforeach; ?>
-        </ul>
-    </nav>
-    <p class="copyright"><?= esc_html($copyright) ?></p>
-    <div class="socials">
-        <?php foreach ($socials as $social) : ?>
-            <a target="_blank" href="<?= $social['link'] ?>" aria-label="Link zu <?= $social['title'] ?>">
-                <img src="<?= $social['icon']['src'] ?>" alt="<?= $social['icon']['alt'] ?>">
-            </a>
-        <?php endforeach; ?>
-    </div>
+        </div>
+    <?php endif; ?>
 </footer>

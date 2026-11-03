@@ -4,6 +4,9 @@
  * und optimieren. Diese Datei muss in der Regel nicht bearbeitet werden.
  */
 
+// -> Theme-Setup und Enqueue von Styles/Scripts
+require_once __DIR__ . '/_theme.php';
+
 // -> add image sizes
 add_image_size('preload', 20, 20);
 add_image_size('xxs', 100, 100);

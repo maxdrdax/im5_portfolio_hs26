@@ -1,41 +1,24 @@
-<!DOCTYPE html>
-<html lang="<?php bloginfo('language') ?>">
-<head>
-    <meta charset="<?php bloginfo('charset') ?>">
-
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500&family=Playfair+Display:ital,wght@0,400..900;1,400..900&display=swap" rel="stylesheet">
-
-    <link rel="stylesheet" href="<?= get_template_directory_uri() ?>/frontend/styles/main.css">
-    <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
-    <title><?php bloginfo('name') ?></title>
-    <?php wp_head(); ?>
-</head>
-<body>
-
 <?php
+// -> Header: Schriftzug (Link auf Startseite) und Hauptnavigation
 $logo = get_global_logo();
-$logo_link = get_global_logo_link();
 $menu = get_menu_by_slug('main');
 ?>
 
 <header data-layout="header">
-    <?php if ($logo) : ?>
-        <a class="logo-link" href="<?= esc_url($logo_link) ?>">
-            <img class="logo" src="<?= esc_url($logo['src']) ?>" alt="<?= esc_attr($logo['alt']) ?>">
-        </a>
+    <a class="logo-link" href="<?= esc_url(home_url('/')) ?>">
+        <span class="header-name"><?= esc_html($logo) ?></span>
+    </a>
+    <?php if (!empty($menu)) : ?>
+        <nav class="nav-container" aria-label="Hauptnavigation">
+            <ul class="nav">
+                <?php foreach ($menu as $item) : ?>
+                    <li class="nav-item">
+                        <a href="<?= esc_url($item['url']) ?>"<?php if ($item['target'] === '_blank') : ?> target="_blank" rel="noopener"<?php endif; ?>>
+                            <?= esc_html($item['title']) ?>
+                        </a>
+                    </li>
+                <?php endforeach; ?>
+            </ul>
+        </nav>
     <?php endif; ?>
-    <nav class="nav-container"
-        data-menu="<?php echo $menu->slug; ?>">
-        <ul class="nav">
-            <?php foreach ($menu as $item) : ?>
-                <li class="nav-item">
-                    <a target="<?= $item['target'] ?>" href="<?= $item['url'] ?>">
-                        <?= $item['title'] ?>
-                    </a>
-                </li>
-            <?php endforeach; ?>
-        </ul>
-    </nav>
 </header>

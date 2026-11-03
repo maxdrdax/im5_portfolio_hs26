@@ -1,0 +1,43 @@
+<?php
+// -> Post Type «Projekt»: gleichförmiger Aufbau, eigene Detailseite (single-project.php)
+register_post_type('project', [
+    'label' => 'Projekt',
+    'labels' => [
+        'name' => 'Projekte',
+        'singular_name' => 'Projekt',
+        'menu_name' => 'Projekte',
+        'name_admin_bar' => 'Projekt',
+        'all_items' => 'Alle Projekte',
+        'add_new_item' => 'Neues Projekt hinzufügen',
+        'add_new' => 'Neues Projekt',
+        'new_item' => 'Neues Projekt',
+        'edit_item' => 'Projekt bearbeiten',
+        'update_item' => 'Projekt updaten',
+        'view_item' => 'Projekt ansehen',
+        'view_items' => 'Projekte ansehen',
+        'search_items' => 'Projekt suchen',
+        'not_found' => 'Kein Projekt gefunden',
+        'not_found_in_trash' => 'Kein Projekt im Papierkorb gefunden',
+    ],
+    'supports' => ['title'],
+    'hierarchical' => false,
+    'public' => true,
+    'show_ui' => true,
+    'show_in_menu' => true,
+    'menu_position' => 20,
+    'menu_icon' => 'dashicons-format-video',
+    'show_in_admin_bar' => false,
+    'show_in_nav_menus' => false,
+    'has_archive' => false,
+    'exclude_from_search' => true,
+    'publicly_queryable' => true,
+    'capability_type' => 'post',
+    'show_in_rest' => false,
+    'rewrite' => [
+        // URL: /projekt/projektname/ (nicht «projekte», damit es nicht mit der Seite «Projekte» kollidiert)
+        'slug' => 'projekt',
+        'with_front' => false,
+        'pages' => false,
+        'feeds' => false,
+    ],
+]);
