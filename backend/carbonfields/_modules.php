@@ -69,7 +69,8 @@ Container::make('post_meta', 'Module')
                 Field::make('complex', 'facts', 'Steckbrief')
                     ->add_fields([
                         Field::make('text', 'label', 'Bezeichnung')->set_width(50),
-                        Field::make('text', 'value', 'Wert')->set_width(50),
+                        // «value» ist in Carbon Fields reserviert, darum «detail»
+                        Field::make('text', 'detail', 'Wert')->set_width(50),
                     ])
                     ->set_header_template('<% if (label) { %><%- label %><% } %>')
                     ->set_layout('tabbed-vertical'),

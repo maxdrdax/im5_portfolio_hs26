@@ -25,7 +25,7 @@ $data = $args['data'];
                 <?php foreach ($data['facts'] as $fact) : ?>
                     <div class="fact">
                         <dt><?= esc_html($fact['label']) ?></dt>
-                        <dd><?= esc_html($fact['value']) ?></dd>
+                        <dd><?= esc_html($fact['detail'] ?? '') ?></dd>
                     </div>
                 <?php endforeach; ?>
             </dl>

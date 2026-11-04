@@ -102,11 +102,12 @@ Startseite: «Berufserfahrung / Ausbildung» (GLB, plattformj.ch).
 | ↳ Skill | skill | text |
 | Steckbrief | facts | complex |
 | ↳ Bezeichnung | label | text |
-| ↳ Wert | value | text |
+| ↳ Wert | detail | text |
 | Titel | title | text |
 | Text | text | rich_text |
 
 Über mich: links Name, Funktion, Skill-Tags, Steckbrief; rechts Titel und Text.
+Hinweis: `value` ist in Carbon Fields ein reservierter Name für Unterfelder von complex-Feldern, darum `detail`.
 
 ### Erfahrung `experience`
 | Name | Slug | Feldtyp |

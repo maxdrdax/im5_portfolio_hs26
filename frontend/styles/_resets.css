@@ -7,11 +7,21 @@ html {
     scroll-behavior: smooth;
 }
 body {
-    background: var(--color-white);
-    color: var(--color-black);
+    /* Dunkler Hintergrund wie die Seiten, sonst entsteht auf kurzen Seiten eine helle Fläche */
+    background: var(--color-black);
+    color: var(--color-white);
     font: 400 16px/24px var(--font-sans);
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    /* Footer immer am unteren Rand: Seite mindestens so hoch wie der Bildschirm */
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    min-height: 100dvh;
+}
+main {
+    /* Inhalt füllt den freien Platz zwischen Header und Footer */
+    flex: 1;
 }
 h1,
 h2,
