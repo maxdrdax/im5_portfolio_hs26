@@ -34,11 +34,24 @@ document.querySelectorAll('[data-filter-group]').forEach((group) => {
     }
 });
 
-// -> Scroll-Pfeil: scrollt zum nächsten Abschnitt nach dem Hero
+// -> Scroll-Pfeil: scrollt so weit, dass der Hero ganz unter dem Header verschwindet
 document.querySelectorAll('[data-scroll-next]').forEach((button) => {
     button.addEventListener('click', () => {
-        const next = button.closest('section')?.nextElementSibling;
-        next?.scrollIntoView({ behavior: 'smooth' });
+        const hero = button.closest('section');
+        const header = document.querySelector('[data-layout="header"]');
+        if (!hero) {
+            return;
+        }
+
+        // Unterkante des Heros auf der Seite (nicht nur im sichtbaren Bereich)
+        const heroBottom = hero.getBoundingClientRect().bottom + window.scrollY;
+        // Unterkante des klebenden Headers im Fenster (inkl. Admin-Leiste, falls eingeloggt)
+        const headerBottom = header ? header.getBoundingClientRect().bottom : 0;
+
+        window.scrollTo({
+            top: heroBottom - headerBottom,
+            behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth',
+        });
     });
 });
 
@@ -253,5 +266,63 @@ if (!reducedMotion) {
             clearTimeout(resizeTimer);
             resizeTimer = setTimeout(build, 200);
         }).observe(marquee);
+    });
+}
+
+// =====================================================================
+// -> Cursor-Punkt: folgt dem Mauszeiger weich verzögert
+// Nur mit Maus/Trackpad und ohne «Bewegung reduzieren». Der normale Mauszeiger bleibt sichtbar.
+// =====================================================================
+if (canHover && !reducedMotion) {
+    const dot = document.createElement('div');
+    dot.className = 'cursor-dot';
+    dot.setAttribute('aria-hidden', 'true');
+    document.body.append(dot);
+
+    // Elemente, über denen der Punkt grösser wird
+    const INTERACTIVE = 'a, button, [role="button"], input, textarea, select, label';
+    const EASING = 0.18; // Anteil der Distanz pro Frame: kleiner = mehr Verzögerung
+
+    let targetX = 0;
+    let targetY = 0;
+    let currentX = 0;
+    let currentY = 0;
+    let frame = null;
+
+    const animate = () => {
+        currentX += (targetX - currentX) * EASING;
+        currentY += (targetY - currentY) * EASING;
+        dot.style.transform = `translate3d(${currentX}px, ${currentY}px, 0)`;
+
+        // Animation anhalten, wenn der Punkt angekommen ist (spart Leistung)
+        if (Math.abs(targetX - currentX) < 0.1 && Math.abs(targetY - currentY) < 0.1) {
+            frame = null;
+            return;
+        }
+        frame = requestAnimationFrame(animate);
+    };
+
+    document.addEventListener('mousemove', (event) => {
+        targetX = event.clientX;
+        targetY = event.clientY;
+
+        // Erste Bewegung: Punkt direkt an die Maus setzen und einblenden
+        if (!dot.classList.contains('is-visible')) {
+            currentX = targetX;
+            currentY = targetY;
+            dot.classList.add('is-visible');
+        }
+
+        // Grösser über Links und Buttons
+        dot.classList.toggle('is-hover', Boolean(event.target.closest?.(INTERACTIVE)));
+
+        if (!frame) {
+            frame = requestAnimationFrame(animate);
+        }
+    });
+
+    // Maus verlässt das Fenster: Punkt ausblenden
+    document.documentElement.addEventListener('mouseleave', () => {
+        dot.classList.remove('is-visible');
     });
 }

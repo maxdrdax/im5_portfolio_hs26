@@ -23,6 +23,11 @@
     /* seitlicher Abstand, der den Inhalt auf 1280 px zentriert */
     --page-inline: max(var(--gap-around), calc((100% - var(--content-width)) / 2));
     --header-height: 100px;
+    /* Admin-Leiste von WordPress (nur eingeloggt); WordPress setzt diese Variable selbst, sonst 0 */
+    --admin-bar-height: var(--wp-admin--admin-bar--height, 0px);
+    /* Hero füllt den Bildschirm: sichtbare Höhe minus Header und Admin-Leiste.
+       svh = kleinste sichtbare Höhe auf dem Handy (Adressleiste eingeblendet), damit nichts springt */
+    --hero-height: max(480px, calc(100svh - var(--header-height) - var(--admin-bar-height)));
     --radius: 16px;
     /* fonts (Figma: Portfolio/...) */
     --font-h1: 500 80px/88px var(--font-sans);
@@ -50,7 +55,8 @@ h3 {
 /* Styling of all available layout components. */
 [data-layout="header"] {
     position: sticky;
-    top: 0;
+    /* klebt unter der Admin-Leiste statt dahinter */
+    top: var(--admin-bar-height);
     z-index: 100;
     display: flex;
     justify-content: space-between;
@@ -167,7 +173,7 @@ h3 {
         position: relative;
         display: grid;
         place-items: center;
-        min-height: 100vh;
+        min-height: var(--hero-height);
 
         .image {
             position: absolute;
@@ -258,7 +264,7 @@ h2 em {
 [data-module="hero-image"] {
     display: flex;
     align-items: flex-start;
-    min-height: max(560px, calc(100svh - var(--header-height)));
+    min-height: var(--hero-height);
     padding: 140px var(--page-inline) var(--space-96);
 
     .image {
@@ -802,3 +808,31 @@ h2 em {
 
 /* BREAKPOINT: xxs */
 @media (max-width: 400px) {}
+
+/* Cursor-Punkt (main.js): folgt dem Mauszeiger, invertiert den Hintergrund */
+.cursor-dot {
+    --dot-size: 12px;
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 1000;
+    pointer-events: none;
+    /* Position setzt main.js per transform; margin zentriert den Punkt auf der Mausspitze */
+    width: var(--dot-size);
+    height: var(--dot-size);
+    margin: calc(var(--dot-size) / -2) 0 0 calc(var(--dot-size) / -2);
+    border-radius: 50%;
+    background-color: var(--color-white);
+    mix-blend-mode: difference;
+    opacity: 0;
+    transition: opacity 200ms ease, width 250ms ease, height 250ms ease, margin 250ms ease;
+
+    &.is-visible {
+        opacity: 1;
+    }
+
+    /* über Links und Buttons grösser */
+    &.is-hover {
+        --dot-size: 40px;
+    }
+}
