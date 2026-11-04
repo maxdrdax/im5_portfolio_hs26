@@ -614,6 +614,8 @@ h2 em {
 
     .photo {
         overflow: hidden;
+        /* abgerundete Ecken wie Figma (16 px, alle vier Ecken) */
+        border-radius: var(--radius);
 
         img {
             display: block;
