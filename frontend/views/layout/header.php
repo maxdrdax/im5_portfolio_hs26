@@ -13,7 +13,8 @@ $menu = get_menu_by_slug('main');
             <ul class="nav">
                 <?php foreach ($menu as $item) : ?>
                     <li class="nav-item">
-                        <a href="<?= esc_url($item['url']) ?>"<?php if ($item['target'] === '_blank') : ?> target="_blank" rel="noopener"<?php endif; ?>>
+                        <?php // aria-current: aktuelle Seite (Active State, auch für Screenreader) ?>
+                        <a href="<?= esc_url($item['url']) ?>"<?php if ($item['current']) : ?> aria-current="page"<?php endif; ?><?php if ($item['target'] === '_blank') : ?> target="_blank" rel="noopener"<?php endif; ?>>
                             <?= esc_html($item['title']) ?>
                         </a>
                     </li>

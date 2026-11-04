@@ -73,7 +73,13 @@ $has_featured = in_array(true, array_column($projects, 'featured'), true);
         </div>
 
         <table class="directory">
-            <thead>
+            <?php // Spaltenbreiten wie Figma (4 : 2 : 3 Rasterspalten); die Kopfzeile ist nur für Screenreader ?>
+            <colgroup>
+                <col class="col-title">
+                <col class="col-category">
+                <col class="col-year">
+            </colgroup>
+            <thead class="screen-reader-text">
                 <tr>
                     <th scope="col">Projekt</th>
                     <th scope="col">Kategorie</th>
@@ -85,9 +91,10 @@ $has_featured = in_array(true, array_column($projects, 'featured'), true);
                     <tr data-categories="<?= esc_attr(implode(' ', array_column($project['categories'], 'slug'))) ?>"
                         data-featured="<?= $project['featured'] ? 'true' : 'false' ?>"
                         data-preview-target="<?= esc_attr($project['id']) ?>">
-                        <td><a href="<?= esc_url($project['url']) ?>"><?= esc_html($project['title']) ?> <span aria-hidden="true">↗</span></a></td>
+                        <?php // Der Link deckt per CSS die ganze Zeile ab (.row-link::after) ?>
+                        <td><a class="row-link" href="<?= esc_url($project['url']) ?>"><?= esc_html($project['title']) ?></a></td>
                         <td><?= esc_html(implode(', ', array_column($project['categories'], 'name'))) ?></td>
-                        <td><?= esc_html($project['year']) ?></td>
+                        <td><?= esc_html($project['year'] ?: '— / —') ?></td>
                     </tr>
                 <?php endforeach; ?>
             </tbody>

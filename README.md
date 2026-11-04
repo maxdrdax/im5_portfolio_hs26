@@ -116,6 +116,7 @@ Zum Vergleich der Stand vor der Umsetzung des CMS-Konzepts (Beispielmodule des S
 | 04.11.2026 | Bugfix Carbon Fields: `value` ist reserviert, Steckbrief-Feld heisst neu `detail`; dunkler Seitenhintergrund und Footer immer am unteren Rand |
 | 04.11.2026 | Design nach Figma (Startseite): Design-Tokens, Header/Footer, Hero, Highlights als Akkordeon (Hover), Farbumkehr des Hero-Texts über Video (`mix-blend-mode: difference`), Logo-Laufschrift (Endlos-Marquee) |
 | 04.11.2026 | Cursor-Punkt (folgt der Maus, invertiert, grösser über Links), Hero immer bildschirmfüllend (inkl. Admin-Leiste), Scroll-Pfeil berechnet die Zielposition exakt |
+| 04.11.2026 | Design nach Figma (Projekte): Directory zweispaltig (Filter links, Tabelle rechts), ganze Zeile anklickbar, grüner Hover, Vorschau 16:9 abgerundet; Active State für Navigation und Filter (`aria-current`, `aria-pressed`); Hero-Text-Titel grün, auf Kontakt weiss (`:has()`) |
 
 ## Learnings
 <!-- In eigenen Worten ergänzen -->

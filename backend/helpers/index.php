@@ -72,6 +72,9 @@ function get_menu_by_slug(string $slug): array
         return [];
     }
     $menu_obj = get_term($theme_locations[$slug], 'nav_menu');
+    if (!$menu_obj || is_wp_error($menu_obj)) {
+        return [];
+    }
     $menu = wp_get_nav_menu_items($menu_obj->name) ?: [];
     $items = [];
     foreach ($menu as $item) {
@@ -80,9 +83,24 @@ function get_menu_by_slug(string $slug): array
             'title' => $item->title,
             'url' => $item->url,
             'target' => $item->target,
+            'current' => is_current_menu_item($item),
         ];
     }
     return $items;
+}
+
+// -> Prüfen, ob ein Menüeintrag zur aktuell angezeigten Seite gehört (für den Active State)
+function is_current_menu_item(WP_Post $item): bool
+{
+    // Eintrag verweist auf genau diese Seite
+    if ($item->type === 'post_type' && (int) $item->object_id === get_queried_object_id()) {
+        return true;
+    }
+    // Projekt-Detailseite: «Projekte» (Seite mit Slug «projekte» aus dem CMS-Konzept) ist aktiv
+    if (is_singular('project') && $item->object === 'page') {
+        return get_post_field('post_name', (int) $item->object_id) === 'projekte';
+    }
+    return false;
 }
 
 // -> Titel mit kursivem Akzent: *Wort* wird zu <em>Wort</em>
