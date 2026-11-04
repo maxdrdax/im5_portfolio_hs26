@@ -244,7 +244,8 @@ h3 {
         overflow-x: auto;
         list-style: none;
 
-        img {
+        img,
+        video {
             height: 60vh;
             width: auto;
         }
@@ -292,6 +293,7 @@ h2 em {
 
     .title {
         position: relative;
+        z-index: 1;
         padding: var(--gap-around);
     }
 }
@@ -332,10 +334,23 @@ h2 em {
             text-decoration: none;
         }
 
+        .card-media {
+            position: relative;
+            display: block;
+        }
+
         img {
             width: 100%;
             height: auto;
             aspect-ratio: 4 / 5;
+            object-fit: cover;
+        }
+
+        .card-video {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
             object-fit: cover;
         }
 
@@ -366,23 +381,56 @@ h2 em {
             color: inherit;
             text-decoration: none;
         }
+    }
 
-        /* Hover-Vorschau mit Titelbild */
-        .preview {
-            position: fixed;
-            top: 50%;
-            right: var(--gap-around);
-            width: 320px;
-            height: auto;
-            opacity: 0;
-            pointer-events: none;
-            transform: translateY(-50%);
-            transition: opacity 220ms ease;
-        }
+    /* Hover-Vorschau: Position setzt main.js per transform (folgt dem Mauszeiger) */
+    .directory-preview {
+        position: fixed;
+        top: 0;
+        left: 0;
+        z-index: 50;
+        pointer-events: none;
+        opacity: 0;
+        transition: opacity 220ms ease;
 
-        tr:hover .preview {
+        &.is-visible {
             opacity: 1;
         }
+    }
+
+    .preview-item {
+        position: absolute;
+        /* rechts neben dem Mauszeiger, vertikal zentriert */
+        width: 360px;
+        aspect-ratio: 4 / 3;
+        transform: translate(24px, -50%);
+        opacity: 0;
+        transition: opacity 180ms ease;
+
+        &.is-active {
+            opacity: 1;
+        }
+
+        img,
+        video {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+    }
+}
+
+/* Videos über einem Bild erst einblenden, wenn sie laufen (kein schwarzes Aufblitzen) */
+.video,
+.card-video,
+.preview-video {
+    opacity: 0;
+    transition: opacity 300ms ease;
+
+    &.is-playing {
+        opacity: 1;
     }
 }
 
@@ -535,6 +583,7 @@ h2 em {
     border: 0;
     background: none;
     color: var(--color-white);
+    z-index: 1;
     font-size: 32px;
     cursor: pointer;
     transform: translateX(-50%);
@@ -593,7 +642,7 @@ h2 em {
     }
 
     /* Keine Hover-Vorschau auf Touch-Geräten */
-    [data-module="projects"] .directory .preview {
+    [data-module="projects"] .directory-preview {
         display: none;
     }
 

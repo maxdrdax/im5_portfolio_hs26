@@ -40,6 +40,30 @@ function get_media_by_id(int|string $id, string $size = 'm'): false|array
     return $data;
 }
 
+// -> Details einer Videodatei anhand der ID laden; false, wenn es kein Video ist
+// Breite/Höhe kommen aus den Metadaten, die WordPress beim Upload speichert.
+function get_video_by_id(int|string $id): false|array
+{
+    $id = (int) $id;
+    if ($id <= 0) {
+        return false;
+    }
+
+    $mime = get_post_mime_type($id);
+    if (!$mime || !str_starts_with($mime, 'video/')) {
+        return false;
+    }
+
+    $meta = wp_get_attachment_metadata($id) ?: [];
+    return [
+        'src' => wp_get_attachment_url($id),
+        'type' => 'video',
+        'mime' => $mime,
+        'width' => (int) ($meta['width'] ?? 0),
+        'height' => (int) ($meta['height'] ?? 0),
+    ];
+}
+
 // -> Ein Menu anhand des Keys laden
 function get_menu_by_slug(string $slug): array
 {

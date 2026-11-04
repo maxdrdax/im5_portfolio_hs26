@@ -12,6 +12,9 @@ Container::make('post_meta', 'Projekt')
         Field::make('image', 'cover', 'Titelbild')
             ->set_required()
             ->set_help_text('Hero im Projekt, Karte im Highlights-Karussell und Hover-Vorschau in der Liste.'),
+        Field::make('file', 'cover_video', 'Titelvideo (MP4)')
+            ->set_type(['video'])
+            ->set_help_text('Optional. Kurzer Clip ohne Ton (ideal unter 5 MB). Läuft im Hero und beim Hover in Karussell und Liste. Das Titelbild bleibt Vorschaubild.'),
         Field::make('text', 'year', 'Jahr')->set_width(33),
         Field::make('text', 'context', 'Kontext')->set_width(33),
         Field::make('text', 'role', 'Meine Rolle')->set_width(33),
@@ -23,6 +26,7 @@ Container::make('post_meta', 'Projekt')
         Field::make('rich_text', 'role_text', 'Rolle und Teamabgrenzung (Text)')
             ->set_help_text('Optional. Text und Bild leer = Sektion wird nicht angezeigt.'),
         Field::make('image', 'role_image', 'Rolle und Teamabgrenzung (Bild)'),
-        Field::make('media_gallery', 'gallery', 'Bildergalerie')
-            ->set_type(['image']),
+        Field::make('media_gallery', 'gallery', 'Bildergalerie (Bilder und Videos)')
+            ->set_type(['image', 'video'])
+            ->set_help_text('Videos laufen ohne Ton in Schleife. Volle Videos besser über das Feld «Video (YouTube/Vimeo-Link)».'),
     ]);

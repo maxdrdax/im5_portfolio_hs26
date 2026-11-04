@@ -5,8 +5,9 @@
 // Alle Daten eines Projekts
 function get_project_by_id(int $id): array
 {
-    $gallery = array_map(function ($image_id) {
-        return get_media_by_id($image_id, 'l');
+    // Galerie: Videos als Video laden, alles andere als Bild
+    $gallery = array_map(function ($media_id) {
+        return get_video_by_id($media_id) ?: get_media_by_id($media_id, 'l');
     }, carbon_get_post_meta($id, 'gallery') ?: []);
 
     return [
@@ -14,6 +15,7 @@ function get_project_by_id(int $id): array
         'title' => get_the_title($id),
         'url' => get_permalink($id),
         'cover' => get_media_by_id(carbon_get_post_meta($id, 'cover'), 'l'),
+        'cover_video' => get_video_by_id(carbon_get_post_meta($id, 'cover_video')),
         'year' => carbon_get_post_meta($id, 'year'),
         'context' => carbon_get_post_meta($id, 'context'),
         'role' => carbon_get_post_meta($id, 'role'),

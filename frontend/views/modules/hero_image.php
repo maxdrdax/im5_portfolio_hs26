@@ -12,6 +12,14 @@ $image = $data['image'] ?? false;
              fetchpriority="high">
     <?php endif; ?>
 
+    <?php // Optionales Video liegt über dem Bild; das Bild bleibt Vorschau und Fallback ?>
+    <?php get_template_part('frontend/views/teaser/video', null, [
+        'video' => $data['video'] ?? false,
+        'mode' => 'inview',
+        'poster' => $image['src'] ?? '',
+        'class' => 'image video',
+    ]); ?>
+
     <?php if (!empty($data['title'])) : ?>
         <h1 class="title"><?= format_accent($data['title']) ?></h1>
     <?php else : ?>

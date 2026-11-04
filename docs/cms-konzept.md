@@ -13,13 +13,14 @@ Alle 7 Seiten (Startseite, Projekte, Fotos, Über mich, Kontakt, Impressum, Date
 |---|---|---|
 | Titel | title | Systemfeld |
 | Titelbild | cover | image |
+| Titelvideo (MP4) | cover_video | file (video) |
 | Jahr | year | text |
 | Kontext | context | text |
 | Meine Rolle | role | text |
 | Projektbeschrieb | description | rich_text |
 | Rolle und Teamabgrenzung (Text) | role_text | rich_text |
 | Rolle und Teamabgrenzung (Bild) | role_image | image |
-| Bildergalerie | gallery | media_gallery |
+| Bildergalerie (Bilder und Videos) | gallery | media_gallery (image, video) |
 | Video (YouTube/Vimeo-Link) | video_url | text (type url) |
 | Ausgewähltes Projekt | featured | checkbox |
 
@@ -27,7 +28,9 @@ Alle 7 Seiten (Startseite, Projekte, Fotos, Über mich, Kontakt, Impressum, Date
 - `cover` ist Hero im Projektbeitrag, Karte im Highlights-Karussell und Hover-Vorschau im Directory. Der Schriftzug im Hero («Interaktiver Film») ist Teil des Bildes.
 - Kategorie kommt aus der Taxonomie `project_category`.
 - Rollen-Sektion ist optional: Text und Bild leer = nicht ausgeben.
-- `video_url` ist optional: wird per oEmbed eingebettet (nach dem Steckbrief), leer = nicht ausgeben.
+- `cover_video` ist optional: läuft ohne Ton in Schleife im Hero; im Highlights-Karussell und im Directory startet es beim Hover. `cover` bleibt Vorschaubild und Fallback (Touch-Geräte, «Bewegung reduzieren»).
+- Videos in der Galerie laufen ohne Ton in Schleife, sobald sie sichtbar sind.
+- `video_url` ist optional (volle Videos, YouTube/Vimeo): wird per oEmbed eingebettet (vor der Galerie), leer = nicht ausgeben.
 - `featured` markiert das Projekt für den Filter «Ausgewählte Projekte».
 
 ### Foto `photo`: gleichförmiger Aufbau
@@ -56,8 +59,9 @@ Titel-Felder (text) unterstützen einen kursiven Akzent: Wort in `*Sternchen*`. 
 |---|---|---|
 | Titel | title | text |
 | Bild | image | image |
+| Video (MP4) | video | file (video) |
 
-Startseite (mit Titel), Über mich (Titel leer).
+Startseite (mit Titel), Über mich (Titel leer). Video optional: läuft ohne Ton in Schleife, Bild ist Vorschau und Fallback.
 
 ### Hero Text `hero_text`
 | Name | Slug | Feldtyp |
@@ -162,10 +166,11 @@ Impressum und Datenschutz.
 - Footer zeigt nur Socials mit Icon (LinkedIn). Kontaktseite listet alle (LinkedIn, Instagram).
 
 ## Statisch im Theme (nicht im CMS)
-Scroll-Pfeil, ↗-Pfeile, Beschriftungen Jahr / Kontext / Kategorie / Meine Rolle, Zwischentitel «Projektbeschrieb» und «Meine Rolle und Teamabgrenzung», Button-Text Lebenslauf, Standardfilter, Karussell, Hover-Effekt (Chroma/Verflüssigen, Cursor), Streifen-Galerie, Foto-Raster.
+Scroll-Pfeil, ↗-Pfeile, Hover-Vorschau im Directory (folgt dem Mauszeiger), Beschriftungen Jahr / Kontext / Kategorie / Meine Rolle, Zwischentitel «Projektbeschrieb» und «Meine Rolle und Teamabgrenzung», Button-Text Lebenslauf, Standardfilter, Karussell, Hover-Effekt (Chroma/Verflüssigen, Cursor), Streifen-Galerie, Foto-Raster.
 
 ## Offen
-- Video-Embed: entschieden, Feld `video_url` im Projekt (Platzierung im Design noch offen).
+- Video: entschieden. Kurze Clips als MP4 (`video`, `cover_video`, Galerie), volle Videos über `video_url`.
+- Directory-Hover: Referenz houmahani.com/directory, Umsetzung vorerst «Vorschau folgt Mauszeiger», ohne Chroma-Effekt.
 - Impressum und Datenschutz ohne Screen.
 - Platzhalter im Design: Lorem ipsum, email@gmail.com, «Projekt 04/05», Instagram-Link.
 - Kategorien: «Fotos» entschieden. «Digital» fehlt im Design-Filter (Filter wird automatisch aus den verwendeten Begriffen erzeugt).

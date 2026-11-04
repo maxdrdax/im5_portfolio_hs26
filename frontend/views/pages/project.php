@@ -4,8 +4,8 @@ $project = get_project_by_id(get_the_ID());
 $cover = $project['cover'];
 $has_role = !empty($project['role_text']) || !empty($project['role_image']);
 $category_names = implode(', ', array_column($project['categories'], 'name'));
-// Embed-Code ist bereits durch wp_kses() gefiltert und kann direkt ausgegeben werden
-$video = get_video_embed($project['video_url']);
+// Volles Video (YouTube/Vimeo): Embed-Code ist bereits durch wp_kses() gefiltert und kann direkt ausgegeben werden
+$embed = get_video_embed($project['video_url']);
 ?>
 
 <main data-page="project">
@@ -19,6 +19,15 @@ $video = get_video_embed($project['video_url']);
         <?php else : ?>
             <h1 class="title"><?= esc_html($project['title']) ?></h1>
         <?php endif; ?>
+
+        <?php // Optionales Titelvideo über dem Titelbild ?>
+        <?php get_template_part('frontend/views/teaser/video', null, [
+            'video' => $project['cover_video'],
+            'mode' => 'inview',
+            'poster' => $cover['src'] ?? '',
+            'class' => 'image video',
+        ]); ?>
+
         <button class="scroll-arrow" type="button" data-scroll-next aria-label="Nach unten scrollen">↓</button>
     </section>
 
@@ -38,12 +47,6 @@ $video = get_video_embed($project['video_url']);
             <?php endif; ?>
         </dl>
     </section>
-
-    <?php if ($video) : ?>
-        <section class="project-video" aria-label="Video">
-            <div class="video-wrapper"><?= $video ?></div>
-        </section>
-    <?php endif; ?>
 
     <?php if ($project['description']) : ?>
         <section class="project-description">
@@ -66,14 +69,28 @@ $video = get_video_embed($project['video_url']);
         </section>
     <?php endif; ?>
 
+    <?php if ($embed) : ?>
+        <section class="project-video" aria-label="Video">
+            <div class="video-wrapper"><?= $embed ?></div>
+        </section>
+    <?php endif; ?>
+
     <?php if (!empty($project['gallery'])) : ?>
-        <section class="project-gallery" aria-label="Bildergalerie">
+        <section class="project-gallery" aria-label="Galerie">
             <ul class="gallery-strip">
-                <?php foreach ($project['gallery'] as $image) : ?>
+                <?php foreach ($project['gallery'] as $media) : ?>
                     <li>
-                        <img src="<?= esc_url($image['src']) ?>" alt="<?= esc_attr($image['alt']) ?>"
-                             width="<?= esc_attr($image['width'] ?? '') ?>" height="<?= esc_attr($image['height'] ?? '') ?>"
-                             loading="lazy" decoding="async">
+                        <?php if ($media['type'] === 'video') : ?>
+                            <?php // Galerie-Video: ohne Ton, Schleife, startet sobald sichtbar ?>
+                            <?php get_template_part('frontend/views/teaser/video', null, [
+                                'video' => $media,
+                                'mode' => 'inview',
+                            ]); ?>
+                        <?php elseif ($media['type'] === 'image') : ?>
+                            <img src="<?= esc_url($media['src']) ?>" alt="<?= esc_attr($media['alt']) ?>"
+                                 width="<?= esc_attr($media['width'] ?? '') ?>" height="<?= esc_attr($media['height'] ?? '') ?>"
+                                 loading="lazy" decoding="async">
+                        <?php endif; ?>
                     </li>
                 <?php endforeach; ?>
             </ul>

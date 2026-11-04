@@ -12,7 +12,12 @@ Container::make('post_meta', 'Module')
             ->add_fields('hero_image', 'Hero Bild', [
                 Field::make('text', 'title', 'Titel')
                     ->set_help_text('Optional. Akzent mit *Sternchen*.'),
-                Field::make('image', 'image', 'Bild')->set_required(),
+                Field::make('image', 'image', 'Bild')
+                    ->set_required()
+                    ->set_help_text('Wird auch als Vorschaubild und Fallback für das Video verwendet.'),
+                Field::make('file', 'video', 'Video (MP4)')
+                    ->set_type(['video'])
+                    ->set_help_text('Optional. Kurzer Clip ohne Ton (ideal unter 5 MB), läuft in Schleife.'),
             ])
             // -> hero_text (Projekte, Fotos, Kontakt)
             ->add_fields('hero_text', 'Hero Text', [
@@ -115,6 +120,7 @@ function render_modules(): void
         switch ($module['_type']) {
             case 'hero_image':
                 $module['image'] = get_media_by_id($module['image'] ?? 0, 'xl');
+                $module['video'] = get_video_by_id($module['video'] ?? 0);
                 break;
             case 'projects':
                 // Association liefert Einträge mit 'id'; leer = alle Projekte

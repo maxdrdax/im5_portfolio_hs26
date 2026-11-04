@@ -12,7 +12,7 @@ if (empty($projects)) {
 $has_featured = in_array(true, array_column($projects, 'featured'), true);
 ?>
 
-<section data-module="projects" data-layout-type="<?= esc_attr($layout) ?>"<?php if ($layout === 'list') : ?> data-filter-group<?php endif; ?>>
+<section data-module="projects" data-layout-type="<?= esc_attr($layout) ?>"<?php if ($layout === 'list') : ?> data-filter-group data-directory<?php endif; ?>>
     <?php if (!empty($data['title'])) : ?>
         <h2 class="module-title"><?= format_accent($data['title']) ?></h2>
     <?php endif; ?>
@@ -20,13 +20,21 @@ $has_featured = in_array(true, array_column($projects, 'featured'), true);
     <?php if ($layout === 'carousel') : ?>
         <ul class="carousel">
             <?php foreach ($projects as $project) : ?>
-                <li class="card">
+                <?php // data-hover-video: Beim Hover über die Karte startet das Titelvideo ?>
+                <li class="card" data-hover-video>
                     <a href="<?= esc_url($project['url']) ?>">
-                        <?php if ($project['cover']) : ?>
-                            <img src="<?= esc_url($project['cover']['src']) ?>" alt="<?= esc_attr($project['cover']['alt']) ?>"
-                                 width="<?= esc_attr($project['cover']['width'] ?? '') ?>" height="<?= esc_attr($project['cover']['height'] ?? '') ?>"
-                                 loading="lazy">
-                        <?php endif; ?>
+                        <span class="card-media">
+                            <?php if ($project['cover']) : ?>
+                                <img src="<?= esc_url($project['cover']['src']) ?>" alt="<?= esc_attr($project['cover']['alt']) ?>"
+                                     width="<?= esc_attr($project['cover']['width'] ?? '') ?>" height="<?= esc_attr($project['cover']['height'] ?? '') ?>"
+                                     loading="lazy">
+                            <?php endif; ?>
+                            <?php get_template_part('frontend/views/teaser/video', null, [
+                                'video' => $project['cover_video'],
+                                'mode' => 'hover',
+                                'class' => 'card-video',
+                            ]); ?>
+                        </span>
                         <span class="card-title"><?= esc_html($project['title']) ?> <span aria-hidden="true">↗</span></span>
                         <?php if (!empty($project['categories'])) : ?>
                             <span class="card-meta"><?= esc_html(implode(', ', array_column($project['categories'], 'name'))) ?></span>
@@ -61,19 +69,31 @@ $has_featured = in_array(true, array_column($projects, 'featured'), true);
             <tbody>
                 <?php foreach ($projects as $project) : ?>
                     <tr data-categories="<?= esc_attr(implode(' ', array_column($project['categories'], 'slug'))) ?>"
-                        data-featured="<?= $project['featured'] ? 'true' : 'false' ?>">
-                        <td>
-                            <a href="<?= esc_url($project['url']) ?>"><?= esc_html($project['title']) ?> <span aria-hidden="true">↗</span></a>
-                            <?php if ($project['cover']) : ?>
-                                <?php // Hover-Vorschau ?>
-                                <img class="preview" src="<?= esc_url($project['cover']['src']) ?>" alt="" loading="lazy">
-                            <?php endif; ?>
-                        </td>
+                        data-featured="<?= $project['featured'] ? 'true' : 'false' ?>"
+                        data-preview-target="<?= esc_attr($project['id']) ?>">
+                        <td><a href="<?= esc_url($project['url']) ?>"><?= esc_html($project['title']) ?> <span aria-hidden="true">↗</span></a></td>
                         <td><?= esc_html(implode(', ', array_column($project['categories'], 'name'))) ?></td>
                         <td><?= esc_html($project['year']) ?></td>
                     </tr>
                 <?php endforeach; ?>
             </tbody>
         </table>
+
+        <?php // Hover-Vorschau: ein Container, der dem Mauszeiger folgt; pro Projekt ein Eintrag (Bild + optional Video) ?>
+        <div class="directory-preview" data-directory-preview aria-hidden="true">
+            <?php foreach ($projects as $project) : ?>
+                <?php if (!$project['cover'] && !$project['cover_video']) { continue; } ?>
+                <div class="preview-item" data-preview-id="<?= esc_attr($project['id']) ?>">
+                    <?php if ($project['cover']) : ?>
+                        <img src="<?= esc_url($project['cover']['src']) ?>" alt="" loading="lazy">
+                    <?php endif; ?>
+                    <?php get_template_part('frontend/views/teaser/video', null, [
+                        'video' => $project['cover_video'],
+                        'mode' => 'hover',
+                        'class' => 'preview-video',
+                    ]); ?>
+                </div>
+            <?php endforeach; ?>
+        </div>
     <?php endif; ?>
 </section>
