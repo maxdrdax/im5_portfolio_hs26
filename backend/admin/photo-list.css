@@ -1,0 +1,17 @@
+/* Backend-Übersicht «Fotos»: Vorschaubild-Spalte */
+.wp-list-table .column-photo_thumb {
+    width: 72px;
+}
+
+.wp-list-table .photo-thumb {
+    display: block;
+    width: 64px;
+    height: 64px;
+    object-fit: cover;
+    border-radius: 4px;
+}
+
+.wp-list-table .column-photo_size,
+.wp-list-table .column-photo_focus {
+    width: 14%;
+}

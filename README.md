@@ -73,6 +73,7 @@ Zum Vergleich der Stand vor der Umsetzung des CMS-Konzepts (Beispielmodule des S
 | `backend/getter/` | Getter-Funktionen: Die Templates erhalten ihre Daten nur über diese Funktionen |
 | `backend/helpers/` | Hilfsfunktionen (Medien, Videos, Rich Text, Titel-Akzent, Taxonomien) |
 | `backend/init/` | Theme-Setup, Laden von Styles und Scripts (`wp_enqueue_*`) |
+| `backend/admin/` | Anpassungen im WordPress-Backend, z. B. Vorschaubild und QuickEdit in der Fotoliste |
 | `frontend/views/` | Templates für Layout, Seiten, Module und wiederverwendbare Teile (z. B. `teaser/video.php`) |
 | `frontend/scripts/main.js` | Filter, Videosteuerung, Hover-Vorschau im Directory |
 | `docs/` | CMS-Konzept und Screenshots |
@@ -117,6 +118,7 @@ Zum Vergleich der Stand vor der Umsetzung des CMS-Konzepts (Beispielmodule des S
 | 04.11.2026 | Design nach Figma (Startseite): Design-Tokens, Header/Footer, Hero, Highlights als Akkordeon (Hover), Farbumkehr des Hero-Texts über Video (`mix-blend-mode: difference`), Logo-Laufschrift (Endlos-Marquee) |
 | 04.11.2026 | Cursor-Punkt (folgt der Maus, invertiert, grösser über Links), Hero immer bildschirmfüllend (inkl. Admin-Leiste), Scroll-Pfeil berechnet die Zielposition exakt |
 | 04.11.2026 | Design nach Figma (Projekte): Directory zweispaltig (Filter links, Tabelle rechts), ganze Zeile anklickbar, grüner Hover, Vorschau 16:9 abgerundet; Active State für Navigation und Filter (`aria-current`, `aria-pressed`); Hero-Text-Titel grün, auf Kontakt weiss (`:has()`) |
+| 04.11.2026 | Design nach Figma (Fotos): Raster mit 3 Spalten und fester Zeilenhöhe (Container-Query-Einheiten), Kachelgrösse und Bildausschnitt pro Foto wählbar (`grid_size`, `focus`), `srcset`/`sizes`; Backend-Liste mit Vorschaubild, Spalten für Grösse/Ausschnitt und QuickEdit |
 
 ## Learnings
 <!-- In eigenen Worten ergänzen -->

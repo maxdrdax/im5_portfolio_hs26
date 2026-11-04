@@ -38,8 +38,12 @@ Alle 7 Seiten (Startseite, Projekte, Fotos, Über mich, Kontakt, Impressum, Date
 |---|---|---|
 | Titel | title | Systemfeld |
 | Bild | image | image |
+| Grösse im Raster | grid_size | select (Automatisch / Klein 1×1 / Breit 2×1 / Hoch 1×2 / Gross 2×2 / Panorama 3×2) |
+| Bildausschnitt | focus | select (Mitte / Oben / Unten / Links / Rechts) |
 
-- Keine Detailseite. Titel = Alt-Text. Raster-Layout ergibt sich aus dem Bildformat.
+- Keine Detailseite. Titel = Alt-Text.
+- Raster mit 3 Spalten und fester Zeilenhöhe (Figma). Kachelgrösse über `grid_size`; «Automatisch» = aus dem Bildformat (Quer → Breit, Hoch → Hoch, Quadrat → Klein).
+- `focus` bestimmt, welcher Teil des Bildes sichtbar bleibt, wenn die Kachel ein anderes Seitenverhältnis hat als das Foto.
 
 ## B | Taxonomien
 | Name | Slug | Post Type | Begriffe |

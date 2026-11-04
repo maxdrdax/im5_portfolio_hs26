@@ -6,3 +6,4 @@ require_once __DIR__ . '/backend/cpt/index.php';
 require_once __DIR__ . '/backend/tax/index.php';
 require_once __DIR__ . '/backend/carbonfields/index.php';
 require_once __DIR__ . '/backend/getter/index.php';
+require_once __DIR__ . '/backend/admin/index.php';
