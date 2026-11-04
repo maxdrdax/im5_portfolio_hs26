@@ -40,6 +40,8 @@
     --font-h1: 500 80px/88px var(--font-sans);
     --font-h2: 500 48px/56px var(--font-brand-family);
     --font-h3: 500 20px/28px var(--font-sans);
+    /* kleiner Zwischentitel (Impressum, Datenschutz): gleiche Grösse wie Body, aber Bold */
+    --font-h4: 700 16px/24px var(--font-sans);
     --font-nav: 400 20px/28px var(--font-sans);
     --font-body: 400 16px/24px var(--font-sans);
     --font-body-large: 400 18px/30px var(--font-sans);
@@ -304,6 +306,12 @@ h3 {
 
         .rich-text {
             font: var(--font-body-large);
+
+            /* auf Grün: Link beim Hover schwarz statt grün */
+            a:hover,
+            a:focus-visible {
+                color: var(--color-black);
+            }
         }
 
         .role-image img {
@@ -1109,12 +1117,86 @@ h2 em {
     }
 }
 
+/* Fliesstext aus dem Editor (Rich Text): Absätze, Zwischentitel, Listen, Links */
 .rich-text {
-    max-width: 720px;
+    max-width: 780px;
     font: var(--font-body);
 
-    p + p {
+    /* Abstand zwischen Absätzen, Listen und Zwischentiteln */
+    > * + * {
         margin-top: 1em;
+    }
+
+    /* Zwischentitel (Editor: Überschrift 2–3) im H3-Stil, deutlich abgesetzt */
+    h2,
+    h3 {
+        font: var(--font-h3);
+
+        &:not(:first-child) {
+            margin-top: var(--space-48);
+        }
+
+        /* Text direkt nach einem Zwischentitel näher dran */
+        + * {
+            margin-top: var(--space-12);
+        }
+    }
+
+    /* Kleiner Zwischentitel (Editor: Überschrift 4–6): Geist Bold in Textgrösse */
+    h4,
+    h5,
+    h6 {
+        font: var(--font-h4);
+
+        &:not(:first-child) {
+            margin-top: var(--space-32);
+        }
+
+        + * {
+            margin-top: var(--space-4);
+        }
+    }
+
+    /* Überschrift 4 direkt nach Überschrift 3: nicht doppelter Abstand */
+    :is(h2, h3) + :is(h4, h5, h6):not(:first-child) {
+        margin-top: var(--space-24);
+    }
+
+    strong,
+    b {
+        font-weight: 500;
+    }
+
+    ul,
+    ol {
+        padding-left: 1.25em;
+    }
+
+    li + li {
+        margin-top: var(--space-4);
+    }
+
+    a {
+        color: inherit;
+        text-decoration: underline;
+        text-decoration-thickness: 1px;
+        text-underline-offset: 3px;
+        transition: color 200ms ease;
+
+        &:hover,
+        &:focus-visible {
+            color: var(--color-accent);
+        }
+    }
+}
+
+/* Modul «Text» (Impressum, Datenschutz): Titel grün wie der Hero Text, Text in lesbarer Breite */
+[data-module="text"] {
+    .title {
+        max-width: 1000px;
+        margin-bottom: var(--space-48);
+        color: var(--color-accent);
+        text-wrap: balance;
     }
 }
 

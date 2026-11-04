@@ -21,7 +21,7 @@ add_action('wp_enqueue_scripts', function () {
     // Hinweis Datenschutz: Für den Livegang besser lokal in frontend/assets/fonts/ hosten.
     wp_enqueue_style(
         'portfolio-fonts',
-        'https://fonts.googleapis.com/css2?family=Geist:wght@400;500&family=Playfair+Display:ital,wght@0,400..900;1,400..900&display=swap',
+        'https://fonts.googleapis.com/css2?family=Geist:wght@400;500;700&family=Playfair+Display:ital,wght@0,400..900;1,400..900&display=swap',
         [],
         null
     );
