@@ -2,9 +2,11 @@
 // -> Modul «Hero Bild»: Vollbild mit optionalem Titel und Scroll-Pfeil
 $data = $args['data'];
 $image = $data['image'] ?? false;
+// Mit Video: Text invertiert seine Farbe dynamisch (siehe CSS .has-video)
+$has_video = !empty($data['video']);
 ?>
 
-<section data-module="hero-image">
+<section data-module="hero-image"<?php if ($has_video) : ?> class="has-video"<?php endif; ?>>
     <?php if ($image) : ?>
         <?php // Hero ist sofort sichtbar: kein Lazy Loading, dafür hohe Priorität ?>
         <img class="image" src="<?= esc_url($image['src']) ?>" alt="<?= esc_attr($image['alt']) ?>"
@@ -27,5 +29,7 @@ $image = $data['image'] ?? false;
         <h1 class="screen-reader-text"><?= esc_html(get_the_title()) ?></h1>
     <?php endif; ?>
 
-    <button class="scroll-arrow" type="button" data-scroll-next aria-label="Nach unten scrollen">↓</button>
+    <button class="scroll-arrow" type="button" data-scroll-next aria-label="Nach unten scrollen">
+        <img src="<?= esc_url(get_template_directory_uri() . '/frontend/assets/icons/arrow-down.svg') ?>" alt="" width="50" height="62">
+    </button>
 </section>

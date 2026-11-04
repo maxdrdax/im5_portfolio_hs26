@@ -3,21 +3,36 @@
 
 /* Definition of base styles. */
 :root {
-    /* colors */
+    /* colors (Figma: color/...) */
     --color-white: #FEFEFC;
     --color-black: #1D1C1C;
     --color-accent: #649D6D;
-    /* gaps & sizes */
-    --gap-around: 40px;
-    /* fonts */
+    --color-border: #868681;
+    /* spacing (Figma: space/...) */
+    --space-4: 4px;
+    --space-8: 8px;
+    --space-12: 12px;
+    --space-24: 24px;
+    --space-32: 32px;
+    --space-48: 48px;
+    --space-64: 64px;
+    --space-96: 96px;
+    /* layout: 80 px Rand, Inhalt max. 1280 px */
+    --gap-around: 80px;
+    --content-width: 1280px;
+    /* seitlicher Abstand, der den Inhalt auf 1280 px zentriert */
+    --page-inline: max(var(--gap-around), calc((100% - var(--content-width)) / 2));
+    --header-height: 100px;
+    --radius: 16px;
+    /* fonts (Figma: Portfolio/...) */
     --font-h1: 500 80px/88px var(--font-sans);
-    --font-h2: 500 48px/56px var(--font-sans);
+    --font-h2: 500 48px/56px var(--font-brand-family);
     --font-h3: 500 20px/28px var(--font-sans);
     --font-nav: 400 20px/28px var(--font-sans);
     --font-body: 400 16px/24px var(--font-sans);
     --font-caption: 400 12px/16px var(--font-sans);
     --font-button: 500 16px/24px var(--font-sans);
-    --font-brand: 400 32px/40px var(--font-brand-family);
+    --font-brand: italic 700 32px/40px var(--font-brand-family);
 }
 
 h1 {
@@ -34,148 +49,107 @@ h3 {
 
 /* Styling of all available layout components. */
 [data-layout="header"] {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    gap: 24px;
-    width: 100%;
-    min-height: 100px;
-    padding: 30px 32px;
-    box-sizing: border-box;
-    background-color: var(--color-black);
     position: sticky;
     top: 0;
     z-index: 100;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: var(--space-24);
+    width: 100%;
+    min-height: var(--header-height);
+    padding: var(--space-24) var(--gap-around);
+    border-bottom: 1px solid var(--color-border);
+    background-color: var(--color-black);
 
     .logo-link {
-        display: block;
         position: relative;
         z-index: 1;
+        display: block;
         text-decoration: none;
-        cursor: pointer;
-    }
-
-    .logo {
-        width: 280px;
-        height: auto;
     }
 
     .header-name {
         color: var(--color-white);
         font: var(--font-brand);
+        white-space: nowrap;
     }
-    .nav-container {
-        .nav {
-            font: var(--font-nav);
-            list-style: none;
-            display: flex;
-            flex-direction: row;
-            justify-content: flex-end;
-            align-self: center;
-            gap: 10px;
-            a{
-                position: relative;
-                text-decoration: none;
-                color: var(--color-white);
 
-                &::after {
-                    position: absolute;
-                    right: 0;
-                    bottom: -4px;
-                    left: 0;
-                    height: 1px;
-                    background-color: var(--color-white);
-                    content: "";
-                    transform: scaleX(0);
-                    transform-origin: left;
-                    transition: transform 220ms ease;
-                }
-
-                &:hover::after,
-                &:focus-visible::after {
-                    transform: scaleX(1);
-                }
-            }
-        }
-   }
+    .nav {
+        display: flex;
+        gap: var(--space-24);
+        list-style: none;
+        font: var(--font-nav);
+        text-transform: uppercase;
+    }
 }
+
+/* Unterstreichung beim Hover (Header und Footer) */
+[data-layout] .nav a {
+    position: relative;
+    color: var(--color-white);
+    text-decoration: none;
+
+    &::after {
+        position: absolute;
+        right: 0;
+        bottom: -4px;
+        left: 0;
+        height: 1px;
+        background-color: var(--color-white);
+        content: "";
+        transform: scaleX(0);
+        transform-origin: left;
+        transition: transform 220ms ease;
+    }
+
+    &:hover::after,
+    &:focus-visible::after {
+        transform: scaleX(1);
+    }
+}
+
 [data-layout="footer"] {
     display: flex;
     align-items: center;
-    justify-content: space-between;
-    gap: 24px;
-    min-height: 84px;
-    padding: 24px 32px;
+    gap: var(--space-32);
+    min-height: var(--header-height);
+    padding: var(--space-24) var(--gap-around);
+    border-top: 1px solid var(--color-border);
     background-color: var(--color-black);
+    color: var(--color-white);
 
-    .logo-link {
-        display: none;
+    .nav {
+        display: flex;
+        flex-wrap: wrap;
+        gap: var(--space-32);
+        list-style: none;
+        font: var(--font-nav);
+        text-transform: uppercase;
+    }
+
+    .copyright {
+        margin-left: auto;
+        font: var(--font-nav);
+        text-transform: uppercase;
+        white-space: nowrap;
     }
 
     .socials {
         display: flex;
         align-items: center;
-        order: 3;
-        gap: 16px;
+        gap: var(--space-8);
 
         a {
             display: flex;
-            width: 48px;
-            height: 48px;
-            text-decoration: none;
+            width: 50px;
+            height: 50px;
         }
 
         img {
             width: 100%;
             height: 100%;
             object-fit: contain;
-        }
-    }
-
-    .copyright {
-        order: 2;
-        margin: 0 0 0 auto;
-        color: var(--color-white);
-        font: var(--font-nav);
-        white-space: nowrap;
-    }
-
-    .nav-container {
-        order: 1;
-
-        .nav {
-            font: var(--font-nav);
-            list-style: none;
-            display: flex;
-            flex-direction: row;
-            justify-content: flex-start;
-            flex-wrap: wrap;
-            gap: 24px;
-
-            a {
-                position: relative;
-                text-decoration: none;
-                color: var(--color-white);
-                text-transform: uppercase;
-
-                &::after {
-                    position: absolute;
-                    right: 0;
-                    bottom: -4px;
-                    left: 0;
-                    height: 1px;
-                    background-color: var(--color-white);
-                    content: "";
-                    transform: scaleX(0);
-                    transform-origin: left;
-                    transition: transform 220ms ease;
-                }
-
-                &:hover::after,
-                &:focus-visible::after {
-                    transform: scaleX(1);
-                }
-            }
         }
     }
 }
@@ -257,16 +231,20 @@ h3 {
     overflow: clip;
     position: relative;
     width: 100%;
-    padding: 64px var(--gap-around);
-    box-sizing: border-box;
+    padding: var(--space-96) var(--page-inline) 0;
     background-color: var(--color-black);
     color: var(--color-white);
     /* Sticky Header überdeckt sonst den Anfang beim Scrollen */
-    scroll-margin-top: 100px;
+    scroll-margin-top: var(--header-height);
 
     .module-title {
-        margin-bottom: 40px;
+        margin-bottom: var(--space-48);
     }
+}
+
+/* Letztes Modul einer Seite: Abstand zum Footer */
+main > [data-module]:last-child {
+    padding-bottom: var(--space-96);
 }
 
 /* Titel-Akzent: *Wort* wird zu <em> */
@@ -274,14 +252,14 @@ h1 em,
 h2 em {
     font-family: var(--font-brand-family);
     font-style: italic;
-    font-weight: 400;
+    font-weight: 500;
 }
 
 [data-module="hero-image"] {
     display: flex;
-    align-items: flex-end;
-    min-height: 100vh;
-    padding: 0;
+    align-items: flex-start;
+    min-height: max(560px, calc(100svh - var(--header-height)));
+    padding: 140px var(--page-inline) var(--space-96);
 
     .image {
         position: absolute;
@@ -294,7 +272,19 @@ h2 em {
     .title {
         position: relative;
         z-index: 1;
-        padding: var(--gap-around);
+        max-width: 780px;
+    }
+
+    /* Mit Video: Text und Pfeil invertieren die Farbe des Videos darunter (pro Pixel, live).
+       Weiss minus Hintergrund: auf hellen Stellen wird der Text dunkel, auf dunklen hell. */
+    &.has-video {
+        /* eigene Mischgruppe: gemischt wird nur mit dem Hero, nicht mit dem Rest der Seite */
+        isolation: isolate;
+
+        .title,
+        .scroll-arrow {
+            mix-blend-mode: difference;
+        }
     }
 }
 
@@ -313,39 +303,54 @@ h2 em {
     }
 }
 
-/* Karussell: horizontal scrollen mit Scroll-Snap (ohne Library) */
+/* Highlights: grüner, zentrierter Titel in Playfair (auch bei Logos) */
+[data-module="projects"][data-layout-type="carousel"] .module-title,
+[data-module="logos"] .module-title {
+    color: var(--color-accent);
+    text-align: center;
+}
+
 [data-module="projects"] {
+    /* Akkordeon: Streifen 88 px, aktives Projekt 648 px (Figma) */
     .carousel {
         display: flex;
-        gap: 24px;
-        overflow-x: auto;
-        scroll-snap-type: x mandatory;
+        flex-direction: column;
+        gap: var(--space-24);
         list-style: none;
     }
 
     .card {
-        flex: 0 0 min(80vw, 520px);
-        scroll-snap-align: start;
+        position: relative;
+        height: clamp(56px, 6vw, 88px);
+        overflow: hidden;
+        border-radius: var(--radius);
+        transition: height 600ms cubic-bezier(.2, .65, .25, 1);
 
-        a {
-            display: grid;
-            gap: 8px;
+        &.is-active {
+            height: clamp(320px, 75vw, 648px);
+        }
+
+        .card-link {
+            display: block;
+            height: 100%;
             color: inherit;
             text-decoration: none;
         }
 
         .card-media {
-            position: relative;
-            display: block;
+            position: absolute;
+            inset: 0;
+
+            /* dunkler Verlauf unten, damit Titel und Pfeil lesbar bleiben */
+            &::after {
+                position: absolute;
+                inset: 0;
+                background: linear-gradient(to top, rgb(0 0 0 / .45), transparent 40%);
+                content: "";
+            }
         }
 
-        img {
-            width: 100%;
-            height: auto;
-            aspect-ratio: 4 / 5;
-            object-fit: cover;
-        }
-
+        img,
         .card-video {
             position: absolute;
             inset: 0;
@@ -354,9 +359,54 @@ h2 em {
             object-fit: cover;
         }
 
-        .card-meta {
-            font: var(--font-caption);
-            text-transform: uppercase;
+        .card-year {
+            position: absolute;
+            top: var(--space-24);
+            right: var(--space-24);
+        }
+
+        .card-info {
+            position: absolute;
+            bottom: var(--space-24);
+            left: var(--space-24);
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            gap: var(--space-12);
+        }
+
+        .card-categories {
+            display: flex;
+            flex-wrap: wrap;
+            gap: var(--space-8);
+        }
+
+        .card-title {
+            font: 500 32px/1.1 var(--font-sans);
+        }
+
+        .card-arrow {
+            position: absolute;
+            right: var(--space-24);
+            bottom: var(--space-12);
+            font: 500 50px/1 var(--font-sans);
+        }
+
+        /* Infos nur im aufgeklappten Zustand */
+        .card-year,
+        .card-info,
+        .card-arrow,
+        .card-media::after {
+            opacity: 0;
+            transition: opacity 300ms ease;
+        }
+
+        &.is-active .card-year,
+        &.is-active .card-info,
+        &.is-active .card-arrow,
+        &.is-active .card-media::after {
+            opacity: 1;
+            transition-delay: 200ms;
         }
     }
 
@@ -483,27 +533,65 @@ h2 em {
 }
 
 [data-module="logos"] {
-    border-top: 1px solid var(--color-white);
+    /* Alle Logos in einer gleich grossen Box (eingepasst mit contain) */
+    --logo-width: 240px;
+    --logo-height: 100px;
 
-    .logo-grid {
-        display: grid;
-        grid-template-columns: repeat(4, 1fr);
-        gap: 24px;
+    /* Sichtbarer Bereich = Inhaltsbreite; was darüber hinausgeht, wird abgeschnitten */
+    .logo-marquee {
+        overflow: hidden;
+    }
+
+    /* Ohne Animation (Fallback): Logos zentriert, bei Bedarf mehrzeilig */
+    .logo-track {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        align-items: center;
         list-style: none;
     }
 
     .logo-item {
-        display: grid;
-        place-items: center;
-        min-height: 100px;
-        padding: 18px;
-        border: 1px solid var(--color-white);
+        flex: 0 0 auto;
+        /* Abstand als Innenabstand statt gap: so ist jede Hälfte der Reihe exakt gleich breit */
+        padding-inline: calc(var(--space-64) / 2);
+
+        a {
+            display: block;
+        }
 
         img {
-            width: 100%;
-            height: 64px;
+            display: block;
+            width: var(--logo-width);
+            height: var(--logo-height);
             object-fit: contain;
         }
+    }
+
+    /* Mit Animation (main.js setzt .is-running) */
+    .logo-marquee.is-running {
+        /* weich ausblenden an den Rändern */
+        mask-image: linear-gradient(to right, transparent, #000 8%, #000 92%, transparent);
+
+        .logo-track {
+            flex-wrap: nowrap;
+            justify-content: flex-start;
+            width: max-content;
+            animation: marquee var(--marquee-duration, 30s) linear infinite;
+        }
+
+        /* Pause beim Hover/Fokus, damit man ein Logo anklicken kann */
+        &:hover .logo-track,
+        &:focus-within .logo-track {
+            animation-play-state: paused;
+        }
+    }
+}
+
+/* Verschiebt die (verdoppelte) Reihe um genau eine Hälfte nach links */
+@keyframes marquee {
+    to {
+        transform: translateX(-50%);
     }
 }
 
@@ -541,6 +629,23 @@ h2 em {
 }
 
 /* Gemeinsame Bausteine */
+.pill {
+    display: inline-flex;
+    padding: var(--space-4) var(--space-12);
+    border-radius: 999px;
+    font: var(--font-caption);
+}
+
+.pill--light {
+    background-color: var(--color-white);
+    color: var(--color-black);
+}
+
+.pill--accent {
+    background-color: var(--color-accent);
+    color: var(--color-white);
+}
+
 .tags {
     display: flex;
     flex-wrap: wrap;
@@ -578,15 +683,20 @@ h2 em {
 
 .scroll-arrow {
     position: absolute;
-    bottom: 24px;
+    bottom: 20px;
     left: 50%;
+    z-index: 1;
+    padding: var(--space-8);
     border: 0;
     background: none;
-    color: var(--color-white);
-    z-index: 1;
-    font-size: 32px;
+    line-height: 0;
     cursor: pointer;
     transform: translateX(-50%);
+
+    img {
+        width: 50px;
+        height: 62px;
+    }
 }
 
 .rich-text {
@@ -629,9 +739,29 @@ h2 em {
 @media (max-width: 768px) {
     :root {
         --gap-around: 24px;
+        --font-h1: 500 48px/56px var(--font-sans);
+        --font-h2: 500 36px/44px var(--font-brand-family);
+        --font-nav: 400 16px/24px var(--font-sans);
+        --font-brand: italic 700 24px/32px var(--font-brand-family);
     }
 
-    [data-module="logos"] .logo-grid,
+    [data-layout="header"] {
+        flex-wrap: wrap;
+
+        .nav {
+            gap: var(--space-12);
+        }
+    }
+
+    [data-module="hero-image"] {
+        padding-top: var(--space-64);
+    }
+
+    [data-module="logos"] {
+        --logo-width: 160px;
+        --logo-height: 64px;
+    }
+
     [data-module="gallery-photos"] .photo-grid {
         grid-template-columns: repeat(2, 1fr);
     }
@@ -647,22 +777,19 @@ h2 em {
     }
 
     [data-layout="footer"] {
-        align-items: flex-start;
         flex-wrap: wrap;
-        padding: 32px 24px 24px;
+        gap: var(--space-24);
 
         .nav-container {
-            order: 1;
             width: 100%;
         }
 
         .copyright {
-            order: 2;
             margin-left: 0;
         }
 
         .socials {
-            order: 3;
+            margin-left: auto;
         }
     }
 }

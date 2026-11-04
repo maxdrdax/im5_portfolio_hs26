@@ -114,6 +114,7 @@ Zum Vergleich der Stand vor der Umsetzung des CMS-Konzepts (Beispielmodule des S
 | 04.11.2026 | Videos an allen Stellen: Hero, Karussell-Hover, Directory-Vorschau, Galerie |
 | 04.11.2026 | Inhalte aller Seiten erfasst, README mit Screenshots |
 | 04.11.2026 | Bugfix Carbon Fields: `value` ist reserviert, Steckbrief-Feld heisst neu `detail`; dunkler Seitenhintergrund und Footer immer am unteren Rand |
+| 04.11.2026 | Design nach Figma (Startseite): Design-Tokens, Header/Footer, Hero, Highlights als Akkordeon (Hover), Farbumkehr des Hero-Texts über Video (`mix-blend-mode: difference`), Logo-Laufschrift (Endlos-Marquee) |
 
 ## Learnings
 <!-- In eigenen Worten ergänzen -->

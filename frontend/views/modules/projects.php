@@ -18,16 +18,17 @@ $has_featured = in_array(true, array_column($projects, 'featured'), true);
     <?php endif; ?>
 
     <?php if ($layout === 'carousel') : ?>
-        <ul class="carousel">
-            <?php foreach ($projects as $project) : ?>
+        <?php // Akkordeon: alle Projekte als schmale Streifen, aufgeklappt wird nur beim Hover/Fokus (Steuerung in main.js) ?>
+        <ul class="carousel" data-accordion>
+            <?php foreach ($projects as $index => $project) : ?>
                 <?php // data-hover-video: Beim Hover über die Karte startet das Titelvideo ?>
-                <li class="card" data-hover-video>
-                    <a href="<?= esc_url($project['url']) ?>">
+                <li class="card" data-accordion-item data-hover-video>
+                    <a class="card-link" href="<?= esc_url($project['url']) ?>">
                         <span class="card-media">
                             <?php if ($project['cover']) : ?>
                                 <img src="<?= esc_url($project['cover']['src']) ?>" alt="<?= esc_attr($project['cover']['alt']) ?>"
                                      width="<?= esc_attr($project['cover']['width'] ?? '') ?>" height="<?= esc_attr($project['cover']['height'] ?? '') ?>"
-                                     loading="lazy">
+                                     loading="<?= $index === 0 ? 'eager' : 'lazy' ?>">
                             <?php endif; ?>
                             <?php get_template_part('frontend/views/teaser/video', null, [
                                 'video' => $project['cover_video'],
@@ -35,10 +36,23 @@ $has_featured = in_array(true, array_column($projects, 'featured'), true);
                                 'class' => 'card-video',
                             ]); ?>
                         </span>
-                        <span class="card-title"><?= esc_html($project['title']) ?> <span aria-hidden="true">↗</span></span>
-                        <?php if (!empty($project['categories'])) : ?>
-                            <span class="card-meta"><?= esc_html(implode(', ', array_column($project['categories'], 'name'))) ?></span>
+
+                        <?php if (!empty($project['year'])) : ?>
+                            <span class="card-year pill pill--light"><?= esc_html($project['year']) ?></span>
                         <?php endif; ?>
+
+                        <span class="card-info">
+                            <?php if (!empty($project['categories'])) : ?>
+                                <span class="card-categories">
+                                    <?php foreach ($project['categories'] as $category) : ?>
+                                        <span class="pill pill--accent"><?= esc_html($category['name']) ?></span>
+                                    <?php endforeach; ?>
+                                </span>
+                            <?php endif; ?>
+                            <span class="card-title"><?= esc_html($project['title']) ?></span>
+                        </span>
+
+                        <span class="card-arrow" aria-hidden="true">↗</span>
                     </a>
                 </li>
             <?php endforeach; ?>

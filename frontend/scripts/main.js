@@ -160,3 +160,98 @@ if (canHover) {
         });
     });
 }
+
+// =====================================================================
+// -> Highlights-Akkordeon (Startseite): ein Projekt ist aufgeklappt
+// =====================================================================
+document.querySelectorAll('[data-accordion]').forEach((accordion) => {
+    const items = accordion.querySelectorAll('[data-accordion-item]');
+
+    const activate = (activeItem) => {
+        items.forEach((item) => item.classList.toggle('is-active', item === activeItem));
+    };
+
+    items.forEach((item) => {
+        // Maus und Tastatur (Tab) klappen ein Projekt auf
+        item.addEventListener('mouseenter', () => activate(item));
+        item.addEventListener('focusin', () => activate(item));
+
+        // Touch: erstes Tippen klappt auf, zweites Tippen öffnet das Projekt
+        item.querySelector('a')?.addEventListener('click', (event) => {
+            if (!item.classList.contains('is-active')) {
+                event.preventDefault();
+                activate(item);
+            }
+        });
+    });
+
+    // Maus verlässt die ganze Liste: alles zuklappen
+    // (nicht pro Streifen, sonst klappt es beim Wechsel über die Lücken zu und wieder auf)
+    accordion.addEventListener('mouseleave', () => activate(null));
+
+    // Fokus verlässt die Liste (Tab weiter): alles zuklappen
+    accordion.addEventListener('focusout', (event) => {
+        if (!accordion.contains(event.relatedTarget)) {
+            activate(null);
+        }
+    });
+});
+
+// =====================================================================
+// -> Logo-Laufschrift (Marquee): läuft endlos von rechts nach links
+// =====================================================================
+const MARQUEE_SPEED = 50; // Pixel pro Sekunde, unabhängig von der Anzahl Logos
+
+// Kopie eines Logos: für Screenreader und Tab-Taste unsichtbar
+const cloneLogo = (item) => {
+    const clone = item.cloneNode(true);
+    clone.dataset.clone = '';
+    clone.setAttribute('aria-hidden', 'true');
+    clone.querySelectorAll('a').forEach((link) => link.setAttribute('tabindex', '-1'));
+    return clone;
+};
+
+if (!reducedMotion) {
+    document.querySelectorAll('[data-marquee]').forEach((marquee) => {
+        const track = marquee.querySelector('[data-marquee-track]');
+        const originals = [...track.children];
+        if (!originals.length) {
+            return;
+        }
+
+        const build = () => {
+            // Zurücksetzen (z. B. nach Änderung der Fensterbreite)
+            track.querySelectorAll('[data-clone]').forEach((clone) => clone.remove());
+            marquee.classList.add('is-running'); // einzeilig, damit die Breite messbar ist
+
+            // 1. Logos wiederholen, bis eine Reihe breiter ist als der sichtbare Bereich
+            let rounds = 0;
+            while (track.offsetWidth < marquee.clientWidth && rounds < 50) {
+                originals.forEach((item) => track.append(cloneLogo(item)));
+                rounds++;
+            }
+
+            // 2. Ganze Reihe verdoppeln: Die Animation verschiebt um genau eine Hälfte (-50 %),
+            //    danach sieht es gleich aus wie am Anfang → nahtlose Endlosschleife
+            [...track.children].forEach((item) => track.append(cloneLogo(item)));
+
+            // 3. Dauer aus der Strecke berechnen → immer gleiche Geschwindigkeit
+            const distance = track.offsetWidth / 2;
+            track.style.setProperty('--marquee-duration', `${distance / MARQUEE_SPEED}s`);
+        };
+
+        build();
+
+        // Bei geänderter Breite neu aufbauen (verzögert, damit es nicht bei jedem Pixel läuft)
+        let resizeTimer = null;
+        let lastWidth = marquee.clientWidth;
+        new ResizeObserver(() => {
+            if (marquee.clientWidth === lastWidth) {
+                return;
+            }
+            lastWidth = marquee.clientWidth;
+            clearTimeout(resizeTimer);
+            resizeTimer = setTimeout(build, 200);
+        }).observe(marquee);
+    });
+}

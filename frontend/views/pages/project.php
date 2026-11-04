@@ -28,7 +28,9 @@ $embed = get_video_embed($project['video_url']);
             'class' => 'image video',
         ]); ?>
 
-        <button class="scroll-arrow" type="button" data-scroll-next aria-label="Nach unten scrollen">↓</button>
+        <button class="scroll-arrow" type="button" data-scroll-next aria-label="Nach unten scrollen">
+            <img src="<?= esc_url(get_template_directory_uri() . '/frontend/assets/icons/arrow-down.svg') ?>" alt="" width="50" height="62">
+        </button>
     </section>
 
     <section class="project-facts">
