@@ -119,6 +119,7 @@ Zum Vergleich der Stand vor der Umsetzung des CMS-Konzepts (Beispielmodule des S
 | 04.11.2026 | Cursor-Punkt (folgt der Maus, invertiert, grösser über Links), Hero immer bildschirmfüllend (inkl. Admin-Leiste), Scroll-Pfeil berechnet die Zielposition exakt |
 | 04.11.2026 | Design nach Figma (Projekte): Directory zweispaltig (Filter links, Tabelle rechts), ganze Zeile anklickbar, grüner Hover, Vorschau 16:9 abgerundet; Active State für Navigation und Filter (`aria-current`, `aria-pressed`); Hero-Text-Titel grün, auf Kontakt weiss (`:has()`) |
 | 04.11.2026 | Design nach Figma (Fotos): Raster mit 3 Spalten und fester Zeilenhöhe (Container-Query-Einheiten), Kachelgrösse und Bildausschnitt pro Foto wählbar (`grid_size`, `focus`), `srcset`/`sizes`; Backend-Liste mit Vorschaubild, Spalten für Grösse/Ausschnitt und QuickEdit |
+| 04.11.2026 | Design nach Figma (Über mich): Profil und Erfahrung im gemeinsamen Raster (4 : 8 Spalten), Stationen zweispaltig, Steckbrief mit rechtsbündigen Werten, grüner Button; Oberkanten von Titel und Name bündig (`text-box-trim` mit Fallback über `cap`/`lh`) |
 
 ## Learnings
 <!-- In eigenen Worten ergänzen -->

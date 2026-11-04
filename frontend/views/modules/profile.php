@@ -1,15 +1,20 @@
 <?php
 // -> Modul «Profil»: links Name, Funktion, Skills, Steckbrief; rechts Titel und Text
+// Zwei Spalten wie Figma (4 : 8 Rasterspalten); das Modul «Erfahrung» darunter nutzt dieselbe rechte Spalte.
 $data = $args['data'];
 ?>
 
 <section data-module="profile">
     <div class="profile-aside">
-        <?php if (!empty($data['name'])) : ?>
-            <h2 class="name"><?= esc_html($data['name']) ?></h2>
-        <?php endif; ?>
-        <?php if (!empty($data['position'])) : ?>
-            <p class="position"><?= esc_html($data['position']) ?></p>
+        <?php if (!empty($data['name']) || !empty($data['position'])) : ?>
+            <div class="profile-head">
+                <?php if (!empty($data['name'])) : ?>
+                    <p class="name"><?= esc_html($data['name']) ?></p>
+                <?php endif; ?>
+                <?php if (!empty($data['position'])) : ?>
+                    <p class="position"><?= esc_html($data['position']) ?></p>
+                <?php endif; ?>
+            </div>
         <?php endif; ?>
 
         <?php if (!empty($data['skills'])) : ?>

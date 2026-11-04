@@ -8,10 +8,12 @@
     --color-black: #1D1C1C;
     --color-accent: #649D6D;
     --color-border: #868681;
+    --color-surface: #ECE8DA;
     /* spacing (Figma: space/...) */
     --space-4: 4px;
     --space-8: 8px;
     --space-12: 12px;
+    --space-16: 16px;
     --space-24: 24px;
     --space-32: 32px;
     --space-48: 48px;
@@ -725,23 +727,140 @@ h2 em {
     }
 }
 
-[data-module="profile"] {
+/* Über mich: Profil und Erfahrung teilen dasselbe Raster (Figma: 4 : 8 Spalten, 411 / 845 px) */
+[data-module="profile"],
+[data-module="experience"] {
     display: grid;
-    grid-template-columns: 1fr 2fr;
-    gap: 40px;
+    grid-template-columns: minmax(0, 410.67fr) minmax(0, 845.33fr);
+    column-gap: var(--space-24);
+    align-items: start;
+}
+
+[data-module="profile"] {
+    /* linke Spalte: Inhalt max. 320 px breit */
+    .profile-aside {
+        display: flex;
+        flex-direction: column;
+        gap: var(--space-32);
+        max-width: 320px;
+    }
+
+    .profile-head {
+        display: flex;
+        flex-direction: column;
+        gap: var(--space-8);
+    }
+
+    .name {
+        font: var(--font-h3);
+    }
+
+    .position {
+        font: var(--font-body);
+    }
+
+    /* rechte Spalte: Titel im H1-Stil, grün (Figma) */
+    .module-title {
+        margin-bottom: var(--space-24);
+        color: var(--color-accent);
+        font: var(--font-h1);
+    }
+
+    /* Oberkante bündig: Name (links) und Titel (rechts) beginnen genau an der Oberkante der Grossbuchstaben.
+       Ohne Anpassung hat der grosse Titel mehr Leerraum über den Buchstaben als der kleine Name. */
+    .name,
+    .module-title {
+        /* Näherung für alle Browser: halbe Differenz zwischen Zeilenhöhe (lh) und Versalhöhe (cap) */
+        margin-top: calc((1cap - 1lh) / 2);
+    }
+
+    /* Exakt in Browsern mit text-box (Chrome, Safari): schneidet den Raum über den Grossbuchstaben ab */
+    @supports (text-box: trim-start cap alphabetic) {
+        .name,
+        .module-title {
+            margin-top: 0;
+            text-box: trim-start cap alphabetic;
+        }
+    }
 }
 
 [data-module="experience"] {
+    /* Erfahrung steht in der rechten Spalte, unter dem Profil */
+    .experience-content {
+        grid-column: 2;
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: var(--space-48);
+    }
+
+    .experience-head {
+        display: flex;
+        flex-direction: column;
+        gap: var(--space-8);
+
+        .module-title {
+            margin-bottom: 0;
+        }
+
+        .text {
+            font: var(--font-body);
+        }
+    }
+
     .stations {
-        display: grid;
-        gap: 40px;
-        margin: 40px 0;
+        display: flex;
+        flex-direction: column;
+        gap: var(--space-64);
+        width: 100%;
         list-style: none;
     }
 
-    .period {
+    /* Station: Kopf links (204 px), Inhalt rechts */
+    .station {
+        display: flex;
+        gap: var(--space-24);
+    }
+
+    .station-head {
+        display: flex;
+        flex: 0 0 204px;
+        flex-direction: column;
+        gap: var(--space-8);
+    }
+
+    .station-title {
+        font: var(--font-h3);
+    }
+
+    .station-meta {
+        display: flex;
+        flex-direction: column;
         font: var(--font-caption);
     }
+
+    .station-body {
+        display: flex;
+        flex: 1;
+        flex-direction: column;
+        gap: var(--space-8);
+        min-width: 0;
+
+        .text {
+            max-width: 780px;
+            font: var(--font-body);
+        }
+    }
+
+    /* Button 64 px unter den Stationen (Figma) */
+    .button {
+        margin-top: var(--space-16);
+    }
+}
+
+/* Erfahrung direkt nach dem Profil: 64 px Abstand statt 96 px (gleiche Fläche wie in Figma) */
+[data-module="profile"] + [data-module="experience"] {
+    padding-top: var(--space-64);
 }
 
 [data-module="contact"] {
@@ -776,39 +895,59 @@ h2 em {
     color: var(--color-white);
 }
 
+/* Tags (Skills, Stationen): nur umrandet, weisser Text (bewusst anders als Figma) */
 .tags {
     display: flex;
     flex-wrap: wrap;
-    gap: 8px;
-    margin-top: 16px;
+    gap: var(--space-8);
     list-style: none;
 
     .tag {
-        padding: 4px 12px;
+        padding: var(--space-4) var(--space-12);
         border: 1px solid var(--color-white);
         border-radius: 999px;
+        color: var(--color-white);
         font: var(--font-caption);
     }
 }
 
+/* Steckbrief: Bezeichnung links, Wert rechtsbündig auf derselben Zeile */
 .facts {
-    display: grid;
-    gap: 12px;
-    margin-top: 32px;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-12);
+    font: var(--font-caption);
 
-    dt {
-        font: var(--font-caption);
-        text-transform: uppercase;
+    .fact {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: var(--space-24);
+    }
+
+    dd {
+        text-align: right;
     }
 }
 
+/* Button: grün gefüllt, schwarzer Text, abgerundet (Figma) */
 .button {
-    display: inline-block;
-    padding: 12px 24px;
-    border: 1px solid var(--color-white);
-    color: inherit;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-8);
+    padding: var(--space-16) var(--space-48);
+    border-radius: var(--radius);
+    background-color: var(--color-accent);
+    color: var(--color-black);
     font: var(--font-button);
     text-decoration: none;
+    transition: background-color 300ms ease;
+
+    &:hover,
+    &:focus-visible {
+        background-color: var(--color-white);
+    }
 }
 
 .scroll-arrow {
@@ -908,8 +1047,29 @@ h2 em {
     }
 
     [data-module="profile"],
+    [data-module="experience"],
     [data-page="project"] .project-role {
         grid-template-columns: 1fr;
+    }
+
+    [data-module="profile"] {
+        row-gap: var(--space-48);
+    }
+
+    [data-module="experience"] {
+        .experience-content {
+            grid-column: 1;
+        }
+
+        /* Station untereinander statt nebeneinander */
+        .station {
+            flex-direction: column;
+            gap: var(--space-12);
+        }
+
+        .station-head {
+            flex-basis: auto;
+        }
     }
 
     [data-module="projects"][data-layout-type="list"] {
