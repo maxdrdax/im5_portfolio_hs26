@@ -23,6 +23,7 @@ Alle 7 Seiten (Startseite, Projekte, Fotos, Über mich, Kontakt, Impressum, Date
 | Bildergalerie (Bilder und Videos) | gallery | media_gallery (image, video) |
 | Video (YouTube/Vimeo-Link) | video_url | text (type url) |
 | Ausgewähltes Projekt | featured | checkbox |
+| Titel unter dem Hero ausblenden | hide_title | checkbox |
 
 - Alle Angaben werden nur hier erfasst. Highlights und Directory rufen sie ab und zeigen nur einen Teil.
 - `cover` ist Hero im Projektbeitrag, Karte im Highlights-Karussell und Hover-Vorschau im Directory. Der Schriftzug im Hero («Interaktiver Film») ist Teil des Bildes.
@@ -32,6 +33,8 @@ Alle 7 Seiten (Startseite, Projekte, Fotos, Über mich, Kontakt, Impressum, Date
 - Videos in der Galerie laufen ohne Ton in Schleife, sobald sie sichtbar sind.
 - `video_url` ist optional (volle Videos, YouTube/Vimeo): wird per oEmbed eingebettet (vor der Galerie), leer = nicht ausgeben.
 - `featured` markiert das Projekt für den Filter «Ausgewählte Projekte».
+- Unter dem Hero stehen Kategorie und Titel sichtbar (Figma). `hide_title` blendet sie aus, z. B. wenn der Schriftzug schon im Titelbild steht; für Screenreader bleibt der Titel erhalten.
+- Bildergalerie als horizontales Akkordeon (Figma): Streifen gleich breit, beim Hover öffnet sich ein Bild. Auf dem Handy nebeneinander zum Wischen.
 
 ### Foto `photo`: gleichförmiger Aufbau
 | Name | Slug | Feldtyp |

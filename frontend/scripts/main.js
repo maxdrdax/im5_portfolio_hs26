@@ -326,3 +326,64 @@ if (canHover && !reducedMotion) {
         dot.classList.remove('is-visible');
     });
 }
+
+// =====================================================================
+// -> Galerie auf der Projektseite: horizontales Akkordeon
+// Desktop: Streifen gleich breit, Hover/Fokus öffnet ein Bild; das Video darin spielt.
+// Touch: Bilder zum Wischen (CSS), Videos spielen, sobald sie sichtbar sind.
+// =====================================================================
+document.querySelectorAll('[data-strip]').forEach((strip) => {
+    const items = strip.querySelectorAll('[data-strip-item]');
+
+    if (!canHover) {
+        if (reducedMotion) {
+            return;
+        }
+        // Touch: Video im sichtbaren Bild abspielen, sonst pausieren
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach((entry) => {
+                const video = entry.target.querySelector('video');
+                if (!video) {
+                    return;
+                }
+                if (entry.isIntersecting) {
+                    playVideo(video);
+                } else {
+                    video.pause();
+                }
+            });
+        }, { threshold: 0.6 });
+        items.forEach((item) => observer.observe(item));
+        return;
+    }
+
+    const activate = (activeItem) => {
+        items.forEach((item) => {
+            const isActive = item === activeItem;
+            item.classList.toggle('is-active', isActive);
+
+            const video = item.querySelector('video');
+            if (!video) {
+                return;
+            }
+            if (isActive && !reducedMotion) {
+                playVideo(video);
+            } else {
+                video.pause();
+            }
+        });
+    };
+
+    items.forEach((item) => {
+        item.addEventListener('mouseenter', () => activate(item));
+        item.addEventListener('focusin', () => activate(item));
+    });
+
+    // Maus verlässt die Galerie: alle Streifen wieder gleich breit
+    strip.addEventListener('mouseleave', () => activate(null));
+    strip.addEventListener('focusout', (event) => {
+        if (!strip.contains(event.relatedTarget)) {
+            activate(null);
+        }
+    });
+});

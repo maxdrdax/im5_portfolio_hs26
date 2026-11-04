@@ -9,6 +9,9 @@ Container::make('post_meta', 'Projekt')
         Field::make('checkbox', 'featured', 'Ausgewähltes Projekt')
             ->set_option_value('yes')
             ->set_help_text('Erscheint im Filter «Ausgewählte Projekte» (Standardfilter auf der Seite Projekte).'),
+        Field::make('checkbox', 'hide_title', 'Titel unter dem Hero ausblenden')
+            ->set_option_value('yes')
+            ->set_help_text('Z. B. wenn der Schriftzug schon im Titelbild steht. Für Screenreader bleibt der Titel erhalten.'),
         Field::make('image', 'cover', 'Titelbild')
             ->set_required()
             ->set_help_text('Hero im Projekt, Karte im Highlights-Karussell und Hover-Vorschau in der Liste.'),

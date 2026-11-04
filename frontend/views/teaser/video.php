@@ -9,6 +9,7 @@
  *           'hover'  = spielt nur beim Hover (Karussell, Directory)
  * - poster: Bild-URL als Vorschau (optional)
  * - class:  CSS-Klasse (optional)
+ * - preload: 'none' (Standard) oder 'metadata' (zeigt das erste Bild ohne Poster)
  *
  * Gestartet wird per JavaScript (main.js). preload="none": Das Video lädt erst, wenn es gebraucht wird.
  */
@@ -19,10 +20,12 @@ if (empty($video['src'])) {
 $mode = ($args['mode'] ?? 'inview') === 'hover' ? 'hover' : 'inview';
 $poster = $args['poster'] ?? '';
 $class = $args['class'] ?? '';
+// preload: 'none' (Standard, lädt erst bei Bedarf) oder 'metadata' (lädt nur das erste Bild, z. B. ohne Vorschaubild)
+$preload = ($args['preload'] ?? 'none') === 'metadata' ? 'metadata' : 'none';
 ?>
 
 <video class="<?= esc_attr($class) ?>" data-video="<?= esc_attr($mode) ?>"
-       muted loop playsinline preload="none" aria-hidden="true"
+       muted loop playsinline preload="<?= esc_attr($preload) ?>" aria-hidden="true"
        <?php if (!empty($video['width']) && !empty($video['height'])) : ?>width="<?= esc_attr($video['width']) ?>" height="<?= esc_attr($video['height']) ?>"<?php endif; ?>
        <?php if ($poster) : ?>poster="<?= esc_url($poster) ?>"<?php endif; ?>>
     <source src="<?= esc_url($video['src']) ?>" type="<?= esc_attr($video['mime']) ?>">

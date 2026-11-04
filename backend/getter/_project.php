@@ -26,6 +26,7 @@ function get_project_by_id(int $id): array
         // Nur der Link; eingebettet wird erst auf der Detailseite (spart Anfragen in Liste/Karussell)
         'video_url' => carbon_get_post_meta($id, 'video_url'),
         'featured' => (bool) carbon_get_post_meta($id, 'featured'),
+        'hide_title' => (bool) carbon_get_post_meta($id, 'hide_title'),
         'categories' => get_term_list($id, 'project_category'),
     ];
 }
