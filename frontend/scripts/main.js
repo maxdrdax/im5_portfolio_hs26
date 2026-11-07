@@ -186,7 +186,7 @@ if (canHover) {
 const ACCORDION_SCROLL_DISTANCE = 300; // Scrollweg in px pro Projekt (mehr = mehr scrollen nötig)
 const ACCORDION_STEP_PAUSE = 700; // ms Mindestabstand zwischen zwei Projekten (bremst schnelle Trackpad-Wischer)
 const ACCORDION_GESTURE_GAP = 500; // ms ohne Mausrad-Signal = Scrollweg beginnt wieder bei 0
-const ACCORDION_HOVER_PAUSE = 1000; // ms nach einem Mausrad-Schritt, in denen Hover ignoriert wird
+const ACCORDION_HOVER_PAUSE = 500; // ms nach einem Mausrad-Schritt, in denen Hover ignoriert wird
 // ▲
 
 document.querySelectorAll('[data-accordion]').forEach((accordion) => {
@@ -545,3 +545,291 @@ document.querySelectorAll('[data-strip]').forEach((strip) => {
         }
     });
 });
+
+// =====================================================================
+// -> Navigation: Overlay-Menü und transparenter Header
+// Markup: frontend/views/layout/header.php, Stil: frontend/styles/_navigation.css
+// =====================================================================
+const siteHeader = document.querySelector('[data-layout="header"]');
+const menuToggle = document.querySelector('[data-menu-toggle]');
+const menu = document.querySelector('[data-menu]');
+
+// -> Text-Scramble: Buchstaben wirbeln kurz zufällig durcheinander und setzen sich
+// von links nach rechts zum richtigen Wort zusammen.
+// ▼ Zum Ausprobieren anpassen
+const SCRAMBLE_DURATION = 1000; // ms bis das ganze Wort steht
+const SCRAMBLE_SPEED = 70; // ms pro Zeichenwechsel (kleiner = hektischer)
+// ▲
+const SCRAMBLE_UPPER = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+const SCRAMBLE_LOWER = 'abcdefghijklmnopqrstuvwxyz';
+const scrambleFrames = new WeakMap(); // laufende Animation pro Element (zum Abbrechen)
+
+const scrambleText = (element) => {
+    if (reducedMotion) {
+        return;
+    }
+    // Originaltext beim ersten Mal merken (auch wenn gerade eine Animation läuft)
+    const original = element.dataset.text ?? element.textContent.trim();
+    element.dataset.text = original;
+    cancelAnimationFrame(scrambleFrames.get(element));
+
+    // Pro Zeichen ein Zeitpunkt, ab dem es feststeht: von links nach rechts, leicht zufällig versetzt
+    const chars = [...original];
+    const settleAt = chars.map((_, i) => (i / chars.length) * SCRAMBLE_DURATION * 0.7 + Math.random() * SCRAMBLE_DURATION * 0.3);
+    const start = performance.now();
+    let lastSwap = 0;
+
+    // Zufallszeichen in gleicher Gross-/Kleinschreibung (wirkt ruhiger); Leerzeichen bleiben
+    const randomChar = (char) => {
+        if (char === ' ') {
+            return ' ';
+        }
+        const set = char === char.toUpperCase() ? SCRAMBLE_UPPER : SCRAMBLE_LOWER;
+        return set[Math.floor(Math.random() * set.length)];
+    };
+
+    const step = (now) => {
+        const elapsed = now - start;
+        // Zeichen nur alle SCRAMBLE_SPEED ms wechseln, sonst flimmert es zu stark
+        if (now - lastSwap >= SCRAMBLE_SPEED) {
+            lastSwap = now;
+            element.textContent = chars.map((char, i) => (elapsed >= settleAt[i] ? char : randomChar(char))).join('');
+        }
+        if (elapsed < SCRAMBLE_DURATION) {
+            scrambleFrames.set(element, requestAnimationFrame(step));
+        } else {
+            element.textContent = original;
+        }
+    };
+    scrambleFrames.set(element, requestAnimationFrame(step));
+};
+
+if (siteHeader && menuToggle && menu) {
+    const links = [...menu.querySelectorAll('[data-menu-target]')];
+    const backgrounds = [...menu.querySelectorAll('[data-menu-bg]')];
+    // Bereiche hinter dem Overlay: werden beim Öffnen «inert» (Fokus bleibt im Menü)
+    const behind = document.querySelectorAll('main, [data-layout="footer"]');
+    // Startbild: aktuelle Seite bzw. erster Menüpunkt (im HTML schon aktiv)
+    const startId = backgrounds.find((bg) => bg.classList.contains('is-active'))?.dataset.menuBg ?? null;
+    let isOpen = false;
+    let imagesLoaded = false;
+    let closeTimer = null;
+    // ms: so lange fahren die Menüpunkte hinaus, bevor der Vorhang schliesst (CSS: .is-closing)
+    const MENU_CLOSE_DELAY = reducedMotion ? 0 : 350;
+    // Dauer des Vorhangs aus dem CSS (--menu-duration), z. B. "700ms" → 700
+    const menuDuration = () => parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--menu-duration')) || 0;
+
+    // Bilder erst beim ersten Öffnen laden: data-src → src (spart Daten, wenn niemand das Menü öffnet)
+    const loadImages = () => {
+        if (imagesLoaded) {
+            return;
+        }
+        imagesLoaded = true;
+        menu.querySelectorAll('img[data-src]').forEach((img) => {
+            img.src = img.dataset.src;
+            img.removeAttribute('data-src');
+        });
+    };
+
+    // Hintergrund wechseln (Crossfade per CSS). Nur das Video des aktiven Hintergrunds läuft,
+    // und nur solange das Menü offen ist.
+    // Gemeinsamer Hintergrund aus den Globals: bleibt immer aktiv, wechselt beim Hover nicht
+    const fixedBackground = menu.hasAttribute('data-menu-fixed');
+
+    const showBackground = (id) => {
+        backgrounds.forEach((bg) => {
+            const active = fixedBackground || bg.dataset.menuBg === id;
+            bg.classList.toggle('is-active', active);
+            const video = bg.querySelector('video[data-video="manual"]');
+            if (!video) {
+                return;
+            }
+            if (active && isOpen && !reducedMotion) {
+                playVideo(video);
+            } else {
+                video.pause();
+            }
+        });
+    };
+
+    // instant: ohne Animation schliessen (z. B. «Zurück» im Browser)
+    const setMenu = (open, { returnFocus = true, instant = false } = {}) => {
+        if (open === isOpen) {
+            return;
+        }
+        isOpen = open;
+        if (open) {
+            loadImages();
+        }
+
+        // aria-expanded steuert auch die Beschriftung «Menü»/«Schliessen» und das X (CSS)
+        menuToggle.setAttribute('aria-expanded', String(open));
+        // inert: geschlossenes Menü ist für Tab und Screenreader weg; offen ist der Rest der Seite weg
+        menu.inert = !open;
+        behind.forEach((element) => {
+            element.inert = open;
+        });
+
+        clearTimeout(closeTimer);
+        if (open) {
+            menu.classList.remove('is-closing');
+            menu.classList.add('is-open');
+            // Body-Scroll sperren (CSS: body.menu-open { overflow: hidden })
+            document.body.classList.add('menu-open');
+        } else if (instant) {
+            menu.classList.remove('is-open', 'is-closing');
+            document.body.classList.remove('menu-open');
+        } else {
+            // Schliessen in zwei Phasen: 1. Menüpunkte fahren hinaus, 2. Vorhang schliesst
+            menu.classList.add('is-closing');
+            closeTimer = setTimeout(() => {
+                menu.classList.remove('is-open', 'is-closing');
+                // 3. Erst wenn der Vorhang ganz zu ist: Header wieder dunkel mit Linie, Scrollen wieder frei
+                //    (sonst blitzt die Header-Linie über dem noch sichtbaren Overlay auf)
+                closeTimer = setTimeout(() => {
+                    document.body.classList.remove('menu-open');
+                }, reducedMotion ? 0 : menuDuration());
+            }, MENU_CLOSE_DELAY);
+        }
+
+        if (open) {
+            // Beim Öffnen immer mit dem Startbild beginnen
+            showBackground(startId);
+        } else {
+            // Beim Schliessen bleibt das Bild stehen (kein Wechsel während der Animation), Videos pausieren
+            menu.querySelectorAll('video[data-video="manual"]').forEach((video) => video.pause());
+        }
+
+        if (open) {
+            // Fokus ins Menü (Tastatur, Screenreader). preventScroll: sonst verschiebt der Browser
+            // die noch eingefahrenen Menüpunkte innerhalb ihrer Zeile.
+            links[0]?.focus({ preventScroll: true });
+        } else if (returnFocus) {
+            // Fokus zurück auf den Button, damit man auf der Seite nicht «verloren» ist
+            menuToggle.focus({ preventScroll: true });
+        }
+    };
+
+    menuToggle.addEventListener('click', () => setMenu(!isOpen));
+
+    // Esc schliesst das Menü
+    document.addEventListener('keydown', (event) => {
+        if (event.key === 'Escape' && isOpen) {
+            setMenu(false);
+        }
+    });
+
+    // Klick auf E-Mail oder Socials (neuer Tab / Mailprogramm) schliesst das Menü.
+    // Menüpunkte nicht: Das Menü bleibt offen, und die neue Seite blendet darüber ein
+    // (View Transition, siehe main.css). Sonst sähe man kurz die alte Seite unter dem Vorhang.
+    menu.querySelectorAll('a').forEach((link) => {
+        link.addEventListener('click', () => {
+            if (link.matches('[data-menu-target]') && link.target !== '_blank') {
+                return;
+            }
+            setMenu(false, { returnFocus: false });
+        });
+    });
+
+    // Hover und Tastatur-Fokus: Hintergrund des Menüpunkts einblenden, Wort «scrambeln»
+    links.forEach((link) => {
+        const word = link.querySelector('[data-scramble]');
+        const activate = () => {
+            showBackground(link.dataset.menuTarget);
+            if (word) {
+                scrambleText(word);
+            }
+        };
+        if (canHover) {
+            link.addEventListener('mouseenter', activate);
+        }
+        // Nur bei Tastatur-Fokus (:focus-visible). Beim Öffnen per Maus setzt das Script den Fokus
+        // auf den ersten Punkt; der soll weder scrambeln noch den Hintergrund wechseln.
+        link.addEventListener('focus', () => {
+            if (link.matches(':focus-visible')) {
+                activate();
+            }
+        });
+    });
+
+    // «Zurück» im Browser zeigt die Seite aus dem Cache (mit noch offenem Menü):
+    // sofort schliessen, ohne Animation. .no-transitions schaltet die CSS-Übergänge kurz aus.
+    window.addEventListener('pageshow', (event) => {
+        if (!event.persisted || !isOpen) {
+            return;
+        }
+        document.documentElement.classList.add('no-transitions');
+        setMenu(false, { returnFocus: false, instant: true });
+        // zwei Frames warten: erst dann hat der Browser den geschlossenen Zustand gezeichnet
+        requestAnimationFrame(() => requestAnimationFrame(() => {
+            document.documentElement.classList.remove('no-transitions');
+        }));
+    });
+}
+
+// -> Transparenter Header über dem Hero (nur mit body.has-hero-header, setzt PHP)
+// IntersectionObserver meldet, ob der Hero noch im sichtbaren Bereich unter dem Header liegt.
+// Ist er ganz hinter dem Header verschwunden, wird der Header dunkel (.is-solid).
+if (siteHeader && document.body.classList.contains('has-hero-header')) {
+    const hero = document.querySelector('main > :first-child');
+    if (hero) {
+        // Unterkante des Headers (inkl. Admin-Leiste); der Bereich darüber zählt nicht als «sichtbar».
+        // +1 px: Liegt der Hero genau an der Header-Kante (nach Klick auf den Scroll-Pfeil), ist er «weg».
+        const headerBottom = Math.ceil(siteHeader.getBoundingClientRect().bottom) + 1;
+        new IntersectionObserver(([entry]) => {
+            siteHeader.classList.toggle('is-solid', !entry.isIntersecting);
+        }, { rootMargin: `-${headerBottom}px 0px 0px 0px` }).observe(hero);
+    }
+}
+
+// =====================================================================
+// -> Einblenden beim Scrollen: Inhalte weiter unten blenden weich ein, sobald sie ins Bild kommen
+// Was beim Laden schon sichtbar ist, bleibt einfach stehen (kein Aufblitzen).
+// Stil: .reveal / .is-revealed in main.css
+// =====================================================================
+const REVEAL_SELECTOR = [
+    '.module-title',
+    '[data-module="projects"] .card',
+    '[data-module="projects"] .filter',
+    '[data-module="projects"] tbody tr',
+    '[data-module="gallery-photos"] .filter',
+    '[data-module="gallery-photos"] .photo',
+    '[data-module="logos"] .logo-marquee',
+    '[data-module="profile"] .profile-aside',
+    '[data-module="profile"] .profile-main',
+    '[data-module="experience"] .experience-head',
+    '[data-module="experience"] .station',
+    '[data-module="contact"] .contact-list > li',
+    '[data-module="text"] .rich-text',
+    '[data-page="project"] .project-intro',
+    '[data-page="project"] .project-description',
+    '[data-page="project"] .project-role',
+    '[data-page="project"] .project-video',
+    '[data-page="project"] .project-gallery',
+].join(', ');
+const REVEAL_STAGGER = 80; // ms Versatz, wenn mehrere Elemente gleichzeitig erscheinen
+
+if (!reducedMotion) {
+    const revealObserver = new IntersectionObserver((entries) => {
+        let index = 0;
+        entries.forEach((entry) => {
+            if (!entry.isIntersecting) {
+                return;
+            }
+            // Gleichzeitig sichtbare Elemente nacheinander einblenden (z. B. Fotos im Raster)
+            entry.target.style.animationDelay = `${index * REVEAL_STAGGER}ms`;
+            entry.target.classList.add('is-revealed');
+            revealObserver.unobserve(entry.target); // nur einmal einblenden
+            index++;
+        });
+    }, { rootMargin: '0px 0px -8% 0px' }); // erst, wenn das Element etwas im Bild ist
+
+    document.querySelectorAll(REVEAL_SELECTOR).forEach((element) => {
+        // Beim Laden schon sichtbar (oder ausgeblendet durch einen Filter): nicht animieren
+        if (element.getBoundingClientRect().top < window.innerHeight) {
+            return;
+        }
+        element.classList.add('reveal');
+        revealObserver.observe(element);
+    });
+}

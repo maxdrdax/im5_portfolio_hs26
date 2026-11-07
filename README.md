@@ -73,7 +73,7 @@ Zum Vergleich der Stand vor der Umsetzung des CMS-Konzepts (Beispielmodule des S
 | `backend/getter/` | Getter-Funktionen: Die Templates erhalten ihre Daten nur über diese Funktionen |
 | `backend/helpers/` | Hilfsfunktionen (Medien, Videos, Rich Text, Titel-Akzent, Taxonomien) |
 | `backend/init/` | Theme-Setup, Laden von Styles und Scripts (`wp_enqueue_*`) |
-| `backend/admin/` | Anpassungen im WordPress-Backend, z. B. Vorschaubild und QuickEdit in der Fotoliste |
+| `backend/admin/` | Anpassungen im WordPress-Backend, z. B. Vorschaubild und QuickEdit in der Fotoliste, Vorschaubilder und «Alle aufklappen» unter Design > Menüs |
 | `frontend/views/` | Templates für Layout, Seiten, Module und wiederverwendbare Teile (z. B. `teaser/video.php`) |
 | `frontend/scripts/main.js` | Filter, Videosteuerung, Hover-Vorschau im Directory |
 | `docs/` | CMS-Konzept und Screenshots |
@@ -84,7 +84,8 @@ Zum Vergleich der Stand vor der Umsetzung des CMS-Konzepts (Beispielmodule des S
 - **WP_Query / get_posts** für Projekte und Fotos, inkl. manueller Reihenfolge über ein Association-Feld
 - **oEmbed** (WordPress-API) für YouTube und Vimeo, zwischengespeichert als Transient (1 Woche)
 - **Vanilla JavaScript** (ES-Modul): IntersectionObserver für Videos, `requestAnimationFrame` für die Hover-Vorschau
-- **CSS** mit Nesting, Grid, Scroll-Snap (Karussell) und `aspect-ratio`
+- **CSS** mit Nesting, Grid, Scroll-Snap (Karussell), `aspect-ratio`, `:has()` und `clip-path`
+- **View Transitions API** (`@view-transition`) für weiche Seitenwechsel
 
 ### Sicherheit, Performance und Barrierefreiheit
 - Jede Ausgabe wird escaped (`esc_html()`, `esc_attr()`, `esc_url()`, `wp_kses_post()`); Video-Embeds werden mit `wp_kses()` auf ein `<iframe>` beschränkt.
@@ -125,6 +126,8 @@ Zum Vergleich der Stand vor der Umsetzung des CMS-Konzepts (Beispielmodule des S
 | 04.11.2026 | Impressum und Datenschutz (Vorlagen nach Schweizer DSG) im Stil der Seiten: Titel grün, Text max. 780 px, Zwischentitel H3 und H4 (Geist Bold), Links und Listen im Fliesstext |
 | 07.11.2026 | Highlights per Mausrad/Trackpad: Scrollweg wird gesammelt (300 px pro Projekt, Mindestpause zwischen Schritten), erstes Projekt beim Laden offen, Video startet nach der Animation, Messung nur beim Laden (kein Ruckeln), `contain: layout paint`; Steckbrief: Werte mit Komma stehen untereinander |
 | 07.11.2026 | Google Fonts lokal eingebunden (Datenschutz): 6 WOFF2-Dateien in `frontend/assets/fonts/`, `@font-face` mit `unicode-range`, Preload für Geist und Playfair Italic |
+| 07.11.2026 | Neue Navigation (CMS-Konzept v04, Prototyp in `docs/prototypes/`): Header mit «Kontakt» und Menü-Button (`aria-expanded`, Striche werden zum X), Vollbild-Overlay mit `clip-path`, Menüpunkte mit Text-Scramble, Einrücken und Abdunkeln der anderen Punkte (`:has()`), Hintergrund pro Menüpunkt oder gemeinsam (Bild/Video, Felder am Menüeintrag `nav_menu_item` und in Globals), Bilder laden erst beim ersten Öffnen; Fokus-Steuerung mit `inert`, Esc, Scroll-Lock mit `scrollbar-gutter`; Backend «Design > Menüs» mit Vorschaubildern und «Alle aufklappen» |
+| 07.11.2026 | Weiche Übergänge: Seitenwechsel per View Transitions API (Menü bleibt beim Klick offen, neue Seite blendet darüber), Inhalte blenden beim Scrollen ein (IntersectionObserver, gestaffelt) |
 
 ## Learnings
 <!-- In eigenen Worten ergänzen -->

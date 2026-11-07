@@ -1,0 +1,579 @@
+/*
+ * Navigation: Header-Aktionen (Kontakt, Menü-Button), Overlay-Menü und transparenter Header über Bild-Heros.
+ * Markup: frontend/views/layout/header.php, Verhalten: frontend/scripts/main.js (Abschnitt «Navigation»).
+ * Grundstil des Headers (Höhe, Logo, Abstände) steht in main.css.
+ */
+
+:root {
+    /* Overlay: Aufklappen und Einfahren der Menüpunkte */
+    --menu-duration: 700ms;
+    --menu-ease: cubic-bezier(.65, 0, .35, 1);
+    /* Menü-Button: Dauer pro Phase (Striche zusammen → drehen) */
+    --bars-step: 220ms;
+    /* feine Linie zwischen den Menüpunkten */
+    --menu-line: color-mix(in srgb, var(--color-white) 18%, transparent);
+}
+
+/* =====================================================================
+   1. Header: Kontakt-Link und Menü-Button
+   ===================================================================== */
+[data-layout="header"] {
+    .header-actions {
+        position: relative;
+        z-index: 1;
+        display: flex;
+        align-items: center;
+        gap: var(--space-32);
+    }
+
+    /* Kontakt: blendet aus, solange das Menü offen ist (siehe body.menu-open weiter unten) */
+    .header-link {
+        transition: opacity var(--bars-step) ease var(--bars-step), visibility 0s;
+    }
+
+    .header-link,
+    .menu-toggle {
+        display: inline-flex;
+        align-items: center;
+        /* Touch-Ziel mind. 44 px hoch */
+        min-height: 44px;
+        color: var(--color-white);
+        font: var(--font-nav);
+        text-transform: uppercase;
+        text-decoration: none;
+    }
+
+    /* Unterstreichung (Stil aus main.css) direkt unter dem Text statt am Rand der 44-px-Fläche.
+       1lh = Zeilenhöhe der Schrift; (44 px − Zeile) / 2 = Abstand Text bis Rand */
+    .header-actions .header-link::after {
+        bottom: calc((44px - 1lh) / 2 - 4px);
+    }
+
+    .menu-toggle {
+        gap: var(--space-12);
+        min-width: 44px;
+        padding: 0;
+        border: 0;
+        background: none;
+        cursor: pointer;
+    }
+
+    /* Der Button ist so breit wie «Menü». «Schliessen» liegt rechtsbündig darüber und ragt nach links
+       in den Platz von «Kontakt», das bei offenem Menü ausgeblendet ist (es steht dann im Overlay). */
+    .menu-toggle-label {
+        position: relative;
+    }
+
+    .menu-toggle-text--open {
+        position: absolute;
+        top: 0;
+        right: 0;
+        white-space: nowrap;
+    }
+
+    /* Bezugspunkt für die Hover-Linie («Schliessen» ist schon absolute positioniert) */
+    .menu-toggle-text--closed {
+        position: relative;
+    }
+
+    .menu-toggle-text {
+        /* Hover/Fokus: Linie läuft von links ein (gleich wie bei «Kontakt» und der Navigation) */
+        &::after {
+            position: absolute;
+            right: 0;
+            bottom: -4px;
+            left: 0;
+            height: 1px;
+            background-color: currentColor;
+            content: "";
+            transform: scaleX(0);
+            transform-origin: left;
+            transition: transform 220ms ease;
+        }
+
+        /* visibility: Das ausgeblendete Wort zählt auch für Screenreader nicht (Name = sichtbares Wort).
+           Umschalten erst nach dem Ausblenden, sonst wäre der Übergang nicht zu sehen. */
+        transition: opacity var(--bars-step) ease, visibility 0s var(--bars-step);
+    }
+
+    .menu-toggle[aria-expanded="false"] .menu-toggle-text--open,
+    .menu-toggle[aria-expanded="true"] .menu-toggle-text--closed {
+        opacity: 0;
+        visibility: hidden;
+    }
+
+    /* Einblenden: kurz warten, bis das andere Wort weg ist */
+    .menu-toggle[aria-expanded="false"] .menu-toggle-text--closed,
+    .menu-toggle[aria-expanded="true"] .menu-toggle-text--open {
+        transition: opacity var(--bars-step) ease var(--bars-step), visibility 0s;
+    }
+
+    /* Zwei Striche, die beim Öffnen zum X werden */
+    .menu-toggle-bars {
+        position: relative;
+        width: 24px;
+        height: 10px;
+
+        &::before,
+        &::after {
+            position: absolute;
+            left: 0;
+            width: 100%;
+            height: 2px;
+            background-color: currentColor;
+            content: "";
+            /* Schliessen (X → Striche): erst zurückdrehen, dann auseinanderfahren */
+            transition: transform var(--bars-step) var(--menu-ease), top var(--bars-step) var(--menu-ease) var(--bars-step);
+        }
+
+        &::before {
+            top: 0;
+        }
+
+        &::after {
+            top: 8px;
+            /* Hover: verkürzt sich nach rechts (Ankerpunkt rechts) */
+            transform-origin: right;
+        }
+    }
+
+    /* Hover (nur Maus) und Tastatur-Fokus auf den geschlossenen Button */
+    .menu-toggle:focus-visible .menu-toggle-text::after {
+        transform: scaleX(1);
+    }
+
+    .menu-toggle[aria-expanded="false"]:focus-visible .menu-toggle-bars::after {
+        transform: scaleX(.6);
+    }
+
+    @media (hover: hover) {
+        .menu-toggle:hover .menu-toggle-text::after {
+            transform: scaleX(1);
+        }
+
+        .menu-toggle[aria-expanded="false"]:hover .menu-toggle-bars::after {
+            transform: scaleX(.6);
+        }
+    }
+
+    /* Öffnen (Striche → X): erst in die Mitte fahren, dann drehen */
+    .menu-toggle[aria-expanded="true"] .menu-toggle-bars {
+        &::before,
+        &::after {
+            transition: top var(--bars-step) var(--menu-ease), transform var(--bars-step) var(--menu-ease) var(--bars-step);
+        }
+
+        &::before {
+            top: 4px;
+            transform: rotate(45deg);
+        }
+
+        &::after {
+            top: 4px;
+            transform: rotate(-45deg);
+            /* X dreht um die Mitte (der Hover-Ankerpunkt rechts gilt hier nicht) */
+            transform-origin: center;
+        }
+    }
+}
+
+/* Tastatur-Fokus gut sichtbar (Header und Overlay) */
+[data-layout="header"] :is(a, button):focus-visible,
+.menu-overlay a:focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 4px;
+}
+
+/* Menü offen: Header wird durchsichtig, damit das Overlay bis oben reicht */
+body.menu-open [data-layout="header"] {
+    border-color: transparent;
+    background-color: transparent;
+
+    &::before {
+        opacity: 0;
+    }
+
+    /* Kontakt ausblenden: Platz für «Schliessen»; Kontakt ist im Overlay als Menüpunkt da.
+       visibility: auch für Tab und Screenreader weg, erst nach dem Ausblenden umschalten. */
+    .header-link {
+        opacity: 0;
+        visibility: hidden;
+        transition: opacity var(--bars-step) ease, visibility 0s var(--bars-step);
+    }
+}
+
+/* Hintergrund scrollt nicht mit, solange das Menü offen ist */
+body.menu-open {
+    overflow: hidden;
+}
+
+/* Platz für den Scrollbalken immer freihalten: Sonst verschwindet er beim Öffnen des Menüs,
+   die Seite wird breiter und Header/Inhalt springen zur Seite. */
+html {
+    scrollbar-gutter: stable;
+}
+
+/* =====================================================================
+   2. Overlay-Menü
+   ===================================================================== */
+.menu-overlay {
+    position: fixed;
+    /* beginnt unter der Admin-Leiste (nur eingeloggt) */
+    inset: var(--admin-bar-height) 0 0;
+    /* unter dem Header (z-index 100), damit Logo, Kontakt und Button sichtbar bleiben */
+    z-index: 90;
+    display: grid;
+    grid-template-rows: 1fr auto;
+    gap: var(--space-32);
+    padding: calc(var(--header-height) + var(--space-16)) var(--page-inline) var(--space-32);
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    background-color: var(--color-black);
+    color: var(--color-white);
+    /* clip-path: geschlossen ist das Overlay von unten bis oben «weggeschnitten» (Höhe 0) */
+    clip-path: inset(0 0 100% 0);
+    visibility: hidden;
+    /* visibility erst nach der Animation umschalten, sonst wäre das Zuklappen nicht zu sehen */
+    transition: clip-path var(--menu-duration) var(--menu-ease), visibility 0s var(--menu-duration);
+
+    &.is-open {
+        clip-path: inset(0);
+        visibility: visible;
+        transition: clip-path var(--menu-duration) var(--menu-ease), visibility 0s;
+    }
+}
+
+/* Hintergründe: einer pro Menüpunkt, Crossfade über opacity */
+.menu-backgrounds {
+    position: absolute;
+    inset: 0;
+    overflow: hidden;
+}
+
+.menu-bg {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    transform: scale(1.06);
+    transition: opacity 600ms ease, transform 1400ms var(--menu-ease);
+
+    img,
+    video {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    /* Video erst einblenden, wenn es läuft (Bild bleibt darunter) */
+    video {
+        opacity: 0;
+        transition: opacity 300ms ease;
+
+        &.is-playing {
+            opacity: 1;
+        }
+    }
+
+    /* dunkle Schicht: Menüpunkte bleiben auf jedem Bild lesbar */
+    &::after {
+        position: absolute;
+        inset: 0;
+        background-color: color-mix(in srgb, var(--color-black) 62%, transparent);
+        content: "";
+    }
+
+    &.is-active {
+        opacity: 1;
+        transform: none;
+    }
+}
+
+.menu-nav {
+    position: relative;
+    align-self: center;
+}
+
+.menu-list {
+    list-style: none;
+}
+
+.menu-item {
+    position: relative;
+    /* overflow: die Wörter fahren beim Öffnen von unten aus der Linie herein */
+    overflow: hidden;
+
+    /* Trennlinien als Pseudo-Elemente (statt border), damit sie sich animieren lassen:
+       scaleX(0) = Linie hat keine Breite, scaleX(1) = volle Breite; transform-origin = Startpunkt */
+    &::before,
+    &:last-child::after {
+        position: absolute;
+        left: 0;
+        width: 100%;
+        height: 1px;
+        background-color: var(--menu-line);
+        content: "";
+        transform: scaleX(0);
+        transform-origin: left;
+        transition: transform 900ms var(--menu-ease);
+    }
+
+    &::before {
+        top: 0;
+    }
+
+    &:last-child::after {
+        bottom: 0;
+    }
+}
+
+.menu-link {
+    /* Schriftgrösse der Menüpunkte (auch für die Position der Nummer verwendet) */
+    --word-size: clamp(40px, 8vw, 112px);
+    display: flex;
+    /* oben ausrichten statt an der Grundlinie: Die Grundlinie hängt von der Schrift ab
+       (Geist ↔ Playfair beim Hover), oben bleibt immer gleich → Nummer und Linien bewegen sich nicht */
+    align-items: flex-start;
+    gap: var(--space-24);
+    /* + 0.15em: Platz für Unterlängen (p, j) */
+    padding-block: calc(clamp(8px, 1.6vh, 18px) + 0.15em);
+    color: var(--color-white);
+    font: 400 var(--word-size)/1 var(--font-sans);
+    text-decoration: none;
+    transform: translateY(110%);
+    transition: transform var(--menu-duration) var(--menu-ease), color 250ms ease, opacity 400ms ease;
+
+    /* Hover/Fokus: Wort wechselt in die kursive Serif (wie im Screendesign) */
+    &:hover .menu-word,
+    &:focus-visible .menu-word {
+        font-family: var(--font-brand-family);
+        font-style: italic;
+    }
+}
+
+/* Feste Höhe (1em), egal welche Schrift: So bleibt die Zeile gleich hoch, wenn beim Hover
+   die Schrift wechselt. Unterlängen dürfen über die Box hinausragen (Platz gibt das Padding). */
+.menu-word {
+    position: relative;
+    height: 1em;
+    line-height: 1;
+    /* Scramble: Breite ändert sich mit den Zufallszeichen; nichts rechts davon, darum kein Springen */
+    white-space: nowrap;
+    /* Hover/Fokus: Wort rückt nach rechts ein. transform statt margin: verschiebt nur die Darstellung,
+       das Layout bleibt stehen (flüssiger, nichts daneben bewegt sich mit) */
+    transition: transform 500ms var(--accordion-ease);
+}
+
+.menu-link:hover .menu-word,
+.menu-link:focus-visible .menu-word {
+    transform: translateX(var(--space-32));
+}
+
+.menu-nr {
+    min-width: 2ch;
+    /* hochgestellt: ungefähr auf Höhe der Oberkante der Grossbuchstaben */
+    margin-top: calc(var(--word-size) * 0.12);
+    color: var(--color-border);
+    font: var(--font-body);
+}
+
+/* Offen: Menüpunkte fahren nacheinander hoch, Linien zeichnen sich von links nach rechts (gestaffelt).
+   Die Linien nutzen dieselben Verzögerungen wie die Wörter (Variable --delay pro Zeile). */
+.menu-overlay.is-open {
+    .menu-link {
+        transform: none;
+    }
+
+    .menu-item::before,
+    .menu-item:last-child::after {
+        transform: scaleX(1);
+        transition-delay: var(--delay, 0ms);
+    }
+
+    .menu-item:nth-child(2) { --delay: 60ms; }
+    .menu-item:nth-child(3) { --delay: 120ms; }
+    .menu-item:nth-child(4) { --delay: 180ms; }
+    .menu-item:nth-child(5) { --delay: 240ms; }
+    .menu-item:nth-child(6) { --delay: 300ms; }
+
+    /* untere Linie der letzten Zeile kommt als letzte */
+    .menu-item:last-child::after {
+        transition-delay: calc(var(--delay, 0ms) + 60ms);
+    }
+
+    .menu-item:nth-child(2) .menu-link { transition-delay: 60ms; }
+    .menu-item:nth-child(3) .menu-link { transition-delay: 120ms; }
+    .menu-item:nth-child(4) .menu-link { transition-delay: 180ms; }
+    .menu-item:nth-child(5) .menu-link { transition-delay: 240ms; }
+    .menu-item:nth-child(6) .menu-link { transition-delay: 300ms; }
+}
+
+/* Schliessen (Klasse .is-closing setzt main.js kurz vor dem Zuklappen):
+   Menüpunkte fahren zuerst nach oben aus ihrer Zeile, danach schliesst der Vorhang */
+.menu-overlay.is-open.is-closing {
+    .menu-link {
+        transform: translateY(-110%);
+        transition: transform 450ms var(--menu-ease);
+    }
+
+    /* Linien ziehen sich nach rechts zurück */
+    .menu-item::before,
+    .menu-item:last-child::after {
+        transform: scaleX(0);
+        transform-origin: right;
+        transition: transform 450ms var(--menu-ease);
+    }
+
+    .menu-item:nth-child(2) .menu-link { transition-delay: 40ms; }
+    .menu-item:nth-child(3) .menu-link { transition-delay: 80ms; }
+    .menu-item:nth-child(4) .menu-link { transition-delay: 120ms; }
+    .menu-item:nth-child(5) .menu-link { transition-delay: 160ms; }
+    .menu-item:nth-child(6) .menu-link { transition-delay: 200ms; }
+}
+
+/* Geschlossen: Menüpunkte springen ohne Animation zurück unter ihre Zeile (Startposition fürs nächste Öffnen).
+   Sie sind dann schon unsichtbar, darum sieht man den Sprung nicht. */
+.menu-overlay:not(.is-open) .menu-link,
+.menu-overlay:not(.is-open) .menu-item::before,
+.menu-overlay:not(.is-open) .menu-item:last-child::after {
+    transition: none;
+}
+
+/* Hover/Fokus: die übrigen Menüpunkte treten zurück, der gewählte bleibt hell.
+   :has() prüft, ob in der Liste ein Punkt gehovert ist. .menu-item (inkl. Linie) statt .menu-link,
+   sonst flackert es beim Überfahren der Trennlinie. Nur mit Maus: Auf Touch bliebe :hover hängen. */
+@media (hover: hover) {
+    .menu-list:has(.menu-item:hover) .menu-item:not(:hover) .menu-link {
+        opacity: .35;
+    }
+}
+
+.menu-list:has(.menu-link:focus-visible) .menu-link:not(:focus-visible) {
+    opacity: .35;
+}
+
+/* Unten: E-Mail und Socials */
+.menu-foot {
+    position: relative;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: var(--space-16) var(--space-32);
+    font: var(--font-body);
+
+    a {
+        display: inline-flex;
+        align-items: center;
+        min-height: 44px;
+        color: var(--color-white);
+        text-decoration: none;
+
+        &:hover {
+            text-decoration: underline;
+            text-underline-offset: 4px;
+        }
+    }
+}
+
+.menu-socials {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-24);
+    list-style: none;
+}
+
+/* =====================================================================
+   3. Transparenter Header über Bild-Heros
+   body.has-hero-header setzt PHP (erstes Modul «hero_image» oder Projektseite).
+   .is-solid setzt main.js, sobald der Hero aus dem Bild ist.
+   ===================================================================== */
+body.has-hero-header {
+    /* Header liegt über dem Hero, darum zählt nur die Admin-Leiste */
+    --hero-height: max(480px, calc(100svh - var(--admin-bar-height)));
+
+    [data-layout="header"] {
+        position: fixed;
+        right: 0;
+        left: 0;
+        border-color: transparent;
+        background-color: transparent;
+        transition: background-color 300ms ease, border-color 300ms ease;
+
+        /* Verlauf für die Lesbarkeit auf hellen Bildern */
+        &::before {
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(to bottom, color-mix(in srgb, #000 55%, transparent), transparent);
+            content: "";
+            pointer-events: none;
+            transition: opacity 300ms ease;
+        }
+
+        &.is-solid {
+            border-color: var(--color-border);
+            background-color: var(--color-black);
+
+            &::before {
+                opacity: 0;
+            }
+        }
+    }
+}
+
+/* =====================================================================
+   4. Responsive und «Bewegung reduzieren»
+   ===================================================================== */
+@media (max-width: 768px) {
+    [data-layout="header"] .header-actions {
+        gap: var(--space-16);
+    }
+
+    .menu-link {
+        gap: var(--space-16);
+    }
+
+    .menu-foot {
+        flex-direction: column;
+        gap: 0;
+    }
+}
+
+/* Sehr schmale Handys: «Menü» nur für Screenreader, sichtbar bleiben die Striche */
+@media (max-width: 480px) {
+    [data-layout="header"] .menu-toggle-label {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        overflow: hidden;
+        clip-path: inset(50%);
+        white-space: nowrap;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .menu-overlay,
+    .menu-overlay.is-open,
+    .menu-bg,
+    .menu-link,
+    .menu-word,
+    .menu-overlay .menu-item::before,
+    .menu-overlay .menu-item:last-child::after,
+    .menu-overlay.is-open .menu-item::before,
+    .menu-overlay.is-open .menu-item:last-child::after,
+    [data-layout="header"] .header-actions .header-link,
+    body.menu-open [data-layout="header"] .header-link,
+    [data-layout="header"] .menu-toggle .menu-toggle-text,
+    [data-layout="header"] .menu-toggle .menu-toggle-text::after,
+    [data-layout="header"] .menu-toggle[aria-expanded] .menu-toggle-text,
+    [data-layout="header"] .menu-toggle .menu-toggle-bars::before,
+    [data-layout="header"] .menu-toggle .menu-toggle-bars::after,
+    [data-layout="header"] .menu-toggle[aria-expanded="true"] .menu-toggle-bars::before,
+    [data-layout="header"] .menu-toggle[aria-expanded="true"] .menu-toggle-bars::after {
+        transition: none;
+    }
+
+    .menu-bg {
+        transform: none;
+    }
+}

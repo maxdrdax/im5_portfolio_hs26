@@ -1,5 +1,6 @@
 @import "_fonts.css";
 @import "_resets.css";
+@import "_navigation.css";
 
 /* Definition of base styles. */
 :root {
@@ -62,6 +63,61 @@ h3 {
     font: var(--font-h3);
 }
 
+/* =====================================================================
+   Seitenübergänge (View Transitions): Beim Klick auf einen Link blendet die neue Seite
+   weich über die alte, statt hart zu wechseln. Der Browser macht ein Bild der alten Seite,
+   lädt die neue und blendet über. Browser ohne Unterstützung wechseln einfach normal.
+   ===================================================================== */
+@media (prefers-reduced-motion: no-preference) {
+    @view-transition {
+        navigation: auto;
+    }
+}
+
+::view-transition-old(root),
+::view-transition-new(root) {
+    animation-duration: 500ms;
+    animation-timing-function: ease;
+}
+
+/* Header als eigenes Element: bleibt beim Seitenwechsel stehen und wechselt nur seinen Zustand */
+[data-layout="header"] {
+    view-transition-name: site-header;
+}
+
+/* Kurz alle Übergänge aus (main.js, z. B. Menü schliessen beim «Zurück» im Browser) */
+.no-transitions *,
+.no-transitions *::before,
+.no-transitions *::after {
+    transition: none !important;
+}
+
+/* =====================================================================
+   Einblenden beim Scrollen (main.js, Abschnitt «Einblenden»):
+   .reveal = wartet unsichtbar, .is-revealed = blendet ein und gleitet leicht nach oben.
+   keyframes statt transition, damit eigene Übergänge der Elemente (z. B. Akkordeon) erhalten bleiben.
+   translate statt transform: überschreibt keine bestehenden transform-Werte.
+   ===================================================================== */
+.reveal:not(.is-revealed) {
+    opacity: 0;
+}
+
+.reveal.is-revealed {
+    animation: reveal 900ms var(--accordion-ease) both;
+}
+
+@keyframes reveal {
+    from {
+        opacity: 0;
+        translate: 0 32px;
+    }
+
+    to {
+        opacity: 1;
+        translate: none;
+    }
+}
+
 /* Styling of all available layout components. */
 [data-layout="header"] {
     position: sticky;
@@ -91,18 +147,13 @@ h3 {
         white-space: nowrap;
     }
 
-    .nav {
-        display: flex;
-        gap: var(--space-24);
-        list-style: none;
-        font: var(--font-nav);
-        text-transform: uppercase;
-    }
+    /* Kontakt-Link und Menü-Button: siehe _navigation.css */
 }
 
 /* Unterstreichung: Navigation (Header, Footer) und Filter verhalten sich überall gleich.
    Hover/Fokus: Linie läuft von links ein. Aktiv (aktuelle Seite / gewählter Filter): Linie bleibt stehen. */
 [data-layout] .nav a,
+[data-layout] .header-link,
 .filter button {
     position: relative;
     color: var(--color-white);
@@ -1239,14 +1290,6 @@ h2 em {
         --font-h2: 500 36px/44px var(--font-brand-family);
         --font-nav: 400 16px/24px var(--font-sans);
         --font-brand: italic 700 24px/32px var(--font-brand-family);
-    }
-
-    [data-layout="header"] {
-        flex-wrap: wrap;
-
-        .nav {
-            gap: var(--space-12);
-        }
     }
 
     [data-module="hero-image"] {

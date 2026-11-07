@@ -1,4 +1,6 @@
-# CMS-Konzept: Portfolio maxhutmacher.ch (v03)
+# CMS-Konzept: Portfolio maxhutmacher.ch (v04)
+
+> **Änderungen v04:** Neue Navigation (Overlay-Menü, transparenter Header über Bild-Heros). Neue Felder am Menüeintrag: `menu_image`, `menu_video`. Neue Globals für einen gemeinsamen Menü-Hintergrund: `menu_bg_image`, `menu_bg_video`.
 
 Quelle: Screendesign v06 (Figma). Felder im Carbon-Fields-Stil.
 `↳` = Unterfeld des complex-Felds direkt darüber.
@@ -33,6 +35,7 @@ Alle 7 Seiten (Startseite, Projekte, Fotos, Über mich, Kontakt, Impressum, Date
 - Videos in der Galerie laufen ohne Ton in Schleife, sobald sie sichtbar sind.
 - `video_url` ist optional (volle Videos, YouTube/Vimeo): wird per oEmbed eingebettet (vor der Galerie), leer = nicht ausgeben.
 - `featured` markiert das Projekt für den Filter «Ausgewählte Projekte».
+- Der Header liegt auch hier transparent über dem Hero (`cover`), gleich wie bei `hero_image`.
 - Unter dem Hero stehen Kategorie und Titel sichtbar (Figma). `hide_title` blendet sie aus, z. B. wenn der Schriftzug schon im Titelbild steht; für Screenreader bleibt der Titel erhalten.
 - Bildergalerie als horizontales Akkordeon (Figma): Streifen gleich breit, beim Hover öffnet sich ein Bild. Auf dem Handy nebeneinander zum Wischen.
 
@@ -69,6 +72,7 @@ Titel-Felder (text) unterstützen einen kursiven Akzent: Wort in `*Sternchen*`. 
 | Video (MP4) | video | file (video) |
 
 Startseite (mit Titel), Über mich (Titel leer). Video optional: läuft ohne Ton in Schleife, Bild ist Vorschau und Fallback.
+Ist `hero_image` das erste Modul einer Seite, liegt der Header transparent über dem Hero (mit Verlauf für die Lesbarkeit) und wird dunkel, sobald der Hero aus dem Bild ist. Auf allen anderen Seiten bleibt der Header dunkel.
 
 ### Hero Text `hero_text`
 | Name | Slug | Feldtyp |
@@ -159,6 +163,22 @@ Impressum und Datenschutz.
 | Hauptnavigation | main | 1 | Projekte, Fotos, Über mich, Kontakt (Header) |
 | Rechtliches | legals | 1 | Impressum, Datenschutz (Footer) |
 
+### Felder am Menüeintrag (nur Hauptnavigation `main`)
+| Name | Slug | Feldtyp |
+|---|---|---|
+| Hintergrundbild | menu_image | image |
+| Hintergrundvideo (MP4) | menu_video | file (video) |
+
+- Header: Logo links, rechts «Kontakt» (sichtbar, solange das Menü geschlossen ist) und Button «Menü»/«Schliessen». Die Hauptnavigation steht nicht mehr im Header, sondern im Overlay.
+- «Kontakt» im Header = Eintrag aus `main`, der auf die Seite `kontakt` verweist (kein eigenes Feld).
+- Overlay-Menü: Vollbild, Menüpunkte gross mit Nummer (01–04). Aktive Seite bleibt weiss (nur für Screenreader markiert, `aria-current`). Unten E-Mail und Socials aus den Globals.
+- Klick auf einen Menüpunkt: Das Menü bleibt offen, die neue Seite blendet weich darüber ein (Seitenübergang für die ganze Website).
+- `menu_image` ist der Hintergrund des Overlays beim Hover/Fokus auf den Menüpunkt (Crossfade). `menu_video` optional: läuft ohne Ton in Schleife, Bild ist Vorschau und Fallback. Ohne Bild: einfarbiger Hintergrund.
+- Handy/Touch: Hintergrund zeigt den Eintrag der aktuellen Seite, sonst den ersten.
+- Carbon Fields zeigt die Felder bei allen Menüeinträgen an (auch `legals`); ausgegeben werden sie nur in `main`.
+- Ist in den Globals `menu_bg_image` (oder `menu_bg_video`) gesetzt, gilt dieser Hintergrund für das ganze Overlay; beim Hover wechselt er nicht. Leer = Hintergrund pro Menüpunkt (`menu_image`, `menu_video`).
+- Backend (Design > Menüs): Button «Alle aufklappen», Vorschaubild in der zugeklappten Zeile, Bild und Video nebeneinander.
+
 ## E | Globals
 | Name | Slug | Feldtyp |
 |---|---|---|
@@ -169,12 +189,14 @@ Impressum und Datenschutz.
 | ↳ Titel | title | text |
 | ↳ Link | url | url |
 | ↳ Icon | icon | image |
+| Menü-Hintergrundbild | menu_bg_image | image |
+| Menü-Hintergrundvideo (MP4) | menu_bg_video | file (video) |
 
 - Logo = Schriftzug «Max Hutmacher» im Header (Link auf Startseite). Copyright im Footer.
 - Footer zeigt nur Socials mit Icon (LinkedIn). Kontaktseite listet alle (LinkedIn, Instagram).
 
 ## Statisch im Theme (nicht im CMS)
-Scroll-Pfeil, ↗-Pfeile, Hover-Vorschau im Directory (folgt dem Mauszeiger), Beschriftungen Jahr / Kontext / Kategorie / Meine Rolle, Zwischentitel «Projektbeschrieb» und «Meine Rolle und Teamabgrenzung», Button-Text Lebenslauf, Standardfilter, Karussell, Hover-Effekt (Chroma/Verflüssigen, Cursor), Streifen-Galerie, Foto-Raster.
+Scroll-Pfeil, ↗-Pfeile, Hover-Vorschau im Directory (folgt dem Mauszeiger), Beschriftungen Jahr / Kontext / Kategorie / Meine Rolle, Zwischentitel «Projektbeschrieb» und «Meine Rolle und Teamabgrenzung», Button-Text Lebenslauf, Standardfilter, Karussell, Hover-Effekt (Chroma/Verflüssigen, Cursor), Streifen-Galerie, Foto-Raster, Menü-Button, Overlay-Animation, Nummerierung der Menüpunkte, Seitenübergänge, Einblenden beim Scrollen.
 
 ## Offen
 - Video: entschieden. Kurze Clips als MP4 (`video`, `cover_video`, Galerie), volle Videos über `video_url`.
@@ -182,3 +204,4 @@ Scroll-Pfeil, ↗-Pfeile, Hover-Vorschau im Directory (folgt dem Mauszeiger), Be
 - Impressum und Datenschutz ohne Screen.
 - Platzhalter im Design: Lorem ipsum, email@gmail.com, «Projekt 04/05», Instagram-Link.
 - Kategorien: «Fotos» entschieden. «Digital» fehlt im Design-Filter (Filter wird automatisch aus den verwendeten Begriffen erzeugt).
+- Navigation: Textanimation im Overlay (Idee für später). Teaser-Text pro Menüpunkt vorerst verworfen.

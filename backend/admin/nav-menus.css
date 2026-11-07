@@ -1,0 +1,30 @@
+/* Backend «Design > Menüs» (geladen über backend/admin/_nav-menus.php) */
+
+/* Button «Alle aufklappen» über der Liste */
+.portfolio-menu-toggle-all {
+    margin-bottom: 12px !important;
+}
+
+/* Vorschaubild in der zugeklappten Zeile (vor dem Titel) */
+.menu-item-handle .item-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.portfolio-menu-thumb {
+    flex: none;
+    width: 28px;
+    height: 28px;
+    border-radius: 2px;
+    object-fit: cover;
+}
+
+/* Einträge etwas breiter: Bild und Video stehen im aufgeklappten Eintrag nebeneinander.
+   Nur die Breite ändert sich; Sortieren und Einrücken (Unterpunkte) funktionieren weiter. */
+#menu-to-edit .menu-item-handle,
+#menu-to-edit .menu-item-settings {
+    max-width: 640px;
+    width: 100%;
+    box-sizing: border-box;
+}

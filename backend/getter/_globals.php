@@ -20,6 +20,18 @@ function get_global_email(): string|false
     return is_email($email) ? $email : false;
 }
 
+// Gemeinsamer Hintergrund fürs Overlay-Menü (Bild und/oder Video); false, wenn beides leer ist
+// → dann gelten die Hintergründe der einzelnen Menüpunkte
+function get_global_menu_background(): array|false
+{
+    $image = get_media_by_id(carbon_get_theme_option('menu_bg_image'), 'l');
+    $video = get_video_by_id(carbon_get_theme_option('menu_bg_video'));
+    if (!$image && !$video) {
+        return false;
+    }
+    return ['image' => $image, 'video' => $video];
+}
+
 // Socials; mit $only_with_icon = true nur Einträge mit Icon (für den Footer)
 function get_global_socials(bool $only_with_icon = false): array
 {

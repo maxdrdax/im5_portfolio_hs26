@@ -78,13 +78,21 @@ function get_menu_by_slug(string $slug): array
     $menu = wp_get_nav_menu_items($menu_obj->name) ?: [];
     $items = [];
     foreach ($menu as $item) {
-        $items[] = [
+        $data = [
             'ID' => (int) $item->ID,
             'title' => $item->title,
             'url' => $item->url,
             'target' => $item->target,
             'current' => is_current_menu_item($item),
+            // Slug der verlinkten Seite (z. B. «kontakt» für den Kontakt-Link im Header); sonst leer
+            'slug' => $item->object === 'page' ? get_post_field('post_name', (int) $item->object_id) : '',
         ];
+        // Overlay-Hintergrund nur für die Hauptnavigation laden (spart Datenbankabfragen beim Footer-Menü)
+        if ($slug === 'main') {
+            $data['image'] = get_media_by_id(carbon_get_nav_menu_item_meta($item->ID, 'menu_image'), 'l');
+            $data['video'] = get_video_by_id(carbon_get_nav_menu_item_meta($item->ID, 'menu_video'));
+        }
+        $items[] = $data;
     }
     return $items;
 }
