@@ -28,9 +28,9 @@
     --header-height: 100px;
     /* Admin-Leiste von WordPress (nur eingeloggt); WordPress setzt diese Variable selbst, sonst 0 */
     --admin-bar-height: var(--wp-admin--admin-bar--height, 0px);
-    /* Hero füllt den Bildschirm: sichtbare Höhe minus Header und Admin-Leiste.
+    /* Hero füllt den Bildschirm: sichtbare Höhe minus Admin-Leiste (der Header liegt über dem Hero).
        svh = kleinste sichtbare Höhe auf dem Handy (Adressleiste eingeblendet), damit nichts springt */
-    --hero-height: max(480px, calc(100svh - var(--header-height) - var(--admin-bar-height)));
+    --hero-height: max(480px, calc(100svh - var(--admin-bar-height)));
     --radius: 16px;
     /* Akkordeons (Highlights Startseite, Galerie Projektseite): gleiche Dauer und Kurve */
     --accordion-duration: 900ms; /* ▲ Zum Ausprobieren: Dauer des Aufklappens der Highlights */
@@ -80,11 +80,6 @@ h3 {
     animation-timing-function: ease;
 }
 
-/* Header als eigenes Element: bleibt beim Seitenwechsel stehen und wechselt nur seinen Zustand */
-[data-layout="header"] {
-    view-transition-name: site-header;
-}
-
 /* Kurz alle Übergänge aus (main.js, z. B. Menü schliessen beim «Zurück» im Browser) */
 .no-transitions *,
 .no-transitions *::before,
@@ -119,10 +114,24 @@ h3 {
 }
 
 /* Styling of all available layout components. */
+/* Header liegt fix über der Seite (Glas-Effekt: siehe _navigation.css).
+   Darum braucht der Inhalt oben Platz, ausser die Seite beginnt mit einem Bild-Hero:
+   Dann liegt der Header bewusst über dem Bild. */
+main {
+    padding-top: var(--header-height);
+}
+
+main:has(> [data-module="hero-image"]:first-child),
+main[data-page="project"] {
+    padding-top: 0;
+}
+
 [data-layout="header"] {
-    position: sticky;
-    /* klebt unter der Admin-Leiste statt dahinter */
+    position: fixed;
+    /* unter der Admin-Leiste statt dahinter */
     top: var(--admin-bar-height);
+    right: 0;
+    left: 0;
     z-index: 100;
     display: flex;
     justify-content: space-between;
@@ -131,8 +140,6 @@ h3 {
     width: 100%;
     min-height: var(--header-height);
     padding: var(--space-24) var(--gap-around);
-    border-bottom: 1px solid var(--color-border);
-    background-color: var(--color-black);
 
     .logo-link {
         position: relative;
@@ -498,6 +505,26 @@ h2 em {
             mix-blend-mode: difference;
         }
     }
+}
+
+/* Weicher Verlauf oben im Hero: Der Header (Farbumkehr) trifft hier auf dunklen Grund und bleibt
+   auch auf hellen Bildern gut lesbar. Gehört zum Hero und scrollt mit ihm weg.
+   Mehrere Stufen statt zwei Farben: wirkt weicher, ohne sichtbare Kante.
+   ::after liegt über Bild und Video, aber unter Titel und Pfeil (die haben z-index 1). */
+[data-module="hero-image"]::after,
+[data-page="project"] .project-hero::after {
+    position: absolute;
+    inset: 0 0 auto;
+    height: calc(var(--header-height) + 100px);
+    background: linear-gradient(
+        to bottom,
+        rgb(0 0 0 / .5) 0%,
+        rgb(0 0 0 / .35) 30%,
+        rgb(0 0 0 / .15) 65%,
+        transparent 100%
+    );
+    content: "";
+    pointer-events: none;
 }
 
 [data-module="hero-text"] {
@@ -1292,8 +1319,9 @@ h2 em {
         --font-brand: italic 700 24px/32px var(--font-brand-family);
     }
 
+    /* Header liegt über dem Hero: Titel beginnt unter dem Header */
     [data-module="hero-image"] {
-        padding-top: var(--space-64);
+        padding-top: calc(var(--header-height) + var(--space-32));
     }
 
     [data-module="logos"] {

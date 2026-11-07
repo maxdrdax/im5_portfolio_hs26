@@ -135,6 +135,7 @@ Zum Vergleich der Stand vor der Umsetzung des CMS-Konzepts (Beispielmodule des S
 | 07.11.2026 | Google Fonts lokal eingebunden (Datenschutz): 6 WOFF2-Dateien in `frontend/assets/fonts/`, `@font-face` mit `unicode-range`, Preload für Geist und Playfair Italic |
 | 07.11.2026 | Neue Navigation (CMS-Konzept v04, Prototyp in `docs/prototypes/`): Header mit «Kontakt» und Menü-Button (`aria-expanded`, Striche werden zum X), Vollbild-Overlay mit `clip-path`, Menüpunkte mit Text-Scramble, Einrücken und Abdunkeln der anderen Punkte (`:has()`), Hintergrund pro Menüpunkt oder gemeinsam (Bild/Video, Felder am Menüeintrag `nav_menu_item` und in Globals), Bilder laden erst beim ersten Öffnen; Fokus-Steuerung mit `inert`, Esc, Scroll-Lock mit `scrollbar-gutter`; Backend «Design > Menüs» mit Vorschaubildern und «Alle aufklappen» |
 | 07.11.2026 | Weiche Übergänge: Seitenwechsel per View Transitions API (Menü bleibt beim Klick offen, neue Seite blendet darüber), Inhalte blenden beim Scrollen ein (IntersectionObserver, gestaffelt) |
+| 08.11.2026 | Header neu: fix auf allen Seiten, ohne Hintergrund, weicher Verlauf oben im Hero für die Lesbarkeit; blendet ab einer Bildschirmhöhe beim Runterscrollen aus und beim Hochscrollen wieder ein (gleiche Distanz auf allen Seiten, Scroll-Events per `requestAnimationFrame` gedrosselt). Ausprobiert und verworfen: Streifen-Hero aus dem Prototyp (doppelt die Navigation), Glas-Effekt über die ganze Breite, Farbumkehr (`mix-blend-mode`), Milchglas |
 
 ## Learnings
 <!-- In eigenen Worten ergänzen -->

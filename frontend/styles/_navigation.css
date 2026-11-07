@@ -1,5 +1,5 @@
 /*
- * Navigation: Header-Aktionen (Kontakt, Menü-Button), Overlay-Menü und transparenter Header über Bild-Heros.
+ * Navigation: Header-Aktionen (Kontakt, Menü-Button), Overlay-Menü und Farbumkehr des Headers.
  * Markup: frontend/views/layout/header.php, Verhalten: frontend/scripts/main.js (Abschnitt «Navigation»).
  * Grundstil des Headers (Höhe, Logo, Abstände) steht in main.css.
  */
@@ -10,6 +10,8 @@
     --menu-ease: cubic-bezier(.65, 0, .35, 1);
     /* Menü-Button: Dauer pro Phase (Striche zusammen → drehen) */
     --bars-step: 220ms;
+    /* Header aus- und einblenden beim Scrollen */
+    --header-hide-duration: 800ms;
     /* feine Linie zwischen den Menüpunkten */
     --menu-line: color-mix(in srgb, var(--color-white) 18%, transparent);
 }
@@ -186,12 +188,7 @@
 
 /* Menü offen: Header wird durchsichtig, damit das Overlay bis oben reicht */
 body.menu-open [data-layout="header"] {
-    border-color: transparent;
     background-color: transparent;
-
-    &::before {
-        opacity: 0;
-    }
 
     /* Kontakt ausblenden: Platz für «Schliessen»; Kontakt ist im Overlay als Menüpunkt da.
        visibility: auch für Tab und Screenreader weg, erst nach dem Ausblenden umschalten. */
@@ -484,40 +481,20 @@ html {
 }
 
 /* =====================================================================
-   3. Transparenter Header über Bild-Heros
-   body.has-hero-header setzt PHP (erstes Modul «hero_image» oder Projektseite).
-   .is-solid setzt main.js, sobald der Hero aus dem Bild ist.
+   3. Header ohne Hintergrund (CMS-Konzept D)
+   Lesbarkeit über hellen Hero-Bildern: Verlauf oben im Hero (main.css).
+   Beim Runterscrollen blendet der Header aus, darum steht er nie lange über dem Inhalt.
    ===================================================================== */
-body.has-hero-header {
-    /* Header liegt über dem Hero, darum zählt nur die Admin-Leiste */
-    --hero-height: max(480px, calc(100svh - var(--admin-bar-height)));
+[data-layout="header"] {
+    background-color: transparent;
+    transition: opacity var(--header-hide-duration) ease;
 
-    [data-layout="header"] {
-        position: fixed;
-        right: 0;
-        left: 0;
-        border-color: transparent;
-        background-color: transparent;
-        transition: background-color 300ms ease, border-color 300ms ease;
-
-        /* Verlauf für die Lesbarkeit auf hellen Bildern */
-        &::before {
-            position: absolute;
-            inset: 0;
-            background: linear-gradient(to bottom, color-mix(in srgb, #000 55%, transparent), transparent);
-            content: "";
-            pointer-events: none;
-            transition: opacity 300ms ease;
-        }
-
-        &.is-solid {
-            border-color: var(--color-border);
-            background-color: var(--color-black);
-
-            &::before {
-                opacity: 0;
-            }
-        }
+    /* Beim Runterscrollen (ab einer Bildschirmhöhe) langsam ausgeblendet, beim Hochscrollen wieder ein (main.js).
+       pointer-events: Der unsichtbare Header fängt keine Klicks ab (Inhalt darunter bleibt klickbar).
+       Per Tab bleibt er erreichbar: Fokus blendet ihn wieder ein. */
+    &.is-hidden {
+        opacity: 0;
+        pointer-events: none;
     }
 }
 
@@ -575,5 +552,10 @@ body.has-hero-header {
 
     .menu-bg {
         transform: none;
+    }
+
+    /* Header blendet ohne Gleiten aus und ein */
+    [data-layout="header"] {
+        transition: none;
     }
 }

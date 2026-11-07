@@ -1,6 +1,6 @@
 # CMS-Konzept: Portfolio maxhutmacher.ch (v04)
 
-> **Änderungen v04:** Neue Navigation (Overlay-Menü, transparenter Header über Bild-Heros). Neue Felder am Menüeintrag: `menu_image`, `menu_video`. Neue Globals für einen gemeinsamen Menü-Hintergrund: `menu_bg_image`, `menu_bg_video`.
+> **Änderungen v04:** Neue Navigation (Overlay-Menü, fixer Header ohne Hintergrund, blendet beim Runterscrollen aus). Neue Felder am Menüeintrag: `menu_image`, `menu_video`. Neue Globals für einen gemeinsamen Menü-Hintergrund: `menu_bg_image`, `menu_bg_video`.
 
 Quelle: Screendesign v06 (Figma). Felder im Carbon-Fields-Stil.
 `↳` = Unterfeld des complex-Felds direkt darüber.
@@ -35,7 +35,6 @@ Alle 7 Seiten (Startseite, Projekte, Fotos, Über mich, Kontakt, Impressum, Date
 - Videos in der Galerie laufen ohne Ton in Schleife, sobald sie sichtbar sind.
 - `video_url` ist optional (volle Videos, YouTube/Vimeo): wird per oEmbed eingebettet (vor der Galerie), leer = nicht ausgeben.
 - `featured` markiert das Projekt für den Filter «Ausgewählte Projekte».
-- Der Header liegt auch hier transparent über dem Hero (`cover`), gleich wie bei `hero_image`.
 - Unter dem Hero stehen Kategorie und Titel sichtbar (Figma). `hide_title` blendet sie aus, z. B. wenn der Schriftzug schon im Titelbild steht; für Screenreader bleibt der Titel erhalten.
 - Bildergalerie als horizontales Akkordeon (Figma): Streifen gleich breit, beim Hover öffnet sich ein Bild. Auf dem Handy nebeneinander zum Wischen.
 
@@ -72,7 +71,7 @@ Titel-Felder (text) unterstützen einen kursiven Akzent: Wort in `*Sternchen*`. 
 | Video (MP4) | video | file (video) |
 
 Startseite (mit Titel), Über mich (Titel leer). Video optional: läuft ohne Ton in Schleife, Bild ist Vorschau und Fallback.
-Ist `hero_image` das erste Modul einer Seite, liegt der Header transparent über dem Hero (mit Verlauf für die Lesbarkeit) und wird dunkel, sobald der Hero aus dem Bild ist. Auf allen anderen Seiten bleibt der Header dunkel.
+Ist `hero_image` das erste Modul einer Seite, beginnt der Hero ganz oben und der Header liegt darüber (Verhalten siehe D).
 
 ### Hero Text `hero_text`
 | Name | Slug | Feldtyp |
@@ -160,7 +159,7 @@ Impressum und Datenschutz.
 ## D | Menus
 | Name | Slug | Hierarchiestufen | Einträge |
 |---|---|---|---|
-| Hauptnavigation | main | 1 | Projekte, Fotos, Über mich, Kontakt (Header) |
+| Hauptnavigation | main | 1 | Projekte, Fotos, Über mich, Kontakt (Overlay-Menü; «Kontakt» zusätzlich im Header) |
 | Rechtliches | legals | 1 | Impressum, Datenschutz (Footer) |
 
 ### Felder am Menüeintrag (nur Hauptnavigation `main`)
@@ -170,6 +169,7 @@ Impressum und Datenschutz.
 | Hintergrundvideo (MP4) | menu_video | file (video) |
 
 - Header: Logo links, rechts «Kontakt» (sichtbar, solange das Menü geschlossen ist) und Button «Menü»/«Schliessen». Die Hauptnavigation steht nicht mehr im Header, sondern im Overlay.
+- Header auf allen Seiten fix oben, ohne Linie, Schrift weiss. Über Bild-Heros (`hero_image`, Projekt-Hero) liegt ein weicher dunkler Verlauf oben im Bild für die Lesbarkeit. Ab einer Bildschirmhöhe (auf allen Seiten gleich) blendet der Header nach 100 px Scrollweg nach unten langsam aus und beim Hochscrollen wieder ein (bei offenem Menü und Tastatur-Fokus immer sichtbar). Verworfen: Glas-Effekt bzw. Milchglas (unnötig, da der Header beim Lesen ausblendet) und Farbumkehr (`mix-blend-mode: difference`, auf mittleren Tönen zu wenig Kontrast).
 - «Kontakt» im Header = Eintrag aus `main`, der auf die Seite `kontakt` verweist (kein eigenes Feld).
 - Overlay-Menü: Vollbild, Menüpunkte gross mit Nummer (01–04). Aktive Seite bleibt weiss (nur für Screenreader markiert, `aria-current`). Unten E-Mail und Socials aus den Globals.
 - Klick auf einen Menüpunkt: Das Menü bleibt offen, die neue Seite blendet weich darüber ein (Seitenübergang für die ganze Website).
@@ -196,7 +196,7 @@ Impressum und Datenschutz.
 - Footer zeigt nur Socials mit Icon (LinkedIn). Kontaktseite listet alle (LinkedIn, Instagram).
 
 ## Statisch im Theme (nicht im CMS)
-Scroll-Pfeil, ↗-Pfeile, Hover-Vorschau im Directory (folgt dem Mauszeiger), Beschriftungen Jahr / Kontext / Kategorie / Meine Rolle, Zwischentitel «Projektbeschrieb» und «Meine Rolle und Teamabgrenzung», Button-Text Lebenslauf, Standardfilter, Karussell, Hover-Effekt (Chroma/Verflüssigen, Cursor), Streifen-Galerie, Foto-Raster, Menü-Button, Overlay-Animation, Nummerierung der Menüpunkte, Seitenübergänge, Einblenden beim Scrollen.
+Scroll-Pfeil, ↗-Pfeile, Hover-Vorschau im Directory (folgt dem Mauszeiger), Beschriftungen Jahr / Kontext / Kategorie / Meine Rolle, Zwischentitel «Projektbeschrieb» und «Meine Rolle und Teamabgrenzung», Button-Text Lebenslauf, Standardfilter, Karussell, Hover-Effekt (Chroma/Verflüssigen, Cursor), Streifen-Galerie, Foto-Raster, Verlauf oben im Hero, Menü-Button, Overlay-Animation, Nummerierung der Menüpunkte, Seitenübergänge, Einblenden beim Scrollen.
 
 ## Offen
 - Video: entschieden. Kurze Clips als MP4 (`video`, `cover_video`, Galerie), volle Videos über `video_url`.
