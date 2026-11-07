@@ -23,8 +23,27 @@ document.querySelectorAll('[data-filter-group]').forEach((group) => {
         });
     };
 
+    // Weicher Wechsel per View Transition (innerhalb der Seite): Der Browser macht ein Bild vom Zustand
+    // vorher und nachher. Jeder Eintrag bekommt kurz einen eigenen Namen, damit der Browser ihn
+    // wiedererkennt: bleibt er sichtbar, gleitet er an den neuen Platz; neue blenden ein, alte aus.
+    // Ohne Unterstützung oder mit «Bewegung reduzieren»: Filter wechselt wie bisher sofort.
+    const groupIndex = [...document.querySelectorAll('[data-filter-group]')].indexOf(group);
     buttons.forEach((button) => {
-        button.addEventListener('click', () => applyFilter(button));
+        button.addEventListener('click', () => {
+            const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+            if (reduce || !document.startViewTransition) {
+                applyFilter(button);
+                return;
+            }
+            items.forEach((item, i) => {
+                item.style.viewTransitionName = `filter-${groupIndex}-${i}`;
+            });
+            const transition = document.startViewTransition(() => applyFilter(button));
+            // Namen wieder entfernen, sonst würden die Einträge auch beim Seitenwechsel einzeln animiert
+            transition.finished.finally(() => {
+                items.forEach((item) => item.style.removeProperty('view-transition-name'));
+            });
+        });
     });
 
     // Beim Laden den Standardfilter anwenden (Button, der im HTML aktiv ist)
@@ -876,4 +895,23 @@ if (siteHeader) {
 
     // Tastatur: Fokus auf Logo, Kontakt oder Menü-Button holt den Header sofort zurück
     siteHeader.addEventListener('focusin', () => siteHeader.classList.remove('is-hidden'));
+}
+
+// =====================================================================
+// -> Bilder weich einblenden, sobald sie geladen sind (statt «aufzuploppen»)
+// Nur Bilder mit loading="lazy" (laden beim Scrollen nach). Hero-Bilder sind sofort da und bleiben aussen vor.
+// Stil: .img-fade / .is-loaded in main.css
+// =====================================================================
+if (!reducedMotion) {
+    document.querySelectorAll('main img[loading="lazy"]').forEach((img) => {
+        // Schon geladen (z. B. aus dem Cache): nichts tun.
+        // Logo-Laufschrift: Die Logos werden kopiert; Kopien hätten keinen Listener und blieben unsichtbar.
+        if (img.complete || img.closest('[data-marquee]')) {
+            return;
+        }
+        img.classList.add('img-fade');
+        const show = () => img.classList.add('is-loaded');
+        img.addEventListener('load', show, { once: true });
+        img.addEventListener('error', show, { once: true }); // Fehler: trotzdem zeigen (Alt-Text)
+    });
 }

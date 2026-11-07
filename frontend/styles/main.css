@@ -113,6 +113,23 @@ h3 {
     }
 }
 
+/* Filter (Projekte, Fotos): Einträge gleiten bei der View Transition an ihren neuen Platz.
+   ::view-transition-group = ein Eintrag zwischen alter und neuer Position (Namen setzt main.js). */
+::view-transition-group(*) {
+    animation-duration: 500ms;
+    animation-timing-function: var(--accordion-ease);
+}
+
+/* Bilder weich einblenden, sobald sie geladen sind (main.js setzt die Klassen) */
+.img-fade {
+    opacity: 0;
+    transition: opacity 600ms ease;
+
+    &.is-loaded {
+        opacity: 1;
+    }
+}
+
 /* Styling of all available layout components. */
 /* Header liegt fix über der Seite (Glas-Effekt: siehe _navigation.css).
    Darum braucht der Inhalt oben Platz, ausser die Seite beginnt mit einem Bild-Hero:
