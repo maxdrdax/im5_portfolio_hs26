@@ -91,6 +91,7 @@ Zum Vergleich der Stand vor der Umsetzung des CMS-Konzepts (Beispielmodule des S
 - Bilder und Iframes mit Lazy Loading, Hero-Bilder mit `fetchpriority="high"`, Breite/Höhe gegen Layout-Sprünge.
 - Videos laden erst bei Bedarf (`preload="none"`) und laufen nur, solange sie sichtbar sind.
 - YouTube wird über `youtube-nocookie.com` eingebunden.
+- Schriften (Geist, Playfair Display) sind lokal eingebunden: keine Verbindung zu Google Fonts, WOFF2 als variable Fonts, `font-display: swap`, Preload der sofort sichtbaren Schriften.
 - Mit «Bewegung reduzieren» (`prefers-reduced-motion`) und auf Touch-Geräten wird statt Hover-Videos das Titelbild gezeigt.
 - Filter-Buttons mit `aria-pressed`, unsichtbare H1 für Screenreader, wo der Titel Teil des Bildes ist.
 
@@ -123,6 +124,7 @@ Zum Vergleich der Stand vor der Umsetzung des CMS-Konzepts (Beispielmodule des S
 | 04.11.2026 | Design nach Figma (Projektseite): Titel und Eckdaten sichtbar unter dem Hero (ausblendbar mit `hide_title`), Projektbeschrieb zweispaltig (CSS `columns`), grüne Fläche für Rolle und Team, Galerie als horizontales Akkordeon (öffnet bei Hover im Format 3:2, Handy: Wischen mit Scroll-Snap) |
 | 04.11.2026 | Impressum und Datenschutz (Vorlagen nach Schweizer DSG) im Stil der Seiten: Titel grün, Text max. 780 px, Zwischentitel H3 und H4 (Geist Bold), Links und Listen im Fliesstext |
 | 07.11.2026 | Highlights per Mausrad/Trackpad: Scrollweg wird gesammelt (300 px pro Projekt, Mindestpause zwischen Schritten), erstes Projekt beim Laden offen, Video startet nach der Animation, Messung nur beim Laden (kein Ruckeln), `contain: layout paint`; Steckbrief: Werte mit Komma stehen untereinander |
+| 07.11.2026 | Google Fonts lokal eingebunden (Datenschutz): 6 WOFF2-Dateien in `frontend/assets/fonts/`, `@font-face` mit `unicode-range`, Preload für Geist und Playfair Italic |
 
 ## Learnings
 <!-- In eigenen Worten ergänzen -->
@@ -138,5 +140,6 @@ Zum Vergleich der Stand vor der Umsetzung des CMS-Konzepts (Beispielmodule des S
 - [Carbon Fields Dokumentation](https://docs.carbonfields.net/)
 - [MDN Web Docs](https://developer.mozilla.org/) (IntersectionObserver, `<video>`, CSS)
 - [HandBrake](https://handbrake.fr/) zum Komprimieren der Videos
+- Schriften [Geist](https://fonts.google.com/specimen/Geist) und [Playfair Display](https://fonts.google.com/specimen/Playfair+Display) von Google Fonts, Lizenz [SIL Open Font License 1.1](https://openfontlicense.org/)
 - Referenz für das Directory: [houmahani.com/directory](https://houmahani.com/directory)
 - KI-Unterstützung: Claude Code (Anthropic) als Coach und Pair-Programmer

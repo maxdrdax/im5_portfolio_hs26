@@ -17,20 +17,12 @@ add_action('wp_enqueue_scripts', function () {
     $dir = get_template_directory();
     $uri = get_template_directory_uri();
 
-    // Google Fonts (Geist, Playfair Display)
-    // Hinweis Datenschutz: Für den Livegang besser lokal in frontend/assets/fonts/ hosten.
-    wp_enqueue_style(
-        'portfolio-fonts',
-        'https://fonts.googleapis.com/css2?family=Geist:wght@400;500;700&family=Playfair+Display:ital,wght@0,400..900;1,400..900&display=swap',
-        [],
-        null
-    );
-
-    // Haupt-Stylesheet; Version = Änderungsdatum, damit der Browser-Cache nach Updates neu lädt
+    // Haupt-Stylesheet; Version = Änderungsdatum, damit der Browser-Cache nach Updates neu lädt.
+    // Die Schriften sind lokal eingebunden (frontend/styles/_fonts.css, Dateien in frontend/assets/fonts/).
     wp_enqueue_style(
         'portfolio-main',
         $uri . '/frontend/styles/main.css',
-        ['portfolio-fonts'],
+        [],
         (string) filemtime($dir . '/frontend/styles/main.css')
     );
 
@@ -42,3 +34,17 @@ add_action('wp_enqueue_scripts', function () {
         (string) filemtime($dir . '/frontend/scripts/main.js')
     );
 });
+
+// -> Wichtigste Schriften vorab laden (preload): Sie sind sofort sichtbar (Text, Logo im Header).
+// Ohne preload entdeckt der Browser sie erst, nachdem main.css und _fonts.css geladen sind.
+// crossorigin ist bei Schriften Pflicht, sonst lädt der Browser die Datei doppelt.
+add_action('wp_head', function () {
+    $fonts = [
+        'geist-latin.woff2',
+        'playfair-display-italic-latin.woff2',
+    ];
+    foreach ($fonts as $font) {
+        $url = get_template_directory_uri() . '/frontend/assets/fonts/' . $font;
+        echo '<link rel="preload" href="' . esc_url($url) . '" as="font" type="font/woff2" crossorigin>' . "\n";
+    }
+}, 1);
