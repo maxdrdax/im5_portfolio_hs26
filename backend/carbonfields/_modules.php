@@ -11,7 +11,13 @@ Container::make('post_meta', 'Module')
             // -> hero_image (Startseite, Über mich)
             ->add_fields('hero_image', 'Hero Bild', [
                 Field::make('text', 'title', 'Titel')
+                    ->set_width(50)
                     ->set_help_text('Optional. Akzent mit *Sternchen*.'),
+                Field::make('select', 'title_position', 'Position des Titels')
+                    ->set_width(50)
+                    ->set_options(get_hero_title_positions())
+                    ->set_default_value('center-left')
+                    ->set_help_text('«Unten Mitte» fehlt: dort liegt der Scroll-Pfeil.'),
                 Field::make('image', 'image', 'Bild')
                     ->set_required()
                     ->set_help_text('Wird auch als Vorschaubild und Fallback für das Video verwendet.'),
@@ -111,6 +117,22 @@ Container::make('post_meta', 'Module')
             ->set_layout('tabbed-vertical'),
     ]);
 
+// -> Auswahl «Position des Titels» im Hero Bild (eine Quelle für Feld und Ausgabe)
+// Raster 3 × 3 ohne «Unten Mitte» (dort liegt der Scroll-Pfeil). Schlüssel = Wert im HTML/CSS.
+function get_hero_title_positions(): array
+{
+    return [
+        'top-left' => 'Oben links',
+        'top-center' => 'Oben Mitte',
+        'top-right' => 'Oben rechts',
+        'center-left' => 'Mitte links',
+        'center' => 'Mitte',
+        'center-right' => 'Mitte rechts',
+        'bottom-left' => 'Unten links',
+        'bottom-right' => 'Unten rechts',
+    ];
+}
+
 // -> Funktion, um die Module und die entsprechenden Templates auf der Seite zu laden
 function render_modules(): void
 {
@@ -122,6 +144,10 @@ function render_modules(): void
         // -> Modifiziere die Daten des Moduls, falls nötig, basierend auf dem Modultyp
         switch ($module['_type']) {
             case 'hero_image':
+                // Nur erlaubte Werte (Whitelist); leer oder unbekannt (z. B. ältere Module) = Mitte links
+                $positions = get_hero_title_positions();
+                $position = $module['title_position'] ?? '';
+                $module['title_position'] = array_key_exists($position, $positions) ? $position : 'center-left';
                 $module['image'] = get_media_by_id($module['image'] ?? 0, 'xl');
                 $module['video'] = get_video_by_id($module['video'] ?? 0);
                 break;

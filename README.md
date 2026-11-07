@@ -137,6 +137,7 @@ Zum Vergleich der Stand vor der Umsetzung des CMS-Konzepts (Beispielmodule des S
 | 07.11.2026 | Weiche Übergänge: Seitenwechsel per View Transitions API (Menü bleibt beim Klick offen, neue Seite blendet darüber), Inhalte blenden beim Scrollen ein (IntersectionObserver, gestaffelt) |
 | 08.11.2026 | Header neu: fix auf allen Seiten, ohne Hintergrund, weicher Verlauf oben im Hero für die Lesbarkeit; blendet ab einer Bildschirmhöhe beim Runterscrollen aus und beim Hochscrollen wieder ein (gleiche Distanz auf allen Seiten, Scroll-Events per `requestAnimationFrame` gedrosselt). Ausprobiert und verworfen: Streifen-Hero aus dem Prototyp (doppelt die Navigation), Glas-Effekt über die ganze Breite, Farbumkehr (`mix-blend-mode`), Milchglas |
 | 08.11.2026 | Filter (Projekte, Fotos) wechseln weich per View Transition innerhalb der Seite (Einträge gleiten an den neuen Platz); nachgeladene Bilder blenden nach dem Laden ein |
+| 08.11.2026 | Hero Bild: Position des Titels im Backend wählbar (`title_position`, Raster 3 × 3 ohne «Unten Mitte», Standard «Mitte links»), weicher Verlauf oben im Hero |
 
 ## Learnings
 <!-- In eigenen Worten ergänzen -->

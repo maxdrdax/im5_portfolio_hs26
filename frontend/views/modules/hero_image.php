@@ -6,7 +6,8 @@ $image = $data['image'] ?? false;
 $has_video = !empty($data['video']);
 ?>
 
-<section data-module="hero-image"<?php if ($has_video) : ?> class="has-video"<?php endif; ?>>
+<?php // data-title-position: Position des Titels im Bild (CSS), Wert ist im Getter geprüft ?>
+<section data-module="hero-image" data-title-position="<?= esc_attr($data['title_position']) ?>"<?php if ($has_video) : ?> class="has-video"<?php endif; ?>>
     <?php if ($image) : ?>
         <?php // Hero ist sofort sichtbar: kein Lazy Loading, dafür hohe Priorität ?>
         <img class="image" src="<?= esc_url($image['src']) ?>" alt="<?= esc_attr($image['alt']) ?>"

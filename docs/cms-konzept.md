@@ -1,6 +1,6 @@
 # CMS-Konzept: Portfolio maxhutmacher.ch (v04)
 
-> **Änderungen v04:** Neue Navigation (Overlay-Menü, fixer Header ohne Hintergrund, blendet beim Runterscrollen aus). Neue Felder am Menüeintrag: `menu_image`, `menu_video`. Neue Globals für einen gemeinsamen Menü-Hintergrund: `menu_bg_image`, `menu_bg_video`.
+> **Änderungen v04:** Neue Navigation (Overlay-Menü, fixer Header ohne Hintergrund, blendet beim Runterscrollen aus). Neue Felder am Menüeintrag: `menu_image`, `menu_video`. Neue Globals für einen gemeinsamen Menü-Hintergrund: `menu_bg_image`, `menu_bg_video`. Hero Bild: Position des Titels `title_position`.
 
 Quelle: Screendesign v06 (Figma). Felder im Carbon-Fields-Stil.
 `↳` = Unterfeld des complex-Felds direkt darüber.
@@ -67,10 +67,12 @@ Titel-Felder (text) unterstützen einen kursiven Akzent: Wort in `*Sternchen*`. 
 | Name | Slug | Feldtyp |
 |---|---|---|
 | Titel | title | text |
+| Position des Titels | title_position | select (Oben links / Oben Mitte / Oben rechts / Mitte links / Mitte / Mitte rechts / Unten links / Unten rechts) |
 | Bild | image | image |
 | Video (MP4) | video | file (video) |
 
 Startseite (mit Titel), Über mich (Titel leer). Video optional: läuft ohne Ton in Schleife, Bild ist Vorschau und Fallback.
+`title_position`: Standard «Mitte links». «Unten Mitte» gibt es nicht, dort liegt der Scroll-Pfeil. Raster statt freier Position, damit der Titel auf jeder Bildschirmgrösse im Bild bleibt.
 Ist `hero_image` das erste Modul einer Seite, beginnt der Hero ganz oben und der Header liegt darüber (Verhalten siehe D).
 
 ### Hero Text `hero_text`
