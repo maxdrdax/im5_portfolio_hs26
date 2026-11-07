@@ -32,7 +32,7 @@
     --hero-height: max(480px, calc(100svh - var(--header-height) - var(--admin-bar-height)));
     --radius: 16px;
     /* Akkordeons (Highlights Startseite, Galerie Projektseite): gleiche Dauer und Kurve */
-    --accordion-duration: 600ms;
+    --accordion-duration: 900ms; /* ▲ Zum Ausprobieren: Dauer des Aufklappens der Highlights */
     --accordion-ease: cubic-bezier(.2, .65, .25, 1);
     /* Galerie öffnet langsamer, weil sich die Bilder dabei stärker verändern */
     --gallery-duration: 1000ms;
@@ -489,6 +489,9 @@ h2 em {
         height: clamp(56px, 6vw, 88px);
         overflow: hidden;
         border-radius: var(--radius);
+        /* Inhalt der Karte (Bild, Video, Texte) beeinflusst nichts ausserhalb:
+           Der Browser berechnet beim Animieren der Höhe weniger neu → flüssiger */
+        contain: layout paint;
         transition: height var(--accordion-duration) var(--accordion-ease);
 
         &.is-active {
@@ -1070,7 +1073,8 @@ h2 em {
     .fact {
         display: flex;
         justify-content: space-between;
-        align-items: center;
+        /* oben bündig: bei mehrzeiligen Werten steht die Bezeichnung auf Höhe der ersten Zeile */
+        align-items: flex-start;
         gap: var(--space-24);
     }
 

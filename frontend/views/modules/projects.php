@@ -18,11 +18,12 @@ $has_featured = in_array(true, array_column($projects, 'featured'), true);
     <?php endif; ?>
 
     <?php if ($layout === 'carousel') : ?>
-        <?php // Akkordeon: alle Projekte als schmale Streifen, aufgeklappt wird nur beim Hover/Fokus (Steuerung in main.js) ?>
+        <?php // Akkordeon: alle Projekte als schmale Streifen (Steuerung in main.js).
+              // Mausrad/Trackpad über den Highlights klappt ein Projekt nach dem anderen auf; dazu Hover, Tastatur, Tippen. ?>
         <ul class="carousel" data-accordion>
             <?php foreach ($projects as $index => $project) : ?>
-                <?php // data-hover-video: Beim Hover über die Karte startet das Titelvideo ?>
-                <li class="card" data-accordion-item data-hover-video>
+                <?php // Erstes Projekt schon im HTML offen (kein Aufklappen beim Laden); Titelvideo spielt, solange offen ?>
+                <li class="card<?= $index === 0 ? ' is-active' : '' ?>" data-accordion-item>
                     <a class="card-link" href="<?= esc_url($project['url']) ?>">
                         <span class="card-media">
                             <?php if ($project['cover']) : ?>

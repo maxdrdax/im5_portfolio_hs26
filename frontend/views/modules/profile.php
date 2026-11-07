@@ -28,9 +28,14 @@ $data = $args['data'];
         <?php if (!empty($data['facts'])) : ?>
             <dl class="facts">
                 <?php foreach ($data['facts'] as $fact) : ?>
+                    <?php
+                    // Mehrere Werte mit Komma getrennt («Deutsch, Englisch») → untereinander.
+                    // Jeder Wert wird einzeln escaped, erst danach mit <br> verbunden.
+                    $values = array_filter(array_map('trim', explode(',', $fact['detail'] ?? '')));
+                    ?>
                     <div class="fact">
                         <dt><?= esc_html($fact['label']) ?></dt>
-                        <dd><?= esc_html($fact['detail'] ?? '') ?></dd>
+                        <dd><?= implode('<br>', array_map('esc_html', $values)) ?></dd>
                     </div>
                 <?php endforeach; ?>
             </dl>

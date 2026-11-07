@@ -175,39 +175,197 @@ if (canHover) {
 }
 
 // =====================================================================
-// -> Highlights-Akkordeon (Startseite): ein Projekt ist aufgeklappt
+// -> Highlights-Akkordeon (Startseite)
+// Mausrad/Trackpad: Ist die Maus über den Highlights, wird der Scrollweg gezählt; nach einer
+// bestimmten Strecke klappt das nächste bzw. vorherige Projekt auf, statt dass die Seite scrollt.
+// Am Anfang/Ende scrollt die Seite normal weiter.
+// Zusätzlich: Hover, Tastatur (Tab) und Tippen (erstes Tippen klappt auf, zweites öffnet).
 // =====================================================================
-document.querySelectorAll('[data-accordion]').forEach((accordion) => {
-    const items = accordion.querySelectorAll('[data-accordion-item]');
 
-    const activate = (activeItem) => {
-        items.forEach((item) => item.classList.toggle('is-active', item === activeItem));
+// ▼ Zum Ausprobieren anpassen
+const ACCORDION_SCROLL_DISTANCE = 300; // Scrollweg in px pro Projekt (mehr = mehr scrollen nötig)
+const ACCORDION_STEP_PAUSE = 700; // ms Mindestabstand zwischen zwei Projekten (bremst schnelle Trackpad-Wischer)
+const ACCORDION_GESTURE_GAP = 500; // ms ohne Mausrad-Signal = Scrollweg beginnt wieder bei 0
+const ACCORDION_HOVER_PAUSE = 1000; // ms nach einem Mausrad-Schritt, in denen Hover ignoriert wird
+// ▲
+
+document.querySelectorAll('[data-accordion]').forEach((accordion) => {
+    const items = [...accordion.querySelectorAll('[data-accordion-item]')];
+    const DEFAULT_INDEX = 0; // Ausgangszustand: erstes Projekt offen (zeigt, wie das Akkordeon funktioniert)
+    let activeIndex = -1;
+    let lastWheel = 0; // Zeitpunkt des letzten Mausrad-Signals
+    let lastStep = 0; // Zeitpunkt des letzten Mausrad-Schritts
+    let scrolled = 0; // gesammelter Scrollweg seit dem letzten Schritt (positiv = nach unten)
+    let gestureCaptured = null; // gehört die laufende Geste dem Akkordeon? (null = noch nicht entschieden)
+    let videoTimer = null;
+
+    // Dauer der Aufklapp-Animation aus dem CSS (--accordion-duration), z. B. "900ms" → 900
+    const animationDuration = () => parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--accordion-duration')) || 0;
+
+    // Projekt aufklappen. Das Titelvideo startet erst nach der Animation:
+    // Laden und Abspielen kosten Rechenleistung und würden sonst den Anfang der Animation stocken lassen.
+    const activate = (index) => {
+        if (index === activeIndex) {
+            return;
+        }
+        activeIndex = index;
+        clearTimeout(videoTimer);
+
+        items.forEach((item, i) => {
+            item.classList.toggle('is-active', i === index);
+            item.querySelector('video')?.pause();
+        });
+
+        const video = items[index]?.querySelector('video');
+        if (video && !reducedMotion) {
+            videoTimer = setTimeout(() => playVideo(video), animationDuration());
+        }
     };
 
-    items.forEach((item) => {
-        // Maus und Tastatur (Tab) klappen ein Projekt auf
-        item.addEventListener('mouseenter', () => activate(item));
-        item.addEventListener('focusin', () => activate(item));
+    // Unterkante des klebenden Headers im Fenster
+    const headerBottom = () => document.querySelector('[data-layout="header"]')?.getBoundingClientRect().bottom ?? 0;
+
+    // Höhe eines Streifens und eines offenen Projekts messen. Nur beim Laden und bei geänderter
+    // Fenstergrösse – nie während einer Animation, sonst springt die gemessene Karte.
+    let sizes = { strip: 0, open: 0, gap: 0 };
+    const measure = () => {
+        // eine geschlossene Karte als Messobjekt (nicht die offene, die gerade animiert sein könnte)
+        const probe = items.find((_, i) => i !== activeIndex) ?? items[0];
+        const wasActive = probe.classList.contains('is-active');
+        probe.style.transition = 'none';
+        probe.classList.remove('is-active');
+        const strip = probe.offsetHeight;
+        probe.classList.add('is-active');
+        const open = probe.offsetHeight;
+        probe.classList.toggle('is-active', wasActive); // ursprünglichen Zustand wiederherstellen
+        probe.offsetHeight; // Layout anwenden, bevor die Animation wieder eingeschaltet wird
+        probe.style.removeProperty('transition');
+        const gap = parseFloat(getComputedStyle(accordion).rowGap) || 0;
+        sizes = { strip, open, gap };
+    };
+
+    // Seite sanft nachrücken, damit das offene Projekt ganz sichtbar ist
+    // (Position aus den Endhöhen berechnet, weil die Animation noch läuft)
+    const keepVisible = (index) => {
+        if (index < 0) {
+            return;
+        }
+        const { strip, open, gap } = sizes;
+        const listTop = accordion.getBoundingClientRect().top + window.scrollY;
+        const cardTop = listTop + index * (strip + gap);
+        const viewTop = headerBottom() + 24;
+        const viewBottom = window.innerHeight - 24;
+
+        // Ein Streifen davor bleibt sichtbar (Orientierung), ausser beim ersten Projekt
+        let target = cardTop - viewTop - (index > 0 ? strip + gap : 0);
+        // Passt das offene Projekt dann nicht ganz, nach unten ausrichten
+        if (cardTop + open - target > viewBottom) {
+            target = cardTop + open - viewBottom;
+        }
+        window.scrollTo({ top: target, behavior: reducedMotion ? 'auto' : 'smooth' });
+    };
+
+    // Ist das Akkordeon so weit oben, dass das Aufklappen sichtbar ist?
+    const inZone = () => {
+        const rect = accordion.getBoundingClientRect();
+        return rect.top <= headerBottom() + window.innerHeight * 0.35 && rect.bottom > headerBottom() + 120;
+    };
+
+    // Mausrad/Trackpad: Scrollweg sammeln; ab ACCORDION_SCROLL_DISTANCE das nächste Projekt öffnen
+    accordion.addEventListener('wheel', (event) => {
+        if (Math.abs(event.deltaY) < Math.abs(event.deltaX)) {
+            return; // seitliches Wischen ignorieren
+        }
+        const now = performance.now();
+
+        // Pause zwischen den Signalen: neue Geste, Scrollweg zurücksetzen
+        if (now - lastWheel > ACCORDION_GESTURE_GAP) {
+            scrolled = 0;
+            gestureCaptured = null;
+        }
+        lastWheel = now;
+
+        // In Pixel umrechnen (Firefox meldet beim Mausrad teilweise Zeilen statt Pixel)
+        const delta = event.deltaMode === 1 ? event.deltaY * 16 : event.deltaY;
+        const direction = Math.sign(delta);
+        if (!direction) {
+            return;
+        }
+        const next = activeIndex + direction;
+        const canStep = next >= 0 && next <= items.length - 1; // immer ein Projekt offen
+
+        // Zu Beginn einer Geste entscheiden, ob das Akkordeon sie übernimmt
+        if (gestureCaptured === null) {
+            gestureCaptured = inZone() && canStep;
+        }
+        // Kein weiteres Projekt in dieser Richtung: Seite wieder normal scrollen lassen
+        if (!gestureCaptured || !canStep) {
+            gestureCaptured = false;
+            return;
+        }
+
+        event.preventDefault(); // Seite nicht scrollen, solange das Akkordeon die Geste übernimmt
+
+        // Richtung gewechselt: Scrollweg neu zählen
+        if (Math.sign(scrolled) !== direction) {
+            scrolled = 0;
+        }
+        scrolled += delta;
+
+        // Genug gescrollt und genug Zeit seit dem letzten Schritt: nächstes Projekt
+        if (Math.abs(scrolled) >= ACCORDION_SCROLL_DISTANCE && now - lastStep >= ACCORDION_STEP_PAUSE) {
+            activate(next);
+            keepVisible(next);
+            lastStep = now;
+            scrolled = 0;
+        }
+    }, { passive: false });
+
+    items.forEach((item, index) => {
+        // Hover klappt auf, ausser kurz nach einem Mausrad-Schritt
+        // (sonst würde das nachrückende Scrollen ein anderes Projekt unter die Maus schieben)
+        item.addEventListener('mouseenter', () => {
+            if (performance.now() - lastStep > ACCORDION_HOVER_PAUSE) {
+                activate(index);
+            }
+        });
+        // Tastatur (Tab)
+        item.addEventListener('focusin', () => activate(index));
 
         // Touch: erstes Tippen klappt auf, zweites Tippen öffnet das Projekt
         item.querySelector('a')?.addEventListener('click', (event) => {
             if (!item.classList.contains('is-active')) {
                 event.preventDefault();
-                activate(item);
+                activate(index);
             }
         });
     });
 
-    // Maus verlässt die ganze Liste: alles zuklappen
-    // (nicht pro Streifen, sonst klappt es beim Wechsel über die Lücken zu und wieder auf)
-    accordion.addEventListener('mouseleave', () => activate(null));
+    // Maus oder Fokus verlässt die Liste: das zuletzt geöffnete Projekt bleibt offen
+    // (sonst würde es nach dem Scrollen beim kleinsten Mauswackeln auf Projekt 1 zurückspringen)
 
-    // Fokus verlässt die Liste (Tab weiter): alles zuklappen
-    accordion.addEventListener('focusout', (event) => {
-        if (!accordion.contains(event.relatedTarget)) {
-            activate(null);
+    // Bereich ganz aus dem Bild gescrollt: zurück zum Ausgangszustand (erstes Projekt offen)
+    new IntersectionObserver((entries) => {
+        if (!entries[0].isIntersecting) {
+            activate(DEFAULT_INDEX);
         }
+    }).observe(accordion);
+
+    // Höhen bei geänderter Fensterbreite neu messen (verzögert)
+    let resizeTimer = null;
+    let lastWidth = window.innerWidth;
+    window.addEventListener('resize', () => {
+        if (window.innerWidth === lastWidth) {
+            return;
+        }
+        lastWidth = window.innerWidth;
+        clearTimeout(resizeTimer);
+        resizeTimer = setTimeout(measure, 200);
     });
+
+    // Start: erstes Projekt ist schon im HTML offen → nur den Zustand übernehmen, dann messen
+    activate(DEFAULT_INDEX);
+    measure();
 });
 
 // =====================================================================

@@ -122,6 +122,7 @@ Zum Vergleich der Stand vor der Umsetzung des CMS-Konzepts (Beispielmodule des S
 | 04.11.2026 | Design nach Figma (Über mich): Profil und Erfahrung im gemeinsamen Raster (4 : 8 Spalten), Stationen zweispaltig, Steckbrief mit rechtsbündigen Werten, grüner Button; Oberkanten von Titel und Name bündig (`text-box-trim` mit Fallback über `cap`/`lh`) |
 | 04.11.2026 | Design nach Figma (Projektseite): Titel und Eckdaten sichtbar unter dem Hero (ausblendbar mit `hide_title`), Projektbeschrieb zweispaltig (CSS `columns`), grüne Fläche für Rolle und Team, Galerie als horizontales Akkordeon (öffnet bei Hover im Format 3:2, Handy: Wischen mit Scroll-Snap) |
 | 04.11.2026 | Impressum und Datenschutz (Vorlagen nach Schweizer DSG) im Stil der Seiten: Titel grün, Text max. 780 px, Zwischentitel H3 und H4 (Geist Bold), Links und Listen im Fliesstext |
+| 07.11.2026 | Highlights per Mausrad/Trackpad: Scrollweg wird gesammelt (300 px pro Projekt, Mindestpause zwischen Schritten), erstes Projekt beim Laden offen, Video startet nach der Animation, Messung nur beim Laden (kein Ruckeln), `contain: layout paint`; Steckbrief: Werte mit Komma stehen untereinander |
 
 ## Learnings
 <!-- In eigenen Worten ergänzen -->
