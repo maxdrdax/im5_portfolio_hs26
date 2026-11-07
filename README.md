@@ -20,7 +20,7 @@ Hero Bild → Projekte (Karussell «Highlights») → Logos
 
 | Website | Backend |
 |---|---|
-| <img src="docs/screenshots/02.6_startseite_website.jpg" alt="Startseite: Hero, Highlights-Karussell und Logos" width="400"> | <img src="docs/screenshots/02.6_startseite1-wordpress.jpg" alt="Backend: Modul Hero Bild" width="400"><br><img src="docs/screenshots/02.6_startseite2-wordpress.jpg" alt="Backend: Modul Projekte als Karussell" width="400"><br><img src="docs/screenshots/02.6_startseite3-wordpress.jpg" alt="Backend: Modul Logos" width="400"> |
+| <img src="docs/screenshots/03.1_startseite_website.jpg" alt="Startseite nach Figma: Hero, Highlights-Akkordeon und Logo-Laufschrift" width="400"> | <img src="docs/screenshots/02.6_startseite1-wordpress.jpg" alt="Backend: Modul Hero Bild" width="400"><br><img src="docs/screenshots/02.6_startseite2-wordpress.jpg" alt="Backend: Modul Projekte als Karussell" width="400"><br><img src="docs/screenshots/02.6_startseite3-wordpress.jpg" alt="Backend: Modul Logos" width="400"> |
 
 ### Projekte (Directory)
 Hero Text → Projekte (Liste) mit Filter «Ausgewählte Projekte» und Hover-Vorschau
@@ -49,6 +49,13 @@ Hero Text mit kursivem Akzent (`*Kontakt*`) → Kontakt (E-Mail und Socials aus 
 | Website | Backend |
 |---|---|
 | <img src="docs/screenshots/02.4_kontakt_website.jpg" alt="Kontaktseite" width="400"> | <img src="docs/screenshots/02.4_kontakt-wordpress.jpg" alt="Backend: Seite Kontakt" width="400"> |
+
+### Navigation (Overlay-Menü)
+Vollbild-Menü mit Hintergrund (gemeinsam oder pro Menüpunkt); Hover: Wort kursiv mit Text-Scramble, die anderen Punkte treten zurück
+
+| Website | Backend |
+|---|---|
+| <img src="docs/screenshots/05.1_navigation_website.jpg" alt="Offenes Overlay-Menü mit Hintergrundbild, Hover auf «Projekte»" width="400"> | <img src="docs/screenshots/05.2_navigation_wordpress.jpg" alt="Backend: Design > Menüs mit Button «Alle aufklappen», Hintergrundbild und -video nebeneinander" width="400"> |
 
 ### Backend: Struktur
 | Admin-Menü | Seitenübersicht | Impressum (Modul Text) |
