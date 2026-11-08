@@ -133,7 +133,7 @@ if ($menu_bg) {
                         <?php foreach ($socials as $social) : ?>
                             <li>
                                 <a href="<?= esc_url($social['url']) ?>" target="_blank" rel="noopener">
-                                    <?= esc_html($social['title']) ?> <span aria-hidden="true">↗</span>
+                                    <?= esc_html($social['title']) ?> <?= get_icon('arrow', 'up-right') ?>
                                 </a>
                             </li>
                         <?php endforeach; ?>

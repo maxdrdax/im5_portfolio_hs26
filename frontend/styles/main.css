@@ -46,7 +46,8 @@
     --font-nav: 400 20px/28px var(--font-sans);
     --font-body: 400 16px/24px var(--font-sans);
     --font-body-large: 400 18px/30px var(--font-sans);
-    --font-caption: 400 12px/16px var(--font-sans);
+    /* kleinste Schrift: 14 px (12 px war auf dem Handy zu klein, v. a. im Grau) */
+    --font-caption: 400 14px/20px var(--font-sans);
     --font-button: 500 16px/24px var(--font-sans);
     --font-brand: italic 700 32px/40px var(--font-brand-family);
 }
@@ -57,6 +58,13 @@ h1 {
 
 h2 {
     font: var(--font-h2);
+}
+
+/* Keine Silbentrennung. Nur als Notlösung: Passt ein einzelnes Wort gar nicht in die Breite,
+   bricht es um, statt über den Bildschirmrand zu ragen. */
+h1,
+h2 {
+    overflow-wrap: break-word;
 }
 
 h3 {
@@ -304,16 +312,14 @@ main[data-page="project"] {
         gap: var(--space-64);
     }
 
-    /* Oberkante bündig: Kategorie (links) und erste Eckdaten-Zeile (rechts) beginnen
-       genau an der Oberkante der Grossbuchstaben (gleiche Technik wie auf Über mich) */
-    .project-category,
-    .facts .fact:first-child > * {
+    /* Oberkante bündig: Die Kategorie (links) beginnt genau an der Oberkante der Grossbuchstaben,
+       auf gleicher Höhe wie die oberste Linie der Eckdaten (rechts). Technik wie auf Über mich. */
+    .project-category {
         margin-top: calc((1cap - 1lh) / 2);
     }
 
     @supports (text-box: trim-start cap alphabetic) {
-        .project-category,
-        .facts .fact:first-child > * {
+        .project-category {
             margin-top: 0;
             text-box: trim-start cap alphabetic;
         }
@@ -336,27 +342,36 @@ main[data-page="project"] {
         font: var(--font-h1);
     }
 
-    /* Eckdaten: zwei gleich breite Spalten, beide linksbündig (anders als im Profil) */
+    /* Eckdaten als Datenblatt: jede Zeile mit feiner Linie, Bezeichnung klein und grau
+       in Grossbuchstaben, Wert weiss (gleiche Linien-Sprache wie die Projektliste) */
     .facts {
-        flex: 0 0 320px;
+        --facts-line: color-mix(in srgb, var(--color-white) 25%, transparent);
+        flex: 0 0 360px;
         /* bleibt rechts, auch wenn der Titel ausgeblendet ist */
         margin-left: auto;
-        gap: var(--space-12);
+        gap: 0;
+        border-bottom: 1px solid var(--facts-line);
         font: var(--font-body);
 
         .fact {
             display: grid;
-            grid-template-columns: 1fr 1fr;
+            grid-template-columns: 2fr 3fr;
             gap: var(--space-16);
-            align-items: start;
+            /* Bezeichnung (14 px) und Wert (16 px) auf derselben Grundlinie */
+            align-items: baseline;
+            padding-block: var(--space-12);
+            border-top: 1px solid var(--facts-line);
+        }
+
+        dt {
+            color: var(--color-border);
+            font: var(--font-caption);
+            letter-spacing: .06em;
+            text-transform: uppercase;
         }
 
         dd {
             text-align: left;
-        }
-
-        .uppercase {
-            text-transform: uppercase;
         }
     }
 
@@ -671,8 +686,10 @@ h2 em {
         .card-arrow {
             position: absolute;
             right: var(--space-24);
-            bottom: var(--space-12);
-            font: 500 50px/1 var(--font-sans);
+            bottom: var(--space-24);
+            /* Icon-Grösse (das Icon ist 1em gross) */
+            font-size: 40px;
+            line-height: 0;
         }
 
         /* Infos nur im aufgeklappten Zustand */
@@ -1157,13 +1174,39 @@ h2 em {
         font: var(--font-h3);
 
         a {
+            display: inline-flex;
+            align-items: center;
+            gap: var(--space-8);
             color: inherit;
             text-decoration: none;
+        }
+
+        .icon {
+            font-size: .8em;
         }
     }
 }
 
 /* Gemeinsame Bausteine */
+
+/* Punkte der Galerie: nur auf Tablet und Handy (Breakpoint lg) */
+.strip-dots {
+    display: none;
+}
+
+/* Icons aus der eigenen Bibliothek (get_icon() in backend/helpers): Grösse = Schriftgrösse (1em),
+   Farbe = Textfarbe (currentColor im SVG). Richtung per Klasse; Grundform zeigt nach unten. */
+.icon {
+    display: inline-block;
+    flex: none;
+    width: 1em;
+    height: 1em;
+    vertical-align: -.1em;
+}
+
+.icon--up-right {
+    rotate: -135deg;
+}
 .pill {
     display: inline-flex;
     padding: var(--space-4) var(--space-12);
@@ -1249,9 +1292,24 @@ h2 em {
     cursor: pointer;
     transform: translateX(-50%);
 
-    img {
-        width: 50px;
-        height: 62px;
+    color: var(--color-white);
+
+    /* langer Pfeil (24 × 32): nur Kontur; Hover/Fokus füllt ihn */
+    .icon {
+        width: 39px;
+        height: 52px;
+        fill: transparent;
+        transition: fill 300ms ease;
+    }
+
+    &:focus-visible .icon {
+        fill: currentColor;
+    }
+
+    @media (hover: hover) {
+        &:hover .icon {
+            fill: currentColor;
+        }
     }
 }
 
@@ -1394,12 +1452,46 @@ h2 em {
             }
         }
 
-        /* jedes Bild 3:2 wie geöffnet auf dem Desktop; auf dem Tablet max. 640 px breit */
+        /* jedes Bild 3:2 und so breit wie der Inhaltsbereich (Wischen zeigen die Punkte darunter) */
         .strip-item,
         .strip-item.is-active {
-            flex: 0 0 min(85%, 640px);
+            flex: 0 0 100%;
             aspect-ratio: 3 / 2;
             scroll-snap-align: center;
+        }
+    }
+
+    /* Galerie: Punkte unter dem Wisch-Bereich (main.js erzeugt sie). Aktiver Punkt breiter und weiss.
+       Der Button ist grösser als der sichtbare Punkt (Tippfläche), der Punkt ist ::before. */
+    .strip-dots {
+        display: flex;
+        justify-content: center;
+        gap: var(--space-4);
+        margin-top: var(--space-16);
+
+        button {
+            display: grid;
+            place-items: center;
+            width: 28px;
+            height: 28px;
+            padding: 0;
+            border: 0;
+            background: none;
+            cursor: pointer;
+
+            &::before {
+                width: 8px;
+                height: 8px;
+                border-radius: 999px;
+                background-color: color-mix(in srgb, var(--color-white) 35%, transparent);
+                content: "";
+                transition: width 300ms ease, background-color 300ms ease;
+            }
+
+            &[aria-current="true"]::before {
+                width: 22px;
+                background-color: var(--color-white);
+            }
         }
     }
 
@@ -1438,7 +1530,7 @@ h2 em {
 @media (max-width: 768px) {
     :root {
         --gap-around: 24px;
-        --font-h1: 500 48px/56px var(--font-sans);
+        --font-h1: 500 40px/48px var(--font-sans);
         --font-h2: 500 36px/44px var(--font-brand-family);
         --font-nav: 400 16px/24px var(--font-sans);
         --font-brand: italic 700 24px/32px var(--font-brand-family);
@@ -1496,8 +1588,13 @@ h2 em {
     }
 
     [data-module="logos"] {
-        --logo-width: 160px;
-        --logo-height: 64px;
+        /* Handy: Logos grösser, Abstand kleiner */
+        --logo-width: 200px;
+        --logo-height: 80px;
+
+        .logo-item {
+            padding-inline: var(--space-12);
+        }
     }
 
     /* Handy: 2 Spalten; grosse Kacheln über die volle Breite */

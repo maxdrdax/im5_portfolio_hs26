@@ -6,7 +6,6 @@ $has_role = !empty($project['role_text']) || !empty($project['role_image']);
 $category_names = implode(', ', array_column($project['categories'], 'name'));
 // Volles Video (YouTube/Vimeo): Embed-Code ist bereits durch wp_kses() gefiltert und kann direkt ausgegeben werden
 $embed = get_video_embed($project['video_url']);
-$arrow = get_template_directory_uri() . '/frontend/assets/icons/arrow-down.svg';
 ?>
 
 <main data-page="project">
@@ -26,7 +25,7 @@ $arrow = get_template_directory_uri() . '/frontend/assets/icons/arrow-down.svg';
         ]); ?>
 
         <button class="scroll-arrow" type="button" data-scroll-next aria-label="Nach unten scrollen">
-            <img src="<?= esc_url($arrow) ?>" alt="" width="50" height="62">
+            <?= get_icon('arrow-long', 'down') // Icon aus dem Theme, sicher (siehe get_icon) ?>
         </button>
     </section>
 
@@ -49,7 +48,7 @@ $arrow = get_template_directory_uri() . '/frontend/assets/icons/arrow-down.svg';
                     <div class="fact"><dt>Kontext</dt><dd><?= esc_html($project['context']) ?></dd></div>
                 <?php endif; ?>
                 <?php if ($category_names) : ?>
-                    <div class="fact"><dt>Kategorie</dt><dd class="uppercase"><?= esc_html($category_names) ?></dd></div>
+                    <div class="fact"><dt>Kategorie</dt><dd><?= esc_html($category_names) ?></dd></div>
                 <?php endif; ?>
                 <?php if ($project['role']) : ?>
                     <div class="fact"><dt>Meine Rolle</dt><dd><?= esc_html($project['role']) ?></dd></div>

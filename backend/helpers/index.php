@@ -111,6 +111,25 @@ function is_current_menu_item(WP_Post $item): bool
     return false;
 }
 
+// -> Icon aus der eigenen Icon-Bibliothek (frontend/assets/icons/{name}.svg) direkt ins HTML einfügen
+// Inline statt <img>: Das Icon übernimmt die Textfarbe (currentColor), auch bei Hover und Farbumkehr.
+// $direction: 'down' (Standard) oder 'up-right'; die Drehung macht das CSS (.icon--up-right).
+// Sicherheit: Nur Namen aus Buchstaben, Zahlen und Bindestrich, Dateien liegen im Theme (keine Uploads).
+function get_icon(string $name, string $direction = 'down', string $class = ''): string
+{
+    if (!preg_match('/^[a-z0-9-]+$/', $name)) {
+        return '';
+    }
+    $file = get_template_directory() . '/frontend/assets/icons/' . $name . '.svg';
+    if (!is_readable($file)) {
+        return '';
+    }
+    $svg = trim((string) file_get_contents($file));
+    $classes = trim('icon icon--' . sanitize_html_class($direction) . ' ' . sanitize_html_class($class));
+    // Klasse und Barrierefreiheit ergänzen: Icons sind Dekoration, der Text daneben sagt, worum es geht
+    return preg_replace('/^<svg\b/', '<svg class="' . esc_attr($classes) . '" aria-hidden="true" focusable="false"', $svg, 1);
+}
+
 // -> Titel mit kursivem Akzent: *Wort* wird zu <em>Wort</em>
 // Zuerst escapen, dann Sternchen ersetzen. Die Rückgabe ist sicher und kann direkt ausgegeben werden.
 function format_accent(?string $text): string

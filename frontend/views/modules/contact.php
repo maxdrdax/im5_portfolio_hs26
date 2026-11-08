@@ -9,13 +9,13 @@ $socials = $data['socials'] ?? [];
     <ul class="contact-list">
         <?php if ($email) : ?>
             <li>
-                <a href="<?= esc_url('mailto:' . $email) ?>"><?= esc_html($email) ?> <span aria-hidden="true">↗</span></a>
+                <a href="<?= esc_url('mailto:' . $email) ?>"><?= esc_html($email) ?> <?= get_icon('arrow', 'up-right') ?></a>
             </li>
         <?php endif; ?>
         <?php foreach ($socials as $social) : ?>
             <li>
                 <a href="<?= esc_url($social['url']) ?>" target="_blank" rel="noopener">
-                    <?= esc_html($social['title']) ?> <span aria-hidden="true">↗</span>
+                    <?= esc_html($social['title']) ?> <?= get_icon('arrow', 'up-right') ?>
                 </a>
             </li>
         <?php endforeach; ?>

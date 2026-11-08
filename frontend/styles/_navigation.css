@@ -505,6 +505,12 @@ html {
     }
 }
 
+/* Pfeil-Icon neben dem Social-Link */
+.menu-socials .icon {
+    margin-left: var(--space-4);
+    font-size: .8em;
+}
+
 .menu-socials {
     display: flex;
     flex-wrap: wrap;
@@ -598,6 +604,12 @@ html {
 
             &::after {
                 display: none;
+            }
+
+            /* Aktive Seite (Kontakt): Button ausgefüllt, wie die Linie auf dem Desktop */
+            &[aria-current="page"] {
+                background-color: var(--color-white);
+                color: var(--color-black);
             }
         }
 

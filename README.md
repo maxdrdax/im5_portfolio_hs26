@@ -141,6 +141,7 @@ Zum Vergleich der Stand vor der Umsetzung des CMS-Konzepts (Beispielmodule des S
 | 08.11.2026 | Responsive: Projektliste auf dem Handy zweispaltig (Kategorie unter dem Titel), Hover nur mit Maus (`@media (hover: hover)`), Touch-Ziele 44 px (`pointer: coarse`), Header 72 px auf dem Handy, H1-Zwischengrösse fürs Tablet; Header mit Milchglas nach dem Hero (auf Tablet/Handy immer), Logo und Navigation optisch eingemittet (`text-box`); Ausblenden beim Scrollen wieder verworfen |
 | 08.11.2026 | Tablet/Handy (bis 1024 px): Highlights alle aufgeklappt mit Infos, Galerie zum Wischen statt Akkordeon (`matchMedia`); Menü-Overlay ohne `visibility` (Safari); Signet statt Schriftzug auf dem Handy (`logo_signet` in Globals, SVG als `<img>`) |
 | 08.11.2026 | Header auf Tablet/Handy: Signet links, Menü-Symbol in der Mitte, «Kontakt» als umrandeter Button rechts (Raster `1fr auto 1fr`, `display: contents`); neues Menü-Symbol mit drei unterschiedlich langen Strichen, Animation zum X |
+| 08.11.2026 | Typografie (kleinste Schrift 14 px, H1 mobil 40 px), Eckdaten als Datenblatt mit Linien; eigene Icon-Bibliothek (`frontend/assets/icons/`, `get_icon()`, Pfeile als abgerundete Flächen, Scroll-Pfeil mit Kontur → Füllung beim Hover); Galerie auf Tablet/Handy in voller Breite mit Punkten; aktiver Kontakt-Button ausgefüllt; Logos auf dem Handy grösser |
 
 ## Learnings
 <!-- In eigenen Worten ergänzen -->

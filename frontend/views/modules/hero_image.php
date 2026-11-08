@@ -31,6 +31,6 @@ $has_video = !empty($data['video']);
     <?php endif; ?>
 
     <button class="scroll-arrow" type="button" data-scroll-next aria-label="Nach unten scrollen">
-        <img src="<?= esc_url(get_template_directory_uri() . '/frontend/assets/icons/arrow-down.svg') ?>" alt="" width="50" height="62">
+        <?= get_icon('arrow-long', 'down') // Icon aus dem Theme, sicher (siehe get_icon) ?>
     </button>
 </section>

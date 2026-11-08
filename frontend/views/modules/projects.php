@@ -53,7 +53,7 @@ $has_featured = in_array(true, array_column($projects, 'featured'), true);
                             <span class="card-title"><?= esc_html($project['title']) ?></span>
                         </span>
 
-                        <span class="card-arrow" aria-hidden="true">↗</span>
+                        <span class="card-arrow"><?= get_icon('arrow', 'up-right') ?></span>
                     </a>
                 </li>
             <?php endforeach; ?>

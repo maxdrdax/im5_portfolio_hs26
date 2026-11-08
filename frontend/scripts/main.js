@@ -525,11 +525,40 @@ document.querySelectorAll('[data-strip]').forEach((strip) => {
         if (reducedMotion) {
             return;
         }
-        // Touch: Video im sichtbaren Bild abspielen, sonst pausieren
+        // Punkte unter der Galerie: zeigen, dass man wischen kann und wo man ist; antippen springt zum Bild
+        const dots = [];
+        if (items.length > 1) {
+            const nav = document.createElement('div');
+            nav.className = 'strip-dots';
+            nav.setAttribute('role', 'group');
+            nav.setAttribute('aria-label', 'Bilder der Galerie');
+            items.forEach((item, index) => {
+                const dot = document.createElement('button');
+                dot.type = 'button';
+                dot.setAttribute('aria-label', `Bild ${index + 1} von ${items.length}`);
+                dot.setAttribute('aria-current', String(index === 0));
+                dot.addEventListener('click', () => {
+                    item.scrollIntoView({
+                        behavior: reducedMotion ? 'auto' : 'smooth',
+                        block: 'nearest',
+                        inline: 'center',
+                    });
+                });
+                nav.append(dot);
+                dots.push(dot);
+            });
+            strip.after(nav);
+        }
+
+        // Sichtbares Bild: Punkt aktiv, Video abspielen; andere pausieren
         const observer = new IntersectionObserver((entries) => {
             entries.forEach((entry) => {
+                const index = [...items].indexOf(entry.target);
+                if (entry.isIntersecting) {
+                    dots.forEach((dot, i) => dot.setAttribute('aria-current', String(i === index)));
+                }
                 const video = entry.target.querySelector('video');
-                if (!video) {
+                if (!video || reducedMotion) {
                     return;
                 }
                 if (entry.isIntersecting) {
@@ -538,7 +567,7 @@ document.querySelectorAll('[data-strip]').forEach((strip) => {
                     video.pause();
                 }
             });
-        }, { threshold: 0.6 });
+        }, { threshold: 0.6 }); // Bezug: Fenster (horizontal und vertikal sichtbar)
         items.forEach((item) => observer.observe(item));
         return;
     }
