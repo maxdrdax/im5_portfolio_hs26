@@ -58,6 +58,7 @@ Alle 7 Seiten (Startseite, Projekte, Fotos, Über mich, Kontakt, Impressum, Date
 
 - «Ausgewählte Projekte» und «Alle» sind Standardfilter im Theme, keine Begriffe. «Ausgewählte Projekte» zeigt Projekte mit `featured` und ist beim Laden aktiv (gibt es keine, ist «Alle» aktiv). «Alle» zeigt alles.
 - Schreibweise der Kategorie: «Fotos» (entschieden).
+- Ordner in der Mediathek: Plugin «Folders» (Premio, Gratis-Version) mit Drag-and-Drop. Eigene Taxonomie `media_folder` verworfen (Drag-and-Drop in der Kachelansicht wäre aufwendig und bei WordPress-Updates anfällig).
 
 ## C | Module
 
