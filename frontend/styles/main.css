@@ -65,6 +65,21 @@
     --measure: 68ch;
 }
 
+/* Markierter Text (z. B. beim Kopieren) in der Akzentfarbe; Schwarz auf Grün hat 5.3 : 1 Kontrast */
+::selection {
+    background-color: var(--color-accent);
+    color: var(--color-black);
+}
+
+/* WordPress-Admin-Leiste (nur eingeloggt): Auf dem Handy (unter 600 px) scrollt sie normalerweise mit
+   der Seite weg. Der fixe Header lässt aber Platz für sie frei, dadurch entstand oben eine Lücke.
+   Darum bleibt sie auch auf dem Handy oben stehen. */
+@media screen and (max-width: 600px) {
+    #wpadminbar {
+        position: fixed;
+    }
+}
+
 h1 {
     font: var(--font-h1);
 }

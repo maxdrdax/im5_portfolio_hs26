@@ -204,6 +204,16 @@ function get_video_embed(?string $url): string|false
 
     // YouTube ohne Tracking-Cookies (Datenschutz)
     $html = str_replace('youtube.com/embed/', 'youtube-nocookie.com/embed/', $html);
+    // Vimeo ohne Tracking-Cookies: Parameter dnt=1 («do not track») an die Player-Adresse anhängen.
+    // add_query_arg() setzt ? oder & richtig; esc_url() maskiert die Adresse wieder für das HTML-Attribut.
+    $html = preg_replace_callback(
+        '/src="(https:\/\/player\.vimeo\.com\/video\/[^"]+)"/',
+        function (array $match): string {
+            $src = add_query_arg('dnt', '1', html_entity_decode($match[1]));
+            return 'src="' . esc_url($src) . '"';
+        },
+        $html
+    );
     // Lazy Loading: Video wird erst geladen, wenn es in die Nähe des Bildschirms kommt
     $html = str_replace('<iframe ', '<iframe loading="lazy" ', $html);
 

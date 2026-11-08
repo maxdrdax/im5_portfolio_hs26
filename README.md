@@ -145,6 +145,7 @@ Zum Vergleich der Stand vor der Umsetzung des CMS-Konzepts (Beispielmodule des S
 | 08.11.2026 | Hover nur mit Maus (keine hängenden Zustände auf Touch), Datenblatt-Stil auch für den Steckbrief, Logos mit gleicher Fläche (Höhe = Grösse ÷ √Seitenverhältnis), Projektliste auf dem Handy als Karten mit Vorschaubild 1:1; Galerie per Mausrad und Pfeiltasten blättern (wie Highlights); Bildformate auf dem Handy: Hochformat 4:5, Fotos einspaltig (1:1 / 4:5 / 3:2), `sizes` angepasst |
 | 08.11.2026 | Vor dem Livegang: Website nur für angemeldete Benutzer (Schalter `site_private` in Globales, `template_redirect` + `auth_redirect()`, REST-API für Gäste gesperrt), Anwendungspasswörter abgeschaltet; Testzugang mit Rolle «Abonnent» |
 | 08.11.2026 | Typografie und Abstände überarbeitet: Type-Scale (ca. 1.25) mit `clamp()`, neue Ebene H3, Zeilenlänge 68ch, Grossbuchstaben gesperrt; semantische Abstands-Tokens (`--space-stack-xs/s/m`, `--space-section`), Seitenrand fliessend; Kategorie-Pillen Schwarz auf Grün (WCAG AA); Highlights: Mausrad blättert ohne Seitenscrollen |
+| 08.11.2026 | Admin-Leiste auf dem Handy fixiert (keine Lücke über dem Header), keine Admin-Leiste für Testzugänge; Markierfarbe im Akzent-Grün (`::selection`); Vimeo-Einbettungen mit `dnt=1` (keine Tracking-Cookies) |
 
 ## Learnings
 <!-- In eigenen Worten ergänzen -->

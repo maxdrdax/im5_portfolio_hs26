@@ -37,3 +37,9 @@ add_filter('rest_authentication_errors', function ($result) {
 // Diese Website braucht sie nicht: Abschalten entfernt einen möglichen Angriffsweg und den Hinweis
 // «Basis-Authentifizierung» im Benutzerprofil. Das normale Login funktioniert unverändert.
 add_filter('wp_is_application_passwords_available', '__return_false');
+
+// -> Admin-Leiste im Frontend nur für Personen, die Inhalte bearbeiten
+// Testzugänge (Rolle «Abonnent») sehen die Website wie normale Besucher, ohne schwarze Leiste oben.
+add_filter('show_admin_bar', function (bool $show): bool {
+    return current_user_can('edit_posts') ? $show : false;
+});
