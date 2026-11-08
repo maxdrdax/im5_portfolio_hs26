@@ -1,6 +1,6 @@
 # CMS-Konzept: Portfolio maxhutmacher.ch (v04)
 
-> **Änderungen v04:** Neue Navigation (Overlay-Menü, fixer Header: über dem Hero durchsichtig, danach Milchglas). Neue Felder am Menüeintrag: `menu_image`, `menu_video`. Neue Globals für einen gemeinsamen Menü-Hintergrund: `menu_bg_image`, `menu_bg_video`. Hero Bild: Position des Titels `title_position`. Globals: `logo_signet`.
+> **Änderungen v04:** Neue Navigation (Overlay-Menü, fixer Header: über dem Hero durchsichtig, danach Milchglas). Neue Felder am Menüeintrag: `menu_image`, `menu_video`. Neue Globals für einen gemeinsamen Menü-Hintergrund: `menu_bg_image`, `menu_bg_video`. Hero Bild: Position des Titels `title_position`. Globals: `logo_signet`, `site_private`.
 
 Quelle: Screendesign v06 (Figma). Felder im Carbon-Fields-Stil.
 `↳` = Unterfeld des complex-Felds direkt darüber.
@@ -193,10 +193,12 @@ Impressum und Datenschutz.
 | ↳ Titel | title | text |
 | ↳ Link | url | url |
 | ↳ Icon | icon | image |
+| Website nur für angemeldete Benutzer | site_private | checkbox |
 | Menü-Hintergrundbild | menu_bg_image | image |
 | Menü-Hintergrundvideo (MP4) | menu_bg_video | file (video) |
 
 - Logo = Schriftzug «Max Hutmacher» im Header (Link auf Startseite). Copyright im Footer.
+- `site_private`: Aktiv = Besucher ohne Login werden zur Anmeldung umgeleitet, auch die REST-API ist gesperrt (Phase vor dem Livegang; Testzugänge mit der Rolle «Abonnent»). Beim Livegang ausschalten (Go-live-Checkliste).
 - `logo_signet`: Auf Tablet und Handy (bis 1024 px) zeigt der Header das Signet statt des Schriftzugs (weisses SVG). Leer = Schriftzug. Für Screenreader bleibt der Logo-Text der Name des Links.
 - Footer zeigt nur Socials mit Icon (LinkedIn). Kontaktseite listet alle (LinkedIn, Instagram).
 

@@ -7,6 +7,12 @@ function get_global_logo(): string
     return carbon_get_theme_option('logo') ?: get_bloginfo('name');
 }
 
+// Website nur für angemeldete Benutzer? (Phase vor dem Livegang)
+function get_global_site_private(): bool
+{
+    return (bool) carbon_get_theme_option('site_private');
+}
+
 // Signet (Handy) aus der Mediathek; false, wenn leer
 // SVG hat keine Bildgrössen: get_media_by_id() liefert dann die Datei-URL direkt
 function get_global_logo_signet(): array|false

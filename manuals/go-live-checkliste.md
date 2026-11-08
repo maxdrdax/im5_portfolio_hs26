@@ -19,6 +19,7 @@
 - [ ] 🟠 Ich habe alle Plugins, die ich nicht brauche, gelöscht.
 - [ ] 🟠 Ich habe alle Themes, die ich nicht brauche, gelöscht.
 - [ ] 🔴 Ich habe nur Nutzer:innen in meinem Backend, welche wirklich auch Zugang dazu brauchen. 
+- [ ] 🔴 Ich habe unter Globales «Website nur für angemeldete Benutzer» ausgeschaltet und Testzugänge (Rolle «Abonnent») gelöscht.
 - [ ] 🟠 Ich habe [Updraft-Plus](#updraft-plus) installiert und konfiguriert.
 
 ### Performance

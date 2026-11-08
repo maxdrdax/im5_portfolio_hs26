@@ -7,6 +7,9 @@
 // -> Theme-Setup und Enqueue von Styles/Scripts
 require_once __DIR__ . '/_theme.php';
 
+// -> Website nur für angemeldete Benutzer (Schalter in Globales)
+require_once __DIR__ . '/_private.php';
+
 // -> add image sizes
 add_image_size('preload', 20, 20);
 add_image_size('xxs', 100, 100);

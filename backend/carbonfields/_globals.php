@@ -6,6 +6,10 @@ use Carbon_Fields\Field;
 // Carbon Fields kennt keinen Feldtyp «url»: darum text-Feld mit type="url" (Browser prüft das Format)
 Container::make('theme_options', 'Globales')
     ->add_fields([
+        // Vor dem Livegang: Website nur mit Login sichtbar (Schutz in backend/init/_private.php)
+        Field::make('checkbox', 'site_private', 'Website nur für angemeldete Benutzer')
+            ->set_option_value('yes')
+            ->set_help_text('Vor dem Livegang: Besucher ohne Login sehen nur die Anmeldung. Testzugänge unter Benutzer > Neu hinzufügen mit der Rolle «Abonnent». Beim Livegang ausschalten.'),
         Field::make('text', 'logo', 'Logo (Schriftzug im Header)')
             ->set_width(50)
             ->set_default_value('Max Hutmacher'),
