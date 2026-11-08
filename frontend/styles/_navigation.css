@@ -326,6 +326,12 @@ html {
 }
 
 .menu-list {
+    /* Platz, der nicht für die Menüpunkte da ist: Header, Abstände, E-Mail/Socials unten */
+    --menu-reserved: calc(var(--admin-bar-height) + var(--header-height) + 190px);
+    /* Abstand über/unter jedem Wort */
+    --menu-pad: clamp(8px, 1.6vh, 18px);
+    /* Höhe pro Zeile, wenn alle Punkte auf den Bildschirm passen sollen (--menu-count kommt aus header.php) */
+    --menu-row: calc((100dvh - var(--menu-reserved)) / var(--menu-count, 4));
     list-style: none;
 }
 
@@ -360,14 +366,17 @@ html {
 
 .menu-link {
     /* Schriftgrösse der Menüpunkte (auch für die Position der Nummer verwendet) */
-    --word-size: clamp(40px, 8vw, 112px);
+    /* Kleinerer Wert gewinnt: 8vw (Breite) oder Zeilenhöhe minus Abstände (Höhe; 1.15 = Wort + Unterlängen).
+       So wird die Schrift bei vielen Punkten oder niedrigem Fenster kleiner. Mindestens 28 px, höchstens 112 px;
+       reicht es selbst dann nicht, lässt sich das Overlay scrollen. */
+    --word-size: clamp(28px, min(8vw, (var(--menu-row) - 2 * var(--menu-pad)) / 1.15), 112px);
     display: flex;
     /* oben ausrichten statt an der Grundlinie: Die Grundlinie hängt von der Schrift ab
        (Geist ↔ Playfair beim Hover), oben bleibt immer gleich → Nummer und Linien bewegen sich nicht */
     align-items: flex-start;
     gap: var(--space-24);
     /* + 0.15em: Platz für Unterlängen (p, j) */
-    padding-block: calc(clamp(8px, 1.6vh, 18px) + 0.15em);
+    padding-block: calc(var(--menu-pad) + 0.15em);
     color: var(--color-white);
     font: 400 var(--word-size)/1 var(--font-sans);
     text-decoration: none;
@@ -427,28 +436,25 @@ html {
         transform: none;
     }
 
+    /* Verzögerung pro Zeile: Position (--i aus header.php) × 60 ms, funktioniert für beliebig viele Punkte */
+    .menu-item {
+        --delay: calc(var(--i, 0) * 60ms);
+    }
+
     .menu-item::before,
     .menu-item:last-child::after {
         transform: scaleX(1);
-        transition-delay: var(--delay, 0ms);
+        transition-delay: var(--delay);
     }
-
-    .menu-item:nth-child(2) { --delay: 60ms; }
-    .menu-item:nth-child(3) { --delay: 120ms; }
-    .menu-item:nth-child(4) { --delay: 180ms; }
-    .menu-item:nth-child(5) { --delay: 240ms; }
-    .menu-item:nth-child(6) { --delay: 300ms; }
 
     /* untere Linie der letzten Zeile kommt als letzte */
     .menu-item:last-child::after {
-        transition-delay: calc(var(--delay, 0ms) + 60ms);
+        transition-delay: calc(var(--delay) + 60ms);
     }
 
-    .menu-item:nth-child(2) .menu-link { transition-delay: 60ms; }
-    .menu-item:nth-child(3) .menu-link { transition-delay: 120ms; }
-    .menu-item:nth-child(4) .menu-link { transition-delay: 180ms; }
-    .menu-item:nth-child(5) .menu-link { transition-delay: 240ms; }
-    .menu-item:nth-child(6) .menu-link { transition-delay: 300ms; }
+    .menu-link {
+        transition-delay: var(--delay);
+    }
 }
 
 /* Schliessen (Klasse .is-closing setzt main.js kurz vor dem Zuklappen):
@@ -467,11 +473,9 @@ html {
         transition: transform 450ms var(--menu-ease);
     }
 
-    .menu-item:nth-child(2) .menu-link { transition-delay: 40ms; }
-    .menu-item:nth-child(3) .menu-link { transition-delay: 80ms; }
-    .menu-item:nth-child(4) .menu-link { transition-delay: 120ms; }
-    .menu-item:nth-child(5) .menu-link { transition-delay: 160ms; }
-    .menu-item:nth-child(6) .menu-link { transition-delay: 200ms; }
+    .menu-link {
+        transition-delay: calc(var(--i, 0) * 40ms);
+    }
 }
 
 /* Geschlossen: Menüpunkte springen ohne Animation zurück unter ihre Zeile (Startposition fürs nächste Öffnen).
@@ -667,6 +671,11 @@ html {
 
     .menu-link {
         gap: var(--space-16);
+    }
+
+    /* E-Mail und Socials stehen untereinander → unten mehr Platz reservieren */
+    .menu-list {
+        --menu-reserved: calc(var(--admin-bar-height) + var(--header-height) + 250px);
     }
 
     .menu-foot {

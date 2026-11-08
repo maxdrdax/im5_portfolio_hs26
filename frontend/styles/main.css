@@ -495,12 +495,20 @@ main[data-page="project"] {
         outline-offset: 4px;
         transition: flex var(--gallery-duration) var(--accordion-ease);
 
+        /* Bild immer so gross wie ein offenes Bild (3:2) und mittig im Streifen. Der Streifen deckt beim
+           Aufklappen nur mehr davon auf (wie ein Vorhang). Mit width: 100% würde der Browser das Bild in jedem
+           Frame neu einpassen: Es zoomt mit und der Ausschnitt rutscht (v. a. bei Hochformat-Bildern). */
         img,
         video {
+            position: absolute;
+            top: 0;
+            left: 50%;
             display: block;
-            width: 100%;
+            width: calc(var(--strip-height) * 1.5);
+            max-width: none;
             height: 100%;
             object-fit: cover;
+            translate: -50% 0;
         }
 
         /* geöffnet: Breite = Höhe × 3/2 → Format 3:2.
@@ -1250,6 +1258,31 @@ h2 em {
 .icon--up-right {
     rotate: -135deg;
 }
+
+.icon--right {
+    rotate: -90deg;
+}
+
+.icon--left {
+    rotate: 90deg;
+}
+
+/* Anleitung «← Wischen →» unter der Galerie: nur Tablet/Handy (siehe @media max-width 1024px) */
+.strip-hint {
+    display: none;
+}
+
+/* Pfeile wippen nach aussen: links nach links, rechts nach rechts */
+@keyframes strip-hint-left {
+    0%, 100% { translate: 0 0; }
+    50% { translate: -3px 0; }
+}
+
+@keyframes strip-hint-right {
+    0%, 100% { translate: 0 0; }
+    50% { translate: 3px 0; }
+}
+
 .pill {
     display: inline-flex;
     padding: var(--space-4) var(--space-12);
@@ -1266,6 +1299,122 @@ h2 em {
 .pill--accent {
     background-color: var(--color-accent);
     color: var(--color-black);
+}
+
+/* Label «Ansehen», das der Maus über den Highlights folgt (Position setzt main.js per transform).
+   pointer-events: none → Klicks gehen durch das Label hindurch auf das Projekt darunter. */
+.cursor-label {
+    /* Raster: beide Texte liegen im selben Feld (siehe .cursor-label-text) */
+    display: inline-grid;
+    position: fixed;
+    top: 0;
+    left: 0;
+    /* über dem Inhalt, unter Overlay-Menü (90) und Header (100) */
+    z-index: 80;
+    /* grösser und kräftiger als die übrigen Pillen (Schrift ist ein variabler Font: jede Stärke möglich) */
+    padding: var(--space-8) var(--space-16);
+    font: 600 16px/1.4 var(--font-sans);
+    letter-spacing: var(--tracking-caps);
+    text-transform: uppercase;
+    white-space: nowrap;
+    pointer-events: none;
+    opacity: 0;
+    /* nur die Deckkraft wird animiert, die Position (transform) nie → kein Hereinfliegen */
+    transition: opacity 250ms ease;
+    will-change: transform;
+
+    &.is-visible {
+        opacity: 1;
+    }
+
+    /* Zwei Texte im selben Rasterfeld übereinander: «Scrollen ↓» (Anleitung) und «Ansehen».
+       Sichtbar ist einer, Wechsel per Crossfade (Klasse .is-learned setzt main.js nach dem ersten Blättern). */
+    .cursor-label-text {
+        display: inline-flex;
+        grid-area: 1 / 1;
+        align-items: center;
+        justify-content: center;
+        gap: var(--space-4);
+        transition: opacity 300ms ease;
+    }
+
+    .cursor-label-text--view {
+        opacity: 0;
+    }
+
+    &.is-learned {
+        .cursor-label-text--scroll {
+            opacity: 0;
+        }
+
+        .cursor-label-text--view {
+            opacity: 1;
+        }
+    }
+
+    /* Pfeil wippt sanft auf und ab: «nach unten scrollen» */
+    .icon {
+        width: .85em;
+        height: .85em;
+        animation: cursor-label-nudge 1200ms ease-in-out infinite;
+    }
+
+    /* Touch-Geräte: keine Maus, kein Label */
+    @media (hover: none) {
+        display: none;
+    }
+}
+
+@keyframes cursor-label-nudge {
+    0%, 100% { translate: 0 -2px; }
+    50% { translate: 0 2px; }
+}
+
+/* Zähler unter den Highlights: «01 / 05» und Fortschrittslinie.
+   sticky + bottom: klebt unten im Fenster, solange die Highlights im Bild sind, danach scrollt er mit weg. */
+.carousel-progress {
+    position: sticky;
+    bottom: var(--space-24);
+    z-index: 2;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-16);
+    width: fit-content;
+    margin: var(--space-stack-s) auto 0;
+    padding: var(--space-8) var(--space-16);
+    border-radius: 999px;
+    /* Milchglas wie der Header: lesbar über den Bildern */
+    background-color: rgb(29 28 28 / .6);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    font: var(--font-caption);
+    font-variant-numeric: tabular-nums;
+    letter-spacing: var(--tracking-caps);
+    transition: opacity 300ms ease;
+
+    /* Nichts offen (Galerie ohne Hover): ausblenden, Platz bleibt reserviert (kein Springen) */
+    &.is-idle {
+        opacity: 0;
+    }
+}
+
+.carousel-progress-bar {
+    width: 80px;
+    height: 2px;
+    overflow: hidden;
+    border-radius: 2px;
+    background-color: color-mix(in srgb, var(--color-white) 25%, transparent);
+}
+
+/* Füllung: --progress (0–1) setzt main.js; scaleX statt width → nur Darstellung, flüssig */
+.carousel-progress-fill {
+    display: block;
+    height: 100%;
+    background-color: var(--color-accent);
+    transform: scaleX(var(--progress, 0));
+    transform-origin: left;
+    transition: transform var(--accordion-duration) var(--accordion-ease);
 }
 
 /* Tags (Skills, Stationen): nur umrandet, weisser Text (bewusst anders als Figma) */
@@ -1488,6 +1637,11 @@ h2 em {
 
     /* Highlights: alle Projekte aufgeklappt, mit Titel, Kategorie und Jahr (kein Akkordeon ohne Maus).
        main.js schaltet das Akkordeon unter 1024 px ebenfalls aus. */
+    /* Alle Projekte offen: Zähler unnötig */
+    .carousel-progress {
+        display: none;
+    }
+
     [data-module="projects"] .card {
         height: clamp(320px, 75vw, 648px);
 
@@ -1512,17 +1666,52 @@ h2 em {
             }
         }
 
-        /* jedes Bild 3:2 und so breit wie der Inhaltsbereich (Wischen zeigen die Punkte darunter) */
+        /* jedes Bild 3:2, 88 % breit: rechts schaut das nächste Bild herein → zeigt ohne Worte, dass es
+           weitergeht. snap start: Bild rastet am linken Rand ein, der Anschnitt bleibt immer rechts. */
         .strip-item,
         .strip-item.is-active {
-            flex: 0 0 100%;
+            flex: 0 0 88%;
             aspect-ratio: 3 / 2;
-            scroll-snap-align: center;
+            scroll-snap-align: start;
+
+            /* kein Aufklappen: Bild füllt einfach die Kachel */
+            img,
+            video {
+                left: 0;
+                width: 100%;
+                translate: none;
+            }
         }
     }
 
     /* Galerie: Punkte unter dem Wisch-Bereich (main.js erzeugt sie). Aktiver Punkt breiter und weiss.
        Der Button ist grösser als der sichtbare Punkt (Tippfläche), der Punkt ist ::before. */
+    /* Anleitung «← Wischen →» unter den Punkten; blendet nach dem ersten Wischen aus (.is-learned, main.js) */
+    .strip-hint {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: var(--space-8);
+        margin-top: var(--space-8);
+        color: var(--color-border);
+        font: var(--font-caption);
+        letter-spacing: var(--tracking-caps);
+        text-transform: uppercase;
+        transition: opacity 400ms ease;
+
+        &.is-learned {
+            opacity: 0;
+        }
+
+        .icon--left {
+            animation: strip-hint-left 1200ms ease-in-out infinite;
+        }
+
+        .icon--right {
+            animation: strip-hint-right 1200ms ease-in-out infinite;
+        }
+    }
+
     .strip-dots {
         display: flex;
         justify-content: center;
@@ -1844,12 +2033,24 @@ h2 em {
     &.is-hover {
         --dot-size: 40px;
     }
+
+    /* Über den Highlights übernimmt das Label «Ansehen» (.cursor-label) */
+    .has-cursor-label & {
+        opacity: 0;
+    }
 }
 
 /* Bewegung reduzieren: Akkordeons ohne Animation */
 @media (prefers-reduced-motion: reduce) {
     [data-module="projects"] .card,
-    [data-page="project"] .strip-item {
+    [data-page="project"] .strip-item,
+    .carousel-progress-fill {
         transition: none;
+    }
+
+    /* Pfeile in den Anleitungen wippen nicht */
+    .cursor-label .icon,
+    .strip-hint .icon {
+        animation: none;
     }
 }

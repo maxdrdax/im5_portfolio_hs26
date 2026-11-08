@@ -209,7 +209,113 @@ const ACCORDION_SCROLL_DISTANCE = 300; // Scrollweg in px pro Projekt (mehr = me
 const ACCORDION_STEP_PAUSE = 700; // ms Mindestabstand zwischen zwei Projekten (bremst schnelle Trackpad-Wischer)
 const ACCORDION_GESTURE_GAP = 500; // ms ohne Mausrad-Signal = Scrollweg beginnt wieder bei 0
 const ACCORDION_HOVER_PAUSE = 500; // ms nach einem Mausrad-Schritt, in denen Hover ignoriert wird
+const ACCORDION_MOMENTUM_GAP = 150; // ms ohne Signal = Nachlauf des Trackpads ist vorbei
+const ACCORDION_HOVER_INTENT = 60; // ms, die die Maus auf einem Projekt ruhen muss, bis es aufklappt (Überfahren ignorieren)
 // ▲
+
+// -> Kurve aus dem CSS (cubic-bezier) in JavaScript nachbauen
+// Damit das Scrollen exakt gleich beschleunigt und abbremst wie das Aufklappen (--accordion-ease).
+// Eine Bézier-Kurve liefert zu einem Zeitpunkt x den Fortschritt y; x → t wird schrittweise angenähert (Bisektion).
+function cubicBezier(x1, y1, x2, y2) {
+    const point = (t, p1, p2) => 3 * (1 - t) ** 2 * t * p1 + 3 * (1 - t) * t ** 2 * p2 + t ** 3;
+    return (x) => {
+        let low = 0;
+        let high = 1;
+        let t = x;
+        for (let i = 0; i < 20; i++) {
+            t = (low + high) / 2;
+            if (point(t, x1, x2) < x) {
+                low = t;
+            } else {
+                high = t;
+            }
+        }
+        return point(t, y1, y2);
+    };
+}
+
+// Kurve aus einer CSS-Variable lesen, z. B. "cubic-bezier(.2, .65, .25, 1)"
+function easingFromCss(name) {
+    const value = getComputedStyle(document.documentElement).getPropertyValue(name);
+    const numbers = value.match(/-?[\d.]+/g)?.map(Number);
+    return numbers?.length === 4 ? cubicBezier(...numbers) : (x) => x;
+}
+
+// -> Seite selbst scrollen (statt behavior: 'smooth'), mit eigener Dauer und Kurve.
+// requestAnimationFrame: Der Browser ruft die Funktion vor jedem neuen Bild auf (ca. 60× pro Sekunde).
+let scrollFrame = null;
+function stopScrollAnimation() {
+    cancelAnimationFrame(scrollFrame);
+}
+function animateScrollTo(target, duration, ease) {
+    stopScrollAnimation();
+    const start = window.scrollY;
+    const maxScroll = document.documentElement.scrollHeight - window.innerHeight;
+    const end = Math.min(Math.max(target, 0), maxScroll);
+    // behavior 'instant': Das CSS hat scroll-behavior: smooth, das würde jeden Einzelschritt verzögern
+    if (reducedMotion || duration <= 0) {
+        window.scrollTo({ top: end, behavior: 'instant' });
+        return;
+    }
+    const startTime = performance.now();
+    const frame = (now) => {
+        const progress = Math.min((now - startTime) / duration, 1);
+        window.scrollTo({ top: start + (end - start) * ease(progress), behavior: 'instant' });
+        if (progress < 1) {
+            scrollFrame = requestAnimationFrame(frame);
+        }
+    };
+    scrollFrame = requestAnimationFrame(frame);
+}
+
+// -> Zähler «01 / 05» mit Fortschrittslinie (Highlights und Galerie)
+// index -1 = nichts offen (Galerie): Zähler blendet aus (.is-idle), Zahl und Linie bleiben stehen,
+// damit beim Ausblenden nichts springt
+function updateProgress(progress, index, total) {
+    if (!progress) {
+        return;
+    }
+    progress.classList.toggle('is-idle', index < 0);
+    if (index < 0) {
+        return;
+    }
+    progress.querySelector('[data-progress-current]').textContent = String(index + 1).padStart(2, '0');
+    progress.querySelector('[data-progress-fill]').style.setProperty('--progress', (index + 1) / total);
+}
+
+// -> Nachlauf (Momentum) des Trackpads erkennen
+// Nach einem Wischer sendet das Trackpad noch 1–2 Sekunden lang immer schwächere Scroll-Signale.
+// Nach einem Schritt wird darum gesperrt (lock), bis die Signale kurz aufhören oder ein neuer Wischer
+// beginnt (Signal wird plötzlich wieder deutlich stärker oder die Richtung wechselt).
+// So klappt ein Wischer genau ein Projekt bzw. ein Bild auf.
+function createMomentumLock() {
+    let locked = false;
+    let lastAbs = 0;
+    let lastTime = 0;
+    let lastDirection = 0;
+
+    return {
+        lock() {
+            locked = true;
+        },
+        // true = Signal gehört zum Nachlauf des letzten Schritts → ignorieren
+        isMomentum(delta, now) {
+            const abs = Math.abs(delta);
+            const direction = Math.sign(delta);
+            if (locked) {
+                const quiet = now - lastTime > ACCORDION_MOMENTUM_GAP;
+                const newSwipe = direction !== lastDirection || (abs >= 8 && abs > lastAbs * 2);
+                if (quiet || newSwipe) {
+                    locked = false;
+                }
+            }
+            lastAbs = abs;
+            lastTime = now;
+            lastDirection = direction;
+            return locked;
+        },
+    };
+}
 
 document.querySelectorAll('[data-accordion]').forEach((accordion) => {
     const items = [...accordion.querySelectorAll('[data-accordion-item]')];
@@ -219,6 +325,7 @@ document.querySelectorAll('[data-accordion]').forEach((accordion) => {
     let lastStep = 0; // Zeitpunkt des letzten Mausrad-Schritts
     let scrolled = 0; // gesammelter Scrollweg seit dem letzten Schritt (positiv = nach unten)
     let gestureCaptured = null; // gehört die laufende Geste dem Akkordeon? (null = noch nicht entschieden)
+    const momentum = createMomentumLock();
     let videoTimer = null;
 
     // Dauer der Aufklapp-Animation aus dem CSS (--accordion-duration), z. B. "900ms" → 900
@@ -226,11 +333,15 @@ document.querySelectorAll('[data-accordion]').forEach((accordion) => {
 
     // Projekt aufklappen. Das Titelvideo startet erst nach der Animation:
     // Laden und Abspielen kosten Rechenleistung und würden sonst den Anfang der Animation stocken lassen.
+    // Zähler «01 / 05» und Fortschrittslinie (Markup in modules/projects.php)
+    const progress = accordion.parentElement.querySelector('[data-accordion-progress]');
+
     const activate = (index) => {
         if (index === activeIndex) {
             return;
         }
         activeIndex = index;
+        updateProgress(progress, index, items.length);
         clearTimeout(videoTimer);
 
         items.forEach((item, i) => {
@@ -266,25 +377,28 @@ document.querySelectorAll('[data-accordion]').forEach((accordion) => {
         sizes = { strip, open, gap };
     };
 
-    // Seite sanft nachrücken, damit das offene Projekt ganz sichtbar ist
-    // (Position aus den Endhöhen berechnet, weil die Animation noch läuft)
-    const keepVisible = (index) => {
+    // Seite sanft mitscrollen, bis das offene Projekt in der Mitte des sichtbaren Bereichs
+    // (zwischen Header und unterem Fensterrand) steht.
+    // Position aus den Endhöhen berechnet, weil die Aufklapp-Animation noch läuft.
+    const centerItem = (index) => {
         if (index < 0) {
             return;
         }
         const { strip, open, gap } = sizes;
         const listTop = accordion.getBoundingClientRect().top + window.scrollY;
+        // Alle Projekte davor sind zu, also Streifen: Oberkante = Index × (Streifen + Abstand)
         const cardTop = listTop + index * (strip + gap);
-        const viewTop = headerBottom() + 24;
-        const viewBottom = window.innerHeight - 24;
+        const viewTop = headerBottom();
+        const viewHeight = window.innerHeight - viewTop;
 
-        // Ein Streifen davor bleibt sichtbar (Orientierung), ausser beim ersten Projekt
-        let target = cardTop - viewTop - (index > 0 ? strip + gap : 0);
-        // Passt das offene Projekt dann nicht ganz, nach unten ausrichten
-        if (cardTop + open - target > viewBottom) {
-            target = cardTop + open - viewBottom;
-        }
-        window.scrollTo({ top: target, behavior: reducedMotion ? 'auto' : 'smooth' });
+        // Mitte der Karte auf die Mitte des sichtbaren Bereichs.
+        // Ist die Karte höher als der Bereich, oben ausrichten (Titel bleibt sichtbar).
+        const target = open < viewHeight
+            ? cardTop + open / 2 - (viewTop + viewHeight / 2)
+            : cardTop - viewTop;
+        // Gleiche Dauer und Kurve wie das Aufklappen (CSS): Scrollen und Aufklappen laufen gleichzeitig,
+        // das Projekt wächst so in der Mitte auf, statt aufzuklappen und dann nachzurutschen
+        animateScrollTo(target, animationDuration(), easingFromCss('--accordion-ease'));
     };
 
 
@@ -309,6 +423,11 @@ document.querySelectorAll('[data-accordion]').forEach((accordion) => {
         if (!direction) {
             return;
         }
+        // Nachlauf nach einem Schritt: schlucken (auch die Seite scrollt nicht), kein weiteres Projekt
+        if (momentum.isMomentum(delta, now)) {
+            event.preventDefault();
+            return;
+        }
         const next = activeIndex + direction;
         const canStep = next >= 0 && next <= items.length - 1; // immer ein Projekt offen
 
@@ -319,8 +438,10 @@ document.querySelectorAll('[data-accordion]').forEach((accordion) => {
             gestureCaptured = canStep;
         }
         // Kein weiteres Projekt in dieser Richtung: Seite wieder normal scrollen lassen
+        // (laufendes Zentrieren abbrechen, sonst kämpfen die beiden Scrollbewegungen gegeneinander)
         if (!gestureCaptured || !canStep) {
             gestureCaptured = false;
+            stopScrollAnimation();
             return;
         }
 
@@ -332,21 +453,62 @@ document.querySelectorAll('[data-accordion]').forEach((accordion) => {
         }
         scrolled += delta;
 
-        // Genug gescrollt und genug Zeit seit dem letzten Schritt: nächstes Projekt
-        // Seite rückt bewusst nicht nach (keepVisible nur bei der Tastatur ohne Maus)
+        // Genug gescrollt und genug Zeit seit dem letzten Schritt: nächstes Projekt,
+        // die Seite scrollt mit, bis es in der Mitte steht
         if (Math.abs(scrolled) >= ACCORDION_SCROLL_DISTANCE && now - lastStep >= ACCORDION_STEP_PAUSE) {
             activate(next);
+            centerAndHold(next);
+            momentum.lock();
+            // Melden: Besucher hat das Blättern verstanden (Cursor-Label wechselt zu «Ansehen»)
+            accordion.dispatchEvent(new CustomEvent('accordion:step'));
             lastStep = now;
             scrolled = 0;
         }
     }, { passive: false });
 
+    // Letzte Mausposition: Beim Mitscrollen schiebt sich ein anderes Projekt unter die stillstehende Maus.
+    // Der Browser meldet das als Mausbewegung, die Position im Fenster bleibt aber gleich → nicht aufklappen.
+    let lastPointer = { x: -1, y: -1 };
+
+    // Nach dem automatischen Zentrieren liegt ein anderes Projekt unter der Maus. Damit es nicht beim
+    // kleinsten Wackeln aufklappt (und die Seite wieder scrollt = «Nachjagen»), pausiert der Hover,
+    // bis die Maus das offene Projekt erreicht oder die Liste verlässt.
+    let hoverHold = false;
+    let centerTimer = null;
+
+    const centerAndHold = (index) => {
+        clearTimeout(centerTimer);
+        centerItem(index);
+        hoverHold = true;
+    };
+
     items.forEach((item, index) => {
-        // Hover klappt auf, ausser kurz nach einem Mausrad-Schritt
-        // (sonst würde das nachrückende Scrollen ein anderes Projekt unter die Maus schieben)
-        item.addEventListener('mouseenter', () => {
-            if (!compactLayout.matches && performance.now() - lastStep > ACCORDION_HOVER_PAUSE) {
-                activate(index);
+        // Hover klappt auf: nur bei echter Mausbewegung und nicht kurz nach einem Mausrad-Schritt
+        // (mousemove statt mouseenter, weil mouseenter auch beim Scrollen unter der Maus auslöst)
+        item.addEventListener('mousemove', (event) => {
+            const moved = event.clientX !== lastPointer.x || event.clientY !== lastPointer.y;
+            lastPointer = { x: event.clientX, y: event.clientY };
+            if (!moved || compactLayout.matches) {
+                return;
+            }
+            // Hover pausiert: erst wieder frei, wenn die Maus auf dem offenen Projekt ist
+            if (hoverHold) {
+                hoverHold = index !== activeIndex;
+                return;
+            }
+            // Schon offen: nichts tun (sonst würde jedes Wackeln die Seite neu ausrichten)
+            if (index === activeIndex) {
+                clearTimeout(centerTimer);
+                return;
+            }
+            if (performance.now() - lastStep > ACCORDION_HOVER_PAUSE) {
+                // Aufklappen und Zentrieren gemeinsam, sobald die Maus kurz ruht
+                // (jede Bewegung startet die Wartezeit neu). So bewegt das blosse Überfahren die Seite nicht.
+                clearTimeout(centerTimer);
+                centerTimer = setTimeout(() => {
+                    activate(index);
+                    centerAndHold(index);
+                }, ACCORDION_HOVER_INTENT);
             }
         });
         // Tastatur (Tab)
@@ -370,7 +532,12 @@ document.querySelectorAll('[data-accordion]').forEach((accordion) => {
     // oder der Fokus darin liegt. Am Anfang/Ende scrollt die Seite normal.
     let pointerOver = false;
     accordion.addEventListener('mouseenter', () => { pointerOver = true; });
-    accordion.addEventListener('mouseleave', () => { pointerOver = false; });
+    accordion.addEventListener('mouseleave', () => {
+        pointerOver = false;
+        // Maus verlässt die Liste: nicht mehr zentrieren, Hover wieder frei
+        clearTimeout(centerTimer);
+        hoverHold = false;
+    });
 
     document.addEventListener('keydown', (event) => {
         if (compactLayout.matches || !(pointerOver || accordion.contains(document.activeElement))) {
@@ -390,10 +557,9 @@ document.querySelectorAll('[data-accordion]').forEach((accordion) => {
         }
         event.preventDefault();
         activate(next);
-        // Nur ohne Maus (Tastatur) die Seite nachrücken, damit das offene Projekt sichtbar bleibt
-        if (!pointerOver) {
-            keepVisible(next);
-        }
+        // Wie beim Mausrad: offenes Projekt in die Mitte scrollen
+        centerAndHold(next);
+        accordion.dispatchEvent(new CustomEvent('accordion:step'));
         lastStep = performance.now();
         // Tastatur: Fokus auf den Link des offenen Projekts (Enter öffnet es)
         if (accordion.contains(document.activeElement)) {
@@ -498,7 +664,9 @@ if (canHover && !reducedMotion) {
     document.body.append(dot);
 
     // Elemente, über denen der Punkt grösser wird
-    const INTERACTIVE = 'a, button, [role="button"], input, textarea, select, label';
+    // inkl. Elemente, die per Tab erreichbar sind (tabindex="0"), z. B. die Bilder der Galerie:
+    // keine Links, aber interaktiv (Hover/Fokus klappt auf)
+    const INTERACTIVE = 'a, button, [role="button"], input, textarea, select, label, [tabindex="0"]';
     const EASING = 0.18; // Anteil der Distanz pro Frame: kleiner = mehr Verzögerung
 
     let targetX = 0;
@@ -546,6 +714,117 @@ if (canHover && !reducedMotion) {
 }
 
 // =====================================================================
+// -> Cursor-Label über den Highlights (modules/projects.php) und der Galerie (pages/project.php)
+// Ersetzt dort den Cursor-Punkt: Pille sitzt mittig auf dem Mauszeiger und folgt ihm weich.
+// Nur mit Maus und auf dem Desktop (Tablet/Handy: Akkordeon ist offen bzw. Galerie zum Wischen).
+// =====================================================================
+document.querySelectorAll('[data-cursor-label]').forEach((label) => {
+    const area = label.parentElement.querySelector('[data-accordion], [data-strip]');
+    if (!canHover || !area) {
+        label.remove();
+        return;
+    }
+    // In den <body> verschieben: position: fixed bezieht sich sonst evtl. auf ein Elternelement
+    // mit transform/translate (z. B. Einblenden beim Scrollen) statt auf das Fenster
+    document.body.append(label);
+
+    // Anleitung «Scrollen ↓» nur, bis zum ersten Mal geblättert wurde. Danach «Ansehen» (Highlights)
+    // oder ganz ausblenden, wenn es keinen zweiten Text gibt (Galerie: Klick öffnet nichts).
+    // sessionStorage merkt sich das für diesen Besuch (Tab), getrennt pro Bereich (data-cursor-label).
+    // try/catch: Speicher kann blockiert sein (z. B. privates Fenster).
+    const LEARNED_KEY = `${label.dataset.cursorLabel || 'label'}-learned`;
+    const hasViewText = Boolean(label.querySelector('.cursor-label-text--view'));
+    let retired = false; // true = Label wird nicht mehr gezeigt
+
+    const applyLearned = () => {
+        label.classList.add('is-learned');
+        if (!hasViewText) {
+            retired = true;
+            setVisible(false);
+        }
+    };
+    const learn = () => {
+        applyLearned();
+        try {
+            sessionStorage.setItem(LEARNED_KEY, '1');
+        } catch (error) {
+            // ohne Speicher: gilt nur bis zum Neuladen
+        }
+    };
+    area.addEventListener('accordion:step', learn);
+
+    const EASING = reducedMotion ? 1 : 0.25; // Anteil der Distanz pro Frame (1 = ohne Verzögerung)
+    let targetX = 0;
+    let targetY = 0;
+    let currentX = 0;
+    let currentY = 0;
+    let frame = null;
+    let visible = false;
+
+    // translate(-50%, -50%): Mitte der Pille auf die Mausspitze
+    const place = () => {
+        label.style.transform = `translate3d(${currentX}px, ${currentY}px, 0) translate(-50%, -50%)`;
+    };
+
+    const animate = () => {
+        currentX += (targetX - currentX) * EASING;
+        currentY += (targetY - currentY) * EASING;
+        place();
+        if (Math.abs(targetX - currentX) < 0.1 && Math.abs(targetY - currentY) < 0.1) {
+            frame = null;
+            return;
+        }
+        frame = requestAnimationFrame(animate);
+    };
+
+    function setVisible(state) {
+        visible = state;
+        label.classList.toggle('is-visible', state);
+        // Cursor-Punkt solange ausblenden (CSS)
+        document.body.classList.toggle('has-cursor-label', state);
+    }
+
+    // Schon in diesem Besuch gelernt? (erst hier, weil applyLearned setVisible braucht)
+    try {
+        if (sessionStorage.getItem(LEARNED_KEY)) {
+            applyLearned();
+        }
+    } catch (error) {
+        // ohne Speicher: Anleitung wird angezeigt
+    }
+
+    area.addEventListener('mousemove', (event) => {
+        if (compactLayout.matches || retired) {
+            return;
+        }
+        targetX = event.clientX;
+        targetY = event.clientY;
+        // Beim Hineinfahren: zuerst sofort an die Maus setzen (noch unsichtbar), erst dann einblenden.
+        // So erscheint die Pille an Ort und Stelle, statt vom letzten Ort bzw. der Ecke herzufliegen.
+        if (!visible) {
+            cancelAnimationFrame(frame);
+            frame = null;
+            currentX = targetX;
+            currentY = targetY;
+            place();
+            setVisible(true);
+        }
+        if (!frame) {
+            frame = requestAnimationFrame(animate);
+        }
+    });
+
+    area.addEventListener('mouseleave', () => setVisible(false));
+    // Seite scrollt die Highlights unter der stillstehenden Maus weg (z. B. Zentrieren): mouseleave kommt
+    // dann nicht zuverlässig → beim Scrollen prüfen, ob die Maus noch über den Highlights ist
+    window.addEventListener('scroll', () => {
+        if (visible && !area.matches(':hover')) {
+            setVisible(false);
+        }
+    }, { passive: true });
+});
+
+// =====================================================================
 // -> Galerie auf der Projektseite: horizontales Akkordeon
 // Desktop: Streifen gleich breit, Hover/Fokus öffnet ein Bild; das Video darin spielt.
 // Touch, Tablet und Handy: Bilder zum Wischen (CSS), Videos spielen, sobald sie sichtbar sind.
@@ -554,6 +833,37 @@ document.querySelectorAll('[data-strip]').forEach((strip) => {
     const items = strip.querySelectorAll('[data-strip-item]');
 
     if (!canHover || compactLayout.matches) {
+        // Anleitung «← Wischen →»: blendet nach dem ersten Wischen aus und bleibt für diesen Besuch weg
+        // (sessionStorage, wie das Cursor-Label am Desktop). try/catch: Speicher kann blockiert sein.
+        const hint = strip.parentElement.querySelector('[data-strip-hint]');
+        if (hint) {
+            const HINT_KEY = 'gallery-swipe-learned';
+            let learned = false;
+            try {
+                learned = Boolean(sessionStorage.getItem(HINT_KEY));
+            } catch (error) {
+                // ohne Speicher: Anleitung wird angezeigt
+            }
+            if (learned) {
+                hint.classList.add('is-learned');
+            } else {
+                // Gewischt = Galerie ist seitlich gescrollt (10 px Toleranz gegen Zittern)
+                const onScroll = () => {
+                    if (strip.scrollLeft < 10) {
+                        return;
+                    }
+                    hint.classList.add('is-learned');
+                    strip.removeEventListener('scroll', onScroll);
+                    try {
+                        sessionStorage.setItem(HINT_KEY, '1');
+                    } catch (error) {
+                        // ohne Speicher: gilt nur bis zum Neuladen
+                    }
+                };
+                strip.addEventListener('scroll', onScroll, { passive: true });
+            }
+        }
+
         if (reducedMotion) {
             return;
         }
@@ -573,7 +883,7 @@ document.querySelectorAll('[data-strip]').forEach((strip) => {
                     item.scrollIntoView({
                         behavior: reducedMotion ? 'auto' : 'smooth',
                         block: 'nearest',
-                        inline: 'center',
+                        inline: 'start', // wie scroll-snap-align: Bild am linken Rand, nächstes schaut rechts herein
                     });
                 });
                 nav.append(dot);
@@ -606,9 +916,11 @@ document.querySelectorAll('[data-strip]').forEach((strip) => {
 
     const itemList = [...items];
     let activeIndex = -1; // -1 = kein Bild offen (alle Streifen gleich breit)
+    const progress = strip.parentElement.querySelector('[data-accordion-progress]'); // Zähler (project.php)
 
     const activate = (activeItem) => {
         activeIndex = itemList.indexOf(activeItem);
+        updateProgress(progress, activeIndex, items.length);
         items.forEach((item) => {
             const isActive = item === activeItem;
             item.classList.toggle('is-active', isActive);
@@ -632,6 +944,7 @@ document.querySelectorAll('[data-strip]').forEach((strip) => {
     let lastStep = 0;
     let scrolled = 0;
     let gestureCaptured = null;
+    const momentum = createMomentumLock(); // Trackpad-Nachlauf (siehe Highlights)
 
     // Galerie ganz ins Bild rücken (sanft), falls sie beim Blättern oben oder unten angeschnitten ist
     const ensureVisible = () => {
@@ -676,6 +989,11 @@ document.querySelectorAll('[data-strip]').forEach((strip) => {
         if (!direction) {
             return;
         }
+        // Nachlauf des Trackpads nach einem Schritt ignorieren (siehe createMomentumLock)
+        if (momentum.isMomentum(delta, now)) {
+            event.preventDefault();
+            return;
+        }
         const next = activeIndex + direction;
         const canStep = next >= 0 && next <= items.length - 1;
 
@@ -698,7 +1016,10 @@ document.querySelectorAll('[data-strip]').forEach((strip) => {
 
         if (Math.abs(scrolled) >= ACCORDION_SCROLL_DISTANCE && now - lastStep >= ACCORDION_STEP_PAUSE) {
             step(direction);
+            momentum.lock();
             scrolled = 0;
+            // Melden: Blättern verstanden (Cursor-Label blendet aus)
+            strip.dispatchEvent(new CustomEvent('accordion:step'));
         }
     }, { passive: false });
 
@@ -723,6 +1044,7 @@ document.querySelectorAll('[data-strip]').forEach((strip) => {
         }
         if (step(direction, { scrollPage: !pointerOver })) {
             event.preventDefault();
+            strip.dispatchEvent(new CustomEvent('accordion:step'));
             // Tastatur: Fokus wandert mit, damit Screenreader das offene Bild kennen
             if (strip.contains(document.activeElement)) {
                 items[activeIndex].focus({ preventScroll: true });

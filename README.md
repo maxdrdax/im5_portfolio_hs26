@@ -147,6 +147,9 @@ Zum Vergleich der Stand vor der Umsetzung des CMS-Konzepts (Beispielmodule des S
 | 08.11.2026 | Typografie und Abstände überarbeitet: Type-Scale (ca. 1.25) mit `clamp()`, neue Ebene H3, Zeilenlänge 68ch, Grossbuchstaben gesperrt; semantische Abstands-Tokens (`--space-stack-xs/s/m`, `--space-section`), Seitenrand fliessend; Kategorie-Pillen Schwarz auf Grün (WCAG AA); Highlights: Mausrad blättert ohne Seitenscrollen |
 | 08.11.2026 | Admin-Leiste auf dem Handy fixiert (keine Lücke über dem Header), keine Admin-Leiste für Testzugänge; Markierfarbe im Akzent-Grün (`::selection`); Vimeo-Einbettungen mit `dnt=1` (keine Tracking-Cookies) |
 | 08.11.2026 | Markierfarbe halbtransparent (`color-mix()`, 50 % Grün wie das Standard-Blau der Browser), auf der grünen Rollen-Fläche halbtransparentes Schwarz |
+| 08.11.2026 | Overlay-Menü: «Start» als erster Punkt (in Design > Menüs), Schrift verkleinert sich automatisch bei vielen Punkten oder niedrigem Fenster (`--menu-count`, `min()` aus Breite und Höhe), gestaffelte Animation über `--i` statt fester `nth-child`-Regeln |
+| 09.11.2026 | Highlights: offenes Projekt wird in die Mitte gescrollt, eigene Scroll-Animation mit `requestAnimationFrame` und derselben Kurve wie das Aufklappen (`cubic-bezier` in JS nachgebaut); Trackpad-Nachlauf (Momentum) erkannt, ein Wischer = ein Schritt; Cursor-Label als grüne Pille («Scrollen ↓» bis zum ersten Blättern, danach «Ansehen»; `sessionStorage`) und Zähler «01 / 05» mit Fortschrittslinie |
+| 09.11.2026 | Galerie: gleiches Cursor-Label und Zähler (eingeblendet nur bei offenem Bild), Bilder ohne Zoom beim Aufklappen (feste Bildgrösse, Streifen deckt auf), Cursor-Punkt gross über interaktiven Elementen (`tabindex="0"`); Handy/Tablet: nächstes Bild angeschnitten (88 %) und Anleitung «← Wischen →» bis zum ersten Wischen |
 
 ## Learnings
 <!-- In eigenen Worten ergänzen -->

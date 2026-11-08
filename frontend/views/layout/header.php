@@ -105,10 +105,12 @@ if ($menu_bg) {
         </div>
 
         <nav class="menu-nav" aria-label="Hauptnavigation">
-            <?php // <ol>: Die Reihenfolge ist Teil der Gestaltung (01–04); die Nummern selbst liest der Screenreader nicht vor ?>
-            <ol class="menu-list">
+            <?php // <ol>: Die Reihenfolge ist Teil der Gestaltung (01, 02 …); die Nummern selbst liest der Screenreader nicht vor ?>
+            <?php // --menu-count: Anzahl Punkte → CSS verkleinert die Schrift, damit alle auf den Bildschirm passen ?>
+            <ol class="menu-list" style="--menu-count: <?= esc_attr(count($menu)) ?>">
                 <?php foreach ($menu as $index => $item) : ?>
-                    <li class="menu-item">
+                    <?php // --i: Position in der Liste → gestaffelte Animation, egal wie viele Punkte es sind ?>
+                    <li class="menu-item" style="--i: <?= esc_attr($index) ?>">
                         <a class="menu-link" href="<?= esc_url($item['url']) ?>" data-menu-target="<?= esc_attr($item['ID']) ?>"<?php if ($item['current']) : ?> aria-current="page"<?php endif; ?><?php if ($item['target'] === '_blank') : ?> target="_blank" rel="noopener"<?php endif; ?>>
                             <span class="menu-nr" aria-hidden="true"><?= esc_html(sprintf('%02d', $index + 1)) ?></span>
                             <span class="menu-word">

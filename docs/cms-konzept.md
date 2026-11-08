@@ -36,7 +36,7 @@ Alle 7 Seiten (Startseite, Projekte, Fotos, Über mich, Kontakt, Impressum, Date
 - `video_url` ist optional (volle Videos, YouTube/Vimeo): wird per oEmbed eingebettet (vor der Galerie), leer = nicht ausgeben.
 - `featured` markiert das Projekt für den Filter «Ausgewählte Projekte».
 - Unter dem Hero stehen Kategorie und Titel sichtbar (Figma). `hide_title` blendet sie aus, z. B. wenn der Schriftzug schon im Titelbild steht; für Screenreader bleibt der Titel erhalten.
-- Bildergalerie als horizontales Akkordeon (Figma): Streifen gleich breit, beim Hover öffnet sich ein Bild; mit Mausrad/Trackpad blättert man durch die Bilder (gleiches Prinzip wie die Highlights). Auf Tablet und Handy Bilder in voller Breite zum Wischen, mit Punkten darunter.
+- Bildergalerie als horizontales Akkordeon (Figma): Streifen gleich breit, beim Hover öffnet sich ein Bild; mit Mausrad/Trackpad blättert man durch die Bilder (gleiches Prinzip wie die Highlights). Auf Tablet und Handy Bilder zum Wischen (88 % breit, das nächste Bild schaut rechts herein), mit Punkten darunter und der Anleitung «← Wischen →», die nach dem ersten Wischen ausblendet.
 
 ### Foto `photo`: gleichförmiger Aufbau
 | Name | Slug | Feldtyp |
@@ -162,7 +162,7 @@ Impressum und Datenschutz.
 ## D | Menus
 | Name | Slug | Hierarchiestufen | Einträge |
 |---|---|---|---|
-| Hauptnavigation | main | 1 | Projekte, Fotos, Über mich, Kontakt (Overlay-Menü; «Kontakt» zusätzlich im Header) |
+| Hauptnavigation | main | 1 | Start, Projekte, Fotos, Über mich, Kontakt (Overlay-Menü; «Kontakt» zusätzlich im Header) |
 | Rechtliches | legals | 1 | Impressum, Datenschutz (Footer) |
 
 ### Felder am Menüeintrag (nur Hauptnavigation `main`)
@@ -175,7 +175,7 @@ Impressum und Datenschutz.
 - Header auf allen Seiten fix oben, ohne Linie, Schrift weiss. Über Bild-Heros (`hero_image`, Projekt-Hero) liegt ein weicher dunkler Verlauf oben im Bild für die Lesbarkeit. Sobald der Hero aus dem Bild ist (und auf Seiten ohne Hero), liegt Milchglas hinter dem Header (Seitenfarbe halbtransparent + Blur), damit der Inhalt darunter nicht scharf neben der Navigation steht (vor allem auf dem Handy). Auf Tablet und Handy (bis 1024 px) liegt das Milchglas immer hinter dem Header, auch über dem Hero; der Verlauf im Hero entfällt dort. Verworfen: Glas-Effekt schon ganz oben über dem Hero (deckt das Bild ab), Ausblenden beim Runterscrollen (unruhig, besonders auf dem Handy) und Farbumkehr (`mix-blend-mode: difference`, auf mittleren Tönen zu wenig Kontrast).
 - Tablet und Handy (bis 1024 px): Signet links, Menü-Symbol (ohne Beschriftung, für Screenreader vorhanden) in der Mitte, «Kontakt» als umrandeter, abgerundeter Button rechts (bleibt auch bei offenem Menü sichtbar; auf der Kontaktseite ausgefüllt).
 - «Kontakt» im Header = Eintrag aus `main`, der auf die Seite `kontakt` verweist (kein eigenes Feld).
-- Overlay-Menü: Vollbild, Menüpunkte gross mit Nummer (01–04). Aktive Seite bleibt weiss (nur für Screenreader markiert, `aria-current`). Unten E-Mail und Socials aus den Globals.
+- Overlay-Menü: Vollbild, Menüpunkte gross mit fortlaufender Nummer (01, 02 …). «Start» (Startseite) ist der erste Punkt. Weitere Seiten lassen sich in Design > Menüs ergänzen; bei vielen Punkten oder niedrigem Fenster wird die Schrift kleiner, damit alle auf den Bildschirm passen. Aktive Seite bleibt weiss (nur für Screenreader markiert, `aria-current`). Unten E-Mail und Socials aus den Globals.
 - Klick auf einen Menüpunkt: Das Menü bleibt offen, die neue Seite blendet weich darüber ein (Seitenübergang für die ganze Website).
 - `menu_image` ist der Hintergrund des Overlays beim Hover/Fokus auf den Menüpunkt (Crossfade). `menu_video` optional: läuft ohne Ton in Schleife, Bild ist Vorschau und Fallback. Ohne Bild: einfarbiger Hintergrund.
 - Handy/Touch: Hintergrund zeigt den Eintrag der aktuellen Seite, sonst den ersten.
@@ -204,7 +204,7 @@ Impressum und Datenschutz.
 - Footer zeigt nur Socials mit Icon (LinkedIn). Kontaktseite listet alle (LinkedIn, Instagram).
 
 ## Statisch im Theme (nicht im CMS)
-Icons aus der eigenen Icon-Bibliothek (`frontend/assets/icons/`, Ausgabe über `get_icon()`; Pfeil nach unten = Scroll-Pfeil, schräg nach rechts oben = Teaser, Kontakt, Socials), Punkte unter der Galerie (Tablet/Handy), Hover-Vorschau im Directory (folgt dem Mauszeiger), Beschriftungen Jahr / Kontext / Kategorie / Meine Rolle, Zwischentitel «Projektbeschrieb» und «Meine Rolle und Teamabgrenzung», Button-Text Lebenslauf, Standardfilter, Karussell, Hover-Effekt (Chroma/Verflüssigen, Cursor), Streifen-Galerie, Foto-Raster, Verlauf oben im Hero, Menü-Button, Overlay-Animation, Nummerierung der Menüpunkte, Seitenübergänge, Einblenden beim Scrollen.
+Icons aus der eigenen Icon-Bibliothek (`frontend/assets/icons/`, Ausgabe über `get_icon()`; Pfeil nach unten = Scroll-Pfeil, schräg nach rechts oben = Teaser, Kontakt, Socials), Punkte unter der Galerie (Tablet/Handy), Hover-Vorschau im Directory (folgt dem Mauszeiger), Beschriftungen Jahr / Kontext / Kategorie / Meine Rolle, Zwischentitel «Projektbeschrieb» und «Meine Rolle und Teamabgrenzung», Button-Text Lebenslauf, Standardfilter, Karussell, Hover-Effekt (Chroma/Verflüssigen, Cursor), Cursor-Label über Highlights und Galerie (grüne Pille, ersetzt dort den Cursor-Punkt; «Scrollen ↓» bis zum ersten Blättern, danach bei den Highlights «Ansehen», bei der Galerie ausgeblendet), Zähler «01 / 05» mit Fortschrittslinie unter Highlights und Galerie (nur Desktop), Streifen-Galerie, Foto-Raster, Verlauf oben im Hero, Menü-Button, Overlay-Animation, Nummerierung der Menüpunkte, Seitenübergänge, Einblenden beim Scrollen.
 
 ## Offen
 - Video: entschieden. Kurze Clips als MP4 (`video`, `cover_video`, Galerie), volle Videos über `video_url`.

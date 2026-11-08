@@ -58,6 +58,24 @@ $has_featured = in_array(true, array_column($projects, 'featured'), true);
                 </li>
             <?php endforeach; ?>
         </ul>
+        <?php // Zähler «01 / 05» mit Fortschrittslinie: zeigt, dass es weitergeht und wo man ist (main.js aktualisiert).
+              // Bleibt unten im Fenster kleben, solange die Highlights sichtbar sind (CSS sticky). ?>
+        <div class="carousel-progress" aria-hidden="true" data-accordion-progress>
+            <span class="carousel-progress-count">
+                <span data-progress-current>01</span> / <?= esc_html(sprintf('%02d', count($projects))) ?>
+            </span>
+            <span class="carousel-progress-bar">
+                <span class="carousel-progress-fill" data-progress-fill style="--progress: <?= esc_attr(1 / max(count($projects), 1)) ?>"></span>
+            </span>
+        </div>
+
+        <?php // Label, das der Maus über den Highlights folgt (main.js). Beim ersten Besuch «Scrollen» als Anleitung,
+              // nach dem ersten Blättern «Ansehen». Nur Dekoration: Der Link selbst ist für Screenreader und
+              // Tastatur schon eindeutig, darum aria-hidden. ?>
+        <span class="cursor-label pill pill--accent" aria-hidden="true" data-cursor-label="highlights">
+            <span class="cursor-label-text cursor-label-text--scroll">Scrollen <?= get_icon('arrow', 'down') ?></span>
+            <span class="cursor-label-text cursor-label-text--view">Ansehen</span>
+        </span>
 
     <?php else : ?>
         <div class="filter" role="group" aria-label="Projekte filtern">

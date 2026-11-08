@@ -92,11 +92,16 @@ $embed = get_video_embed($project['video_url']);
     <?php endif; ?>
 
     <?php // 5. Galerie als horizontales Akkordeon (Steuerung in main.js) ?>
-    <?php if (!empty($project['gallery'])) : ?>
+    <?php
+    // Nur Bilder und Videos (andere Dateitypen überspringen); vorher filtern, damit der Zähler stimmt
+    $gallery = array_values(array_filter($project['gallery'] ?? [], function ($media) {
+        return in_array($media['type'] ?? '', ['image', 'video'], true);
+    }));
+    ?>
+    <?php if (!empty($gallery)) : ?>
         <section class="project-gallery" aria-label="Galerie">
             <ul class="gallery-strip" data-strip>
-                <?php foreach ($project['gallery'] as $index => $media) : ?>
-                    <?php if (!in_array($media['type'], ['image', 'video'], true)) { continue; } ?>
+                <?php foreach ($gallery as $index => $media) : ?>
                     <?php // tabindex: auch mit der Tastatur (Tab) aufklappbar ?>
                     <li class="strip-item" data-strip-item tabindex="0">
                         <?php if ($media['type'] === 'video') : ?>
@@ -113,6 +118,30 @@ $embed = get_video_embed($project['video_url']);
                     </li>
                 <?php endforeach; ?>
             </ul>
+
+            <?php if (count($gallery) > 1) : ?>
+                <?php // Zähler wie bei den Highlights; ausgeblendet (is-idle), bis ein Bild offen ist (main.js) ?>
+                <div class="carousel-progress is-idle" aria-hidden="true" data-accordion-progress>
+                    <span class="carousel-progress-count">
+                        <span data-progress-current>01</span> / <?= esc_html(sprintf('%02d', count($gallery))) ?>
+                    </span>
+                    <span class="carousel-progress-bar">
+                        <span class="carousel-progress-fill" data-progress-fill></span>
+                    </span>
+                </div>
+
+                <?php // Anleitung «Scrollen ↓» am Mauszeiger, bis zum ersten Mal geblättert wurde (main.js).
+                      // Ohne «Ansehen»: Ein Klick auf ein Bild öffnet nichts, darum blendet die Pille danach aus. ?>
+                <span class="cursor-label pill pill--accent" aria-hidden="true" data-cursor-label="gallery">
+                    <span class="cursor-label-text cursor-label-text--scroll">Scrollen <?= get_icon('arrow', 'down') ?></span>
+                </span>
+
+                <?php // Tablet/Handy: Anleitung «← Wischen →» unter den Punkten, bis zum ersten Mal gewischt wurde
+                      // (nur dort sichtbar, CSS; ausblenden: main.js). Dekoration, darum aria-hidden. ?>
+                <p class="strip-hint" aria-hidden="true" data-strip-hint>
+                    <?= get_icon('arrow', 'left') ?> Wischen <?= get_icon('arrow', 'right') ?>
+                </p>
+            <?php endif; ?>
         </section>
     <?php endif; ?>
 </main>
