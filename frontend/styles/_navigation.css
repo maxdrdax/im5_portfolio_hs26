@@ -10,8 +10,8 @@
     --menu-ease: cubic-bezier(.65, 0, .35, 1);
     /* Menü-Button: Dauer pro Phase (Striche zusammen → drehen) */
     --bars-step: 220ms;
-    /* Header aus- und einblenden beim Scrollen */
-    --header-hide-duration: 800ms;
+    /* Milchglas hinter dem Header weich einblenden */
+    --glass-duration: 700ms;
     /* feine Linie zwischen den Menüpunkten */
     --menu-line: color-mix(in srgb, var(--color-white) 18%, transparent);
 }
@@ -45,10 +45,18 @@
         text-decoration: none;
     }
 
-    /* Unterstreichung (Stil aus main.css) direkt unter dem Text statt am Rand der 44-px-Fläche.
-       1lh = Zeilenhöhe der Schrift; (44 px − Zeile) / 2 = Abstand Text bis Rand */
+    /* Unterstreichung (Stil aus main.css) 4 px unter der Grundlinie statt am Rand der 44-px-Fläche.
+       Der Text ist auf Buchstabenhöhe zugeschnitten (1cap = Höhe der Grossbuchstaben) und eingemittet:
+       (44 px − 1cap) / 2 = Abstand Grundlinie bis unterer Rand */
     .header-actions .header-link::after {
-        bottom: calc((44px - 1lh) / 2 - 4px);
+        bottom: calc((44px - 1cap) / 2 - 4px);
+    }
+
+    /* Gleich wie beim Logo: Text auf die Buchstabenhöhe zuschneiden, dann wird er im 44-px-Feld
+       genau eingemittet (Logo, Kontakt, Menü und Striche auf einer optischen Mittellinie) */
+    .header-link-text,
+    .menu-toggle-label {
+        text-box: trim-both cap alphabetic;
     }
 
     .menu-toggle {
@@ -71,6 +79,9 @@
         top: 0;
         right: 0;
         white-space: nowrap;
+        /* gleich zugeschnitten wie «Menü» (siehe .menu-toggle-label): sonst sitzt «Schliessen»
+           um den Leerraum über den Buchstaben tiefer als das X */
+        text-box: trim-both cap alphabetic;
     }
 
     /* Bezugspunkt für die Hover-Linie («Schliessen» ist schon absolute positioniert) */
@@ -189,6 +200,11 @@
 /* Menü offen: Header wird durchsichtig, damit das Overlay bis oben reicht */
 body.menu-open [data-layout="header"] {
     background-color: transparent;
+
+    /* kein Milchglas über dem Overlay */
+    &::before {
+        opacity: 0;
+    }
 
     /* Kontakt ausblenden: Platz für «Schliessen»; Kontakt ist im Overlay als Menüpunkt da.
        visibility: auch für Tab und Screenreader weg, erst nach dem Ausblenden umschalten. */
@@ -481,26 +497,50 @@ html {
 }
 
 /* =====================================================================
-   3. Header ohne Hintergrund (CMS-Konzept D)
-   Lesbarkeit über hellen Hero-Bildern: Verlauf oben im Hero (main.css).
-   Beim Runterscrollen blendet der Header aus, darum steht er nie lange über dem Inhalt.
+   3. Header-Hintergrund (CMS-Konzept D)
+   Über dem Hero: durchsichtig (Lesbarkeit über den Verlauf oben im Hero, siehe main.css).
+   Danach und auf Seiten ohne Hero (.is-solid, setzt main.js): Milchglas, ohne Linie. Der Inhalt
+   scrollt verschwommen darunter durch, statt scharf neben dem Logo zu stehen (wichtig auf dem Handy).
+   backdrop-filter macht unscharf, was HINTER dem Header liegt; die Schrift bleibt scharf.
+   Wirkt nur mit halbtransparentem Hintergrund (deckend = Blur unsichtbar).
    ===================================================================== */
 [data-layout="header"] {
     background-color: transparent;
-    transition: opacity var(--header-hide-duration) ease;
 
-    /* Beim Runterscrollen (ab einer Bildschirmhöhe) langsam ausgeblendet, beim Hochscrollen wieder ein (main.js).
-       pointer-events: Der unsichtbare Header fängt keine Klicks ab (Inhalt darunter bleibt klickbar).
-       Per Tab bleibt er erreichbar: Fokus blendet ihn wieder ein. */
-    &.is-hidden {
+    /* Milchglas als eigene Ebene hinter Logo und Menü. Eingeblendet wird nur die Deckkraft (opacity):
+       Die lässt sich in allen Browsern weich animieren, backdrop-filter selbst nicht überall (Safari). */
+    &::before {
+        position: absolute;
+        inset: 0;
+        /* hinter dem Inhalt des Headers (der Header bildet durch z-index eine eigene Ebene) */
+        z-index: -1;
+        /* Seitenfarbe #1D1C1C mit 60 % Deckkraft + Unschärfe */
+        background-color: rgb(29 28 28 / .6);
+        -webkit-backdrop-filter: blur(16px);
+        backdrop-filter: blur(16px);
+        content: "";
         opacity: 0;
         pointer-events: none;
+        transition: opacity var(--glass-duration) ease;
     }
+
+    &.is-solid::before {
+        opacity: 1;
+    }
+
 }
 
 /* =====================================================================
    4. Responsive und «Bewegung reduzieren»
    ===================================================================== */
+/* Tablet und Handy (alles ausser Desktop): Milchglas immer, auch über dem Hero; dafür kein Verlauf
+   im Hero (main.css). Bei offenem Menü bleibt das Milchglas aus (Regel body.menu-open ist stärker). */
+@media (max-width: 1024px) {
+    [data-layout="header"]::before {
+        opacity: 1;
+    }
+}
+
 @media (max-width: 768px) {
     [data-layout="header"] .header-actions {
         gap: var(--space-16);
@@ -554,8 +594,8 @@ html {
         transform: none;
     }
 
-    /* Header blendet ohne Gleiten aus und ein */
-    [data-layout="header"] {
+    /* Milchglas ohne Überblenden */
+    [data-layout="header"]::before {
         transition: none;
     }
 }

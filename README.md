@@ -138,6 +138,7 @@ Zum Vergleich der Stand vor der Umsetzung des CMS-Konzepts (Beispielmodule des S
 | 08.11.2026 | Header neu: fix auf allen Seiten, ohne Hintergrund, weicher Verlauf oben im Hero für die Lesbarkeit; blendet ab einer Bildschirmhöhe beim Runterscrollen aus und beim Hochscrollen wieder ein (gleiche Distanz auf allen Seiten, Scroll-Events per `requestAnimationFrame` gedrosselt). Ausprobiert und verworfen: Streifen-Hero aus dem Prototyp (doppelt die Navigation), Glas-Effekt über die ganze Breite, Farbumkehr (`mix-blend-mode`), Milchglas |
 | 08.11.2026 | Filter (Projekte, Fotos) wechseln weich per View Transition innerhalb der Seite (Einträge gleiten an den neuen Platz); nachgeladene Bilder blenden nach dem Laden ein |
 | 08.11.2026 | Hero Bild: Position des Titels im Backend wählbar (`title_position`, Raster 3 × 3 ohne «Unten Mitte», Standard «Mitte links»), weicher Verlauf oben im Hero |
+| 08.11.2026 | Responsive: Projektliste auf dem Handy zweispaltig (Kategorie unter dem Titel), Hover nur mit Maus (`@media (hover: hover)`), Touch-Ziele 44 px (`pointer: coarse`), Header 72 px auf dem Handy, H1-Zwischengrösse fürs Tablet; Header mit Milchglas nach dem Hero (auf Tablet/Handy immer), Logo und Navigation optisch eingemittet (`text-box`); Ausblenden beim Scrollen wieder verworfen |
 
 ## Learnings
 <!-- In eigenen Worten ergänzen -->

@@ -64,12 +64,11 @@ document.querySelectorAll('[data-scroll-next]').forEach((button) => {
 
         // Unterkante des Heros auf der Seite (nicht nur im sichtbaren Bereich)
         const heroBottom = hero.getBoundingClientRect().bottom + window.scrollY;
-        // Oberkante des Headers = Unterkante der Admin-Leiste (0, wenn nicht eingeloggt).
-        // Der Header blendet beim Runterscrollen aus, darum beginnt der Inhalt direkt unter der Admin-Leiste.
-        const pageTop = header ? parseFloat(getComputedStyle(header).top) || 0 : 0;
+        // Unterkante des fixen Headers im Fenster (inkl. Admin-Leiste, falls eingeloggt)
+        const headerBottom = header ? header.getBoundingClientRect().bottom : 0;
 
         window.scrollTo({
-            top: heroBottom - pageTop,
+            top: heroBottom - headerBottom,
             behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth',
         });
     });
@@ -841,60 +840,26 @@ if (!reducedMotion) {
 }
 
 // =====================================================================
-// -> Header: Ausblenden beim Runterscrollen, Einblenden beim Hochscrollen
+// -> Header: durchsichtig über dem Hero, danach Milchglas
 // Stil: _navigation.css, Abschnitt 3
 // =====================================================================
 if (siteHeader) {
-    // -> Ausblenden beim Runterscrollen, Einblenden beim Hochscrollen
-    // Gleiche Regel auf allen Seiten: erst nach einer Bildschirmhöhe (entspricht dem Hero) und erst nach
-    // einem Stück Scrollweg am Stück nach unten. Kurze Seiten (z. B. Kontakt) behalten den Header.
-    // ▼ Zum Ausprobieren anpassen
-    const HEADER_HIDE_AFTER = 1; // Bildschirmhöhen ab Seitenanfang, vorher bleibt der Header immer sichtbar
-    const HEADER_HIDE_DISTANCE = 100; // px am Stück nach unten, bis der Header ausblendet
-    const HEADER_SHOW_DISTANCE = 8; // px nach oben, bis er wieder einblendet (ignoriert kleines Zittern)
-    // ▲
-    let lastScrollY = window.scrollY;
-    let downTravel = 0; // Scrollweg am Stück nach unten
-    let upTravel = 0; // Scrollweg am Stück nach oben
-    let ticking = false;
+    // -> Milchglas (.is-solid): über dem Hero durchsichtig, danach mit Hintergrund
+    // Beginnt die Seite mit einem Bild-Hero? (Modul «Hero Bild» oder Projektseite)
+    const hero = document.querySelector('main > [data-module="hero-image"]:first-child, main[data-page="project"] > .project-hero');
 
-    const updateHeaderVisibility = () => {
-        ticking = false;
-        const y = window.scrollY;
-        const delta = y - lastScrollY;
-        lastScrollY = y;
-
-        // Richtung gewechselt: den Weg in die andere Richtung neu zählen
-        if (delta > 0) {
-            downTravel += delta;
-            upTravel = 0;
-        } else if (delta < 0) {
-            upTravel -= delta;
-            downTravel = 0;
-        }
-
-        // Immer sichtbar: im oberen Bereich, bei offenem Menü, bei Tastatur-Fokus im Header
-        const keepVisible = y < window.innerHeight * HEADER_HIDE_AFTER
-            || document.body.classList.contains('menu-open')
-            || siteHeader.contains(document.activeElement);
-
-        if (keepVisible || upTravel >= HEADER_SHOW_DISTANCE) {
-            siteHeader.classList.remove('is-hidden');
-        } else if (downTravel >= HEADER_HIDE_DISTANCE) {
-            siteHeader.classList.add('is-hidden');
-        }
-    };
-
-    // Scroll-Ereignisse kommen sehr oft; requestAnimationFrame rechnet höchstens einmal pro Bild
-    window.addEventListener('scroll', () => {
-        if (!ticking) {
-            ticking = true;
-            requestAnimationFrame(updateHeaderVisibility);
-        }
-    }, { passive: true });
-
-    // Tastatur: Fokus auf Logo, Kontakt oder Menü-Button holt den Header sofort zurück
-    siteHeader.addEventListener('focusin', () => siteHeader.classList.remove('is-hidden'));
+    if (!hero) {
+        // Kein Hero: Milchglas von Anfang an (ganz oben liegt nur der dunkle Seitenhintergrund dahinter)
+        siteHeader.classList.add('is-solid');
+    } else {
+        // IntersectionObserver meldet, ob der Hero noch unter dem Header sichtbar ist.
+        // rootMargin oben = Unterkante des Headers (inkl. Admin-Leiste): Der Bereich hinter dem Header zählt nicht.
+        // +1 px: Liegt der Hero genau an der Header-Kante (nach Klick auf den Scroll-Pfeil), gilt er als «weg».
+        const headerBottom = Math.ceil(siteHeader.getBoundingClientRect().bottom) + 1;
+        new IntersectionObserver(([entry]) => {
+            siteHeader.classList.toggle('is-solid', !entry.isIntersecting);
+        }, { rootMargin: `-${headerBottom}px 0px 0px 0px` }).observe(hero);
+    }
 }
 
 // =====================================================================

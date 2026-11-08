@@ -1,6 +1,6 @@
 # CMS-Konzept: Portfolio maxhutmacher.ch (v04)
 
-> **Änderungen v04:** Neue Navigation (Overlay-Menü, fixer Header ohne Hintergrund, blendet beim Runterscrollen aus). Neue Felder am Menüeintrag: `menu_image`, `menu_video`. Neue Globals für einen gemeinsamen Menü-Hintergrund: `menu_bg_image`, `menu_bg_video`. Hero Bild: Position des Titels `title_position`.
+> **Änderungen v04:** Neue Navigation (Overlay-Menü, fixer Header: über dem Hero durchsichtig, danach Milchglas). Neue Felder am Menüeintrag: `menu_image`, `menu_video`. Neue Globals für einen gemeinsamen Menü-Hintergrund: `menu_bg_image`, `menu_bg_video`. Hero Bild: Position des Titels `title_position`.
 
 Quelle: Screendesign v06 (Figma). Felder im Carbon-Fields-Stil.
 `↳` = Unterfeld des complex-Felds direkt darüber.
@@ -171,7 +171,7 @@ Impressum und Datenschutz.
 | Hintergrundvideo (MP4) | menu_video | file (video) |
 
 - Header: Logo links, rechts «Kontakt» (sichtbar, solange das Menü geschlossen ist) und Button «Menü»/«Schliessen». Die Hauptnavigation steht nicht mehr im Header, sondern im Overlay.
-- Header auf allen Seiten fix oben, ohne Linie, Schrift weiss. Über Bild-Heros (`hero_image`, Projekt-Hero) liegt ein weicher dunkler Verlauf oben im Bild für die Lesbarkeit. Ab einer Bildschirmhöhe (auf allen Seiten gleich) blendet der Header nach 100 px Scrollweg nach unten langsam aus und beim Hochscrollen wieder ein (bei offenem Menü und Tastatur-Fokus immer sichtbar). Verworfen: Glas-Effekt bzw. Milchglas (unnötig, da der Header beim Lesen ausblendet) und Farbumkehr (`mix-blend-mode: difference`, auf mittleren Tönen zu wenig Kontrast).
+- Header auf allen Seiten fix oben, ohne Linie, Schrift weiss. Über Bild-Heros (`hero_image`, Projekt-Hero) liegt ein weicher dunkler Verlauf oben im Bild für die Lesbarkeit. Sobald der Hero aus dem Bild ist (und auf Seiten ohne Hero), liegt Milchglas hinter dem Header (Seitenfarbe halbtransparent + Blur), damit der Inhalt darunter nicht scharf neben der Navigation steht (vor allem auf dem Handy). Auf Tablet und Handy (bis 1024 px) liegt das Milchglas immer hinter dem Header, auch über dem Hero; der Verlauf im Hero entfällt dort. Verworfen: Glas-Effekt schon ganz oben über dem Hero (deckt das Bild ab), Ausblenden beim Runterscrollen (unruhig, besonders auf dem Handy) und Farbumkehr (`mix-blend-mode: difference`, auf mittleren Tönen zu wenig Kontrast).
 - «Kontakt» im Header = Eintrag aus `main`, der auf die Seite `kontakt` verweist (kein eigenes Feld).
 - Overlay-Menü: Vollbild, Menüpunkte gross mit Nummer (01–04). Aktive Seite bleibt weiss (nur für Screenreader markiert, `aria-current`). Unten E-Mail und Socials aus den Globals.
 - Klick auf einen Menüpunkt: Das Menü bleibt offen, die neue Seite blendet weich darüber ein (Seitenübergang für die ganze Website).

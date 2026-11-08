@@ -93,8 +93,13 @@ $has_featured = in_array(true, array_column($projects, 'featured'), true);
                         data-featured="<?= $project['featured'] ? 'true' : 'false' ?>"
                         data-preview-target="<?= esc_attr($project['id']) ?>">
                         <?php // Der Link deckt per CSS die ganze Zeile ab (.row-link::after) ?>
-                        <td><a class="row-link" href="<?= esc_url($project['url']) ?>"><?= esc_html($project['title']) ?></a></td>
-                        <td><?= esc_html(implode(', ', array_column($project['categories'], 'name'))) ?></td>
+                        <?php $category_list = implode(', ', array_column($project['categories'], 'name')); ?>
+                        <td>
+                            <a class="row-link" href="<?= esc_url($project['url']) ?>"><?= esc_html($project['title']) ?></a>
+                            <?php // Nur Handy: Kategorie klein unter dem Titel (die Kategorie-Spalte ist dort ausgeblendet) ?>
+                            <span class="row-category"><?= esc_html($category_list) ?></span>
+                        </td>
+                        <td class="cell-category"><?= esc_html($category_list) ?></td>
                         <td><?= esc_html($project['year'] ?: '— / —') ?></td>
                     </tr>
                 <?php endforeach; ?>

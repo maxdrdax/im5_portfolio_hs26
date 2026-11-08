@@ -162,7 +162,12 @@ main[data-page="project"] {
         position: relative;
         z-index: 1;
         display: block;
+        /* Schrift hier statt nur am Text: text-box rechnet mit der Schrift dieses Elements */
+        font: var(--font-brand);
         text-decoration: none;
+        /* Box auf Oberkante Grossbuchstaben bis Grundlinie zuschneiden: So sitzen Logo und Navigation
+           optisch auf gleicher Höhe, obwohl die Schriften verschieden viel Leerraum haben */
+        text-box: trim-both cap alphabetic;
     }
 
     .header-name {
@@ -744,11 +749,24 @@ h2 em {
             border-bottom: 0;
         }
 
-        /* Hover/Fokus: ganze Zeile grün, Text schwarz */
-        tr:hover td,
-        tr:focus-within td {
+        /* Hover (nur Maus) und Tastatur-Fokus: ganze Zeile grün, Text schwarz.
+           Nicht auf Touch: iOS behält :hover nach dem Tippen, die Zeile bliebe grün.
+           :has(:focus-visible) statt :focus-within: nur Tastatur, nicht nach dem Tippen. */
+        tr:has(:focus-visible) td {
             background-color: var(--color-accent);
             color: var(--color-black);
+        }
+
+        @media (hover: hover) {
+            tr:hover td {
+                background-color: var(--color-accent);
+                color: var(--color-black);
+            }
+        }
+
+        /* Kategorie unter dem Titel: nur auf dem Handy (siehe Breakpoint md) */
+        .row-category {
+            display: none;
         }
 
         a {
@@ -969,10 +987,16 @@ h2 em {
             animation: marquee var(--marquee-duration, 30s) linear infinite;
         }
 
-        /* Pause beim Hover/Fokus, damit man ein Logo anklicken kann */
-        &:hover .logo-track,
-        &:focus-within .logo-track {
+        /* Pause beim Hover (nur Maus) und Tastatur-Fokus, damit man ein Logo anklicken kann.
+           Nicht auf Touch: Dort bliebe die Laufschrift nach dem Tippen stehen. */
+        &:has(:focus-visible) .logo-track {
             animation-play-state: paused;
+        }
+
+        @media (hover: hover) {
+            &:hover .logo-track {
+                animation-play-state: paused;
+            }
         }
     }
 }
@@ -1333,8 +1357,18 @@ h2 em {
 /* BREAKPOINT: xl */
 @media (max-width: 1280px) {}
 
-/* BREAKPOINT: lg */
-@media (max-width: 1024px) {}
+/* BREAKPOINT: lg (Tablet): Zwischengrösse für H1, damit lange Titel neben den Eckdaten Platz haben */
+@media (max-width: 1024px) {
+    :root {
+        --font-h1: 500 64px/72px var(--font-sans);
+    }
+
+    /* Tablet und Handy: Header hat immer Milchglas (_navigation.css), darum kein Verlauf oben im Hero */
+    [data-module="hero-image"]::after,
+    [data-page="project"] .project-hero::after {
+        display: none;
+    }
+}
 
 /* BREAKPOINT: md */
 @media (max-width: 768px) {
@@ -1344,6 +1378,52 @@ h2 em {
         --font-h2: 500 36px/44px var(--font-brand-family);
         --font-nav: 400 16px/24px var(--font-sans);
         --font-brand: italic 700 24px/32px var(--font-brand-family);
+    }
+
+    /* Header auf dem Handy niedriger (72 px): 12 px oben/unten + 44 px Touch-Ziel + Spielraum */
+    :root {
+        --header-height: 72px;
+    }
+
+    [data-layout="header"] {
+        padding-block: var(--space-12);
+    }
+
+    /* Projektliste: Titel und Jahr nebeneinander, Kategorie klein unter dem Titel.
+       Die Tabelle wird zu einem Raster pro Zeile (2 Spalten), die Kategorie-Spalte fällt weg. */
+    [data-module="projects"] .directory {
+        &,
+        tbody {
+            display: block;
+        }
+
+        colgroup,
+        .cell-category {
+            display: none;
+        }
+
+        tr {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) auto;
+        }
+
+        td {
+            height: auto;
+            min-height: 56px;
+            padding-block: var(--space-12);
+        }
+
+        .row-category {
+            display: block;
+            margin-top: var(--space-4);
+            color: var(--color-border);
+            font: var(--font-caption);
+        }
+
+        /* Hover/Fokus: Kategorie auf Grün gut lesbar */
+        tr:has(:focus-visible) .row-category {
+            color: inherit;
+        }
     }
 
     /* Header liegt über dem Hero: Titel beginnt unter dem Header */
@@ -1476,6 +1556,22 @@ h2 em {
 
 /* BREAKPOINT: xxs */
 @media (max-width: 400px) {}
+
+/* Touch-Geräte: grössere Tippfläche (mind. 44 px) für Filter und Footer-Links, ohne dass sich das
+   Layout ändert: Padding vergrössert die Fläche, gleich grosser negativer Margin hebt es im Layout auf.
+   Die Unterstreichung rückt um das Padding nach oben, damit sie am gleichen Ort bleibt. */
+@media (pointer: coarse) {
+    .filter button,
+    [data-layout="footer"] .nav a {
+        display: inline-block;
+        padding-block: 10px;
+        margin-block: -10px;
+
+        &::after {
+            bottom: 6px;
+        }
+    }
+}
 
 /* Cursor-Punkt (main.js): folgt dem Mauszeiger, invertiert den Hintergrund */
 .cursor-dot {

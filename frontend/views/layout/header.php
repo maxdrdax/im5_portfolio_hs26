@@ -51,7 +51,8 @@ if ($menu_bg) {
         <div class="header-actions">
             <?php if ($contact) : ?>
                 <a class="header-link" href="<?= esc_url($contact['url']) ?>"<?php if ($contact['current']) : ?> aria-current="page"<?php endif; ?>>
-                    <?= esc_html($contact['title']) ?>
+                    <?php // eigenes Element für den Text: wird per CSS auf die Buchstabenhöhe zugeschnitten (Einmitten) ?>
+                    <span class="header-link-text"><?= esc_html($contact['title']) ?></span>
                 </a>
             <?php endif; ?>
 
