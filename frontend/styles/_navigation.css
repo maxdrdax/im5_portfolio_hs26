@@ -41,6 +41,7 @@
         min-height: 44px;
         color: var(--color-white);
         font: var(--font-nav);
+        letter-spacing: var(--tracking-caps);
         text-transform: uppercase;
         text-decoration: none;
     }
@@ -643,6 +644,7 @@ html {
             min-height: 36px;
             padding-inline: var(--space-12);
             font: var(--font-caption);
+            letter-spacing: var(--tracking-caps);
             text-transform: uppercase;
         }
 

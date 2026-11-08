@@ -20,8 +20,14 @@
     --space-48: 48px;
     --space-64: 64px;
     --space-96: 96px;
-    /* layout: 80 px Rand, Inhalt max. 1280 px */
-    --gap-around: 80px;
+    /* Abstände mit Bedeutung (Gesetz der Nähe): in einer Gruppe < zwischen Blöcken < zwischen Sektionen.
+       clamp(min, fliessend, max): wächst linear von 390 px (Handy) bis 1440 px (Desktop) Fensterbreite */
+    --space-stack-xs: var(--space-8); /* eng zusammengehörig: Kategorie → Titel, Bezeichnung → Wert */
+    --space-stack-s: clamp(16px, 13px + .76vw, 24px); /* Titel → Text, Elemente einer Liste */
+    --space-stack-m: clamp(32px, 26.1px + 1.52vw, 48px); /* Modultitel → Inhalt, zwischen Blöcken */
+    --space-section: clamp(56px, 41.1px + 3.81vw, 96px); /* zwischen Sektionen bzw. Modulen */
+    /* layout: Seitenrand 20 px (Handy) bis 80 px (Desktop), Inhalt max. 1280 px */
+    --gap-around: clamp(20px, 5.71vw - 2.3px, 80px);
     --content-width: 1280px;
     /* seitlicher Abstand, der den Inhalt auf 1280 px zentriert */
     --page-inline: max(var(--gap-around), calc((100% - var(--content-width)) / 2));
@@ -37,19 +43,26 @@
     --accordion-ease: cubic-bezier(.2, .65, .25, 1);
     /* Galerie öffnet langsamer, weil sich die Bilder dabei stärker verändern */
     --gallery-duration: 1000ms;
-    /* fonts (Figma: Portfolio/...) */
-    --font-h1: 500 80px/88px var(--font-sans);
-    --font-h2: 500 48px/56px var(--font-brand-family);
-    --font-h3: 500 20px/28px var(--font-sans);
+    /* Type-Scale (Verhältnis ca. 1.25): Grössen fliessend mit clamp() von Handy (390 px) bis Desktop (1440 px).
+       Titel eng gesetzt (Zeilenhöhe 1.1–1.3), Fliesstext luftig (1.55–1.6).
+       Geist = Text und UI, Playfair = Akzent (H2-Modultitel, Logo, *Wort*). */
+    --font-h1: 500 clamp(40px, 25.1px + 3.81vw, 80px)/1.1 var(--font-sans);
+    --font-h2: 500 clamp(32px, 26.1px + 1.52vw, 48px)/1.15 var(--font-brand-family);
+    --font-h3: 500 clamp(24px, 21px + .76vw, 32px)/1.2 var(--font-sans);
+    --font-h4: 500 clamp(18px, 17.3px + .19vw, 20px)/1.3 var(--font-sans);
     /* kleiner Zwischentitel (Impressum, Datenschutz): gleiche Grösse wie Body, aber Bold */
-    --font-h4: 700 16px/24px var(--font-sans);
-    --font-nav: 400 20px/28px var(--font-sans);
-    --font-body: 400 16px/24px var(--font-sans);
-    --font-body-large: 400 18px/30px var(--font-sans);
-    /* kleinste Schrift: 14 px (12 px war auf dem Handy zu klein, v. a. im Grau) */
-    --font-caption: 400 14px/20px var(--font-sans);
-    --font-button: 500 16px/24px var(--font-sans);
-    --font-brand: italic 700 32px/40px var(--font-brand-family);
+    --font-h5: 700 16px/1.5 var(--font-sans);
+    --font-nav: 400 clamp(16px, 15.3px + .19vw, 18px)/1.4 var(--font-sans);
+    --font-body: 400 16px/1.55 var(--font-sans);
+    --font-body-large: 400 clamp(17px, 16.6px + .1vw, 18px)/1.6 var(--font-sans);
+    /* kleinste Schrift: 14 px */
+    --font-caption: 400 14px/1.4 var(--font-sans);
+    --font-button: 500 16px/1.5 var(--font-sans);
+    --font-brand: italic 700 clamp(24px, 21px + .76vw, 32px)/1.25 var(--font-brand-family);
+    /* Grossbuchstaben leicht sperren (besser lesbar) */
+    --tracking-caps: .04em;
+    /* maximale Zeilenlänge für Fliesstext: ca. 65–75 Zeichen */
+    --measure: 68ch;
 }
 
 h1 {
@@ -68,7 +81,7 @@ h2 {
 }
 
 h3 {
-    font: var(--font-h3);
+    font: var(--font-h4);
 }
 
 /* =====================================================================
@@ -231,7 +244,7 @@ main[data-page="project"] {
 [data-layout="footer"] {
     display: flex;
     align-items: center;
-    gap: var(--space-32);
+    gap: var(--space-stack-m);
     min-height: var(--header-height);
     padding: var(--space-24) var(--gap-around);
     border-top: 1px solid var(--color-border);
@@ -241,15 +254,17 @@ main[data-page="project"] {
     .nav {
         display: flex;
         flex-wrap: wrap;
-        gap: var(--space-32);
+        gap: var(--space-stack-m);
         list-style: none;
         font: var(--font-nav);
+        letter-spacing: var(--tracking-caps);
         text-transform: uppercase;
     }
 
     .copyright {
         margin-left: auto;
         font: var(--font-nav);
+        letter-spacing: var(--tracking-caps);
         text-transform: uppercase;
         white-space: nowrap;
     }
@@ -306,16 +321,17 @@ main[data-page="project"] {
     .project-intro {
         display: flex;
         flex-direction: column;
-        gap: var(--space-32);
-        padding-top: var(--space-96);
-        padding-bottom: 72px;
+        /* Kopf (Titel, Eckdaten) → Projektbeschrieb: Blockabstand; oben/unten: Sektionsabstand */
+        gap: var(--space-stack-m);
+        padding-block: var(--space-section);
     }
 
     /* Kategorie + Titel links, Eckdaten rechts (320 px), oben bündig */
     .project-header {
         display: flex;
         align-items: flex-start;
-        gap: var(--space-64);
+        /* zwischen Stationen: Blockabstand (grösser als innerhalb einer Station) */
+        gap: var(--space-stack-m);
     }
 
     /* Oberkante bündig: Die Kategorie (links) beginnt genau an der Oberkante der Grossbuchstaben,
@@ -335,12 +351,13 @@ main[data-page="project"] {
         display: flex;
         flex: 1;
         flex-direction: column;
-        gap: var(--space-8);
+        /* Kategorie → Titel: eng zusammengehörig */
+        gap: var(--space-stack-xs);
         min-width: 0;
     }
 
     .project-category {
-        font: var(--font-h3);
+        font: var(--font-h4);
     }
 
     .project-title {
@@ -355,8 +372,10 @@ main[data-page="project"] {
         margin-left: auto;
     }
 
+    /* Zwischentitel («Projektbeschrieb», «Meine Rolle und Teamabgrenzung»): neue Ebene H3,
+       deutlich grösser als der Text darunter (24–32 px statt 20 px) */
     .project-subtitle {
-        margin-bottom: var(--space-32);
+        margin-bottom: var(--space-stack-s);
         font: var(--font-h3);
     }
 
@@ -364,7 +383,7 @@ main[data-page="project"] {
     .rich-text--columns {
         max-width: none;
         columns: 2;
-        column-gap: var(--space-48);
+        column-gap: var(--space-stack-m);
         font: var(--font-body-large);
     }
 
@@ -374,14 +393,16 @@ main[data-page="project"] {
         grid-template-columns: 1fr 1fr;
         gap: var(--space-24);
         align-items: start;
-        padding-block: var(--space-48);
+        /* Innenabstand der grünen Fläche */
+        padding-block: var(--space-stack-m);
         background-color: var(--color-accent);
         color: var(--color-white);
 
         .role-text {
             display: flex;
             flex-direction: column;
-            gap: var(--space-24);
+            /* Titel → Text */
+            gap: var(--space-stack-s);
         }
 
         .rich-text {
@@ -411,7 +432,7 @@ main[data-page="project"] {
 
     /* 4. Volles Video: Breite anpassen, Seitenverhältnis 16:9 */
     .project-video {
-        padding-top: var(--space-48);
+        padding-top: var(--space-section);
     }
 
     .video-wrapper {
@@ -428,8 +449,7 @@ main[data-page="project"] {
 
     /* 5. Galerie: horizontales Akkordeon. Alle Streifen gleich breit, beim Hover öffnet sich ein Bild im Format 3:2 */
     .project-gallery {
-        padding-top: var(--space-48);
-        padding-bottom: var(--space-96);
+        padding-block: var(--space-section);
         /* Container: cqw = Prozent der Inhaltsbreite (für Höhe und Breite der Galerie) */
         container-type: inline-size;
     }
@@ -439,7 +459,7 @@ main[data-page="project"] {
            daneben bleibt Platz für die schmalen Streifen (max. 700 px statt 762 px in Figma) */
         --strip-height: clamp(300px, 54cqw, 700px);
         display: flex;
-        gap: var(--space-24);
+        gap: var(--space-stack-s);
         height: var(--strip-height);
         /* Desktop: nie scrollen, alles passt in die Breite */
         overflow: hidden;
@@ -477,20 +497,22 @@ main[data-page="project"] {
     overflow: clip;
     position: relative;
     width: 100%;
-    padding: var(--space-96) var(--page-inline) 0;
+    /* Abstand zwischen Modulen = Sektionsabstand (56–96 px, fliessend) */
+    padding: var(--space-section) var(--page-inline) 0;
     background-color: var(--color-black);
     color: var(--color-white);
     /* Sticky Header überdeckt sonst den Anfang beim Scrollen */
     scroll-margin-top: var(--header-height);
 
+    /* Modultitel → Inhalt: Abstand zwischen Blöcken (kleiner als zwischen Modulen) */
     .module-title {
-        margin-bottom: var(--space-48);
+        margin-bottom: var(--space-stack-m);
     }
 }
 
 /* Letztes Modul einer Seite: Abstand zum Footer */
 main > [data-module]:last-child {
-    padding-bottom: var(--space-96);
+    padding-bottom: var(--space-section);
 }
 
 /* Titel-Akzent: *Wort* wird zu <em> */
@@ -505,7 +527,8 @@ h2 em {
     display: flex;
     align-items: flex-start;
     min-height: var(--hero-height);
-    padding: 140px var(--page-inline) var(--space-96);
+    /* oben: unter dem (darüberliegenden) Header plus Blockabstand; unten: Sektionsabstand */
+    padding: calc(var(--header-height) + var(--space-stack-m)) var(--page-inline) var(--space-section);
 
     /* Position des Titels (Feld title_position, z. B. "bottom-left"):
        ^= «beginnt mit» bestimmt die Höhe (oben/Mitte/unten), $= «endet mit» die Seite.
@@ -564,6 +587,12 @@ h2 em {
     pointer-events: none;
 }
 
+/* Seitentitel (Hero Text) und das Modul darunter gehören zusammen (z. B. «Projekte» + Liste):
+   Blockabstand statt Sektionsabstand (Gesetz der Nähe) */
+[data-module="hero-text"] + [data-module] {
+    padding-top: var(--space-stack-m);
+}
+
 [data-module="hero-text"] {
     .title {
         max-width: 1000px;
@@ -572,8 +601,8 @@ h2 em {
     }
 
     .text {
-        max-width: 560px;
-        margin-top: var(--space-24);
+        max-width: var(--measure);
+        margin-top: var(--space-stack-s);
         font: var(--font-body);
     }
 
@@ -595,7 +624,8 @@ h2 em {
     .carousel {
         display: flex;
         flex-direction: column;
-        gap: var(--space-24);
+        /* Elemente einer Liste: kleiner Abstand */
+        gap: var(--space-stack-s);
         list-style: none;
     }
 
@@ -665,7 +695,7 @@ h2 em {
         }
 
         .card-title {
-            font: 500 32px/1.1 var(--font-sans);
+            font: var(--font-h3);
         }
 
         .card-arrow {
@@ -699,7 +729,7 @@ h2 em {
     &[data-layout-type="list"] {
         display: grid;
         grid-template-columns: minmax(0, 302fr) minmax(0, 954fr);
-        column-gap: var(--space-24);
+        column-gap: var(--space-stack-s);
         align-items: start;
 
         .module-title {
@@ -739,6 +769,7 @@ h2 em {
             /* Einzug links und rechts 12 px (Figma), Text vertikal in der Mitte der Zeile */
             padding: 0 var(--space-12);
             vertical-align: middle;
+            letter-spacing: var(--tracking-caps);
             text-transform: uppercase;
             /* durchgehende Trennlinie über alle Spalten */
             border-bottom: 1px solid var(--color-border);
@@ -851,8 +882,8 @@ h2 em {
 .filter {
     display: flex;
     flex-wrap: wrap;
-    gap: 16px;
-    margin-bottom: 32px;
+    gap: var(--space-stack-s);
+    margin-bottom: var(--space-stack-m);
 
     /* Farbe bleibt immer weiss; aktiver Filter = Linie (siehe Unterstreichung oben) */
     button {
@@ -860,6 +891,7 @@ h2 em {
         border: 0;
         background: none;
         font: var(--font-nav);
+        letter-spacing: var(--tracking-caps);
         text-align: left;
         cursor: pointer;
     }
@@ -870,18 +902,18 @@ h2 em {
     --photo-cols: 3;
     /* Figma: Zeile 427.6 px bei Spalte 410.67 px → Zeile ist 4 % höher als die Spalte breit */
     --photo-row-ratio: 1.0412;
-    /* Abstand zum Hero Text wie Figma (Einleitung → Filter 48 px) */
-    padding-top: var(--space-48);
+    /* Abstand zum Seitentitel: Regel «Hero Text + Modul» (Blockabstand) */
     /* Container: cqw = Prozent der Inhaltsbreite dieses Moduls (für die Zeilenhöhe) */
     container-type: inline-size;
 
     /* Filter nebeneinander, Grossbuchstaben (Figma) */
     .filter {
-        gap: var(--space-24);
-        margin-bottom: var(--space-32);
+        gap: var(--space-stack-s);
+        margin-bottom: var(--space-stack-m);
 
         button {
             font: var(--font-body);
+            letter-spacing: var(--tracking-caps);
             text-transform: uppercase;
         }
     }
@@ -890,10 +922,11 @@ h2 em {
         display: grid;
         grid-template-columns: repeat(var(--photo-cols), minmax(0, 1fr));
         /* Zeilenhöhe = Spaltenbreite × Faktor; Spaltenbreite = (Inhaltsbreite − Abstände) / Anzahl Spalten */
-        grid-auto-rows: calc((100cqw - (var(--photo-cols) - 1) * var(--space-24)) / var(--photo-cols) * var(--photo-row-ratio));
+        grid-auto-rows: calc((100cqw - (var(--photo-cols) - 1) * var(--space-stack-s)) / var(--photo-cols) * var(--photo-row-ratio));
         /* «dense»: Kacheln rücken in freie Lücken nach (z. B. wenn ein Filter Fotos ausblendet) */
         grid-auto-flow: dense;
-        gap: var(--space-24);
+        /* Elemente einer Liste (gleicher Wert wie in der Zeilenhöhe oben) */
+        gap: var(--space-stack-s);
         list-style: none;
     }
 
@@ -968,7 +1001,7 @@ h2 em {
     .logo-item {
         flex: 0 0 auto;
         /* Abstand als Innenabstand statt gap: so ist jede Hälfte der Reihe exakt gleich breit */
-        padding-inline: calc(var(--space-64) / 2);
+        padding-inline: calc(var(--space-stack-m) / 2);
 
         a {
             display: block;
@@ -1023,7 +1056,7 @@ h2 em {
 [data-module="experience"] {
     display: grid;
     grid-template-columns: minmax(0, 410.67fr) minmax(0, 845.33fr);
-    column-gap: var(--space-24);
+    column-gap: var(--space-stack-s);
     align-items: start;
 }
 
@@ -1032,18 +1065,19 @@ h2 em {
     .profile-aside {
         display: flex;
         flex-direction: column;
-        gap: var(--space-32);
+        /* Name/Funktion → Skills → Steckbrief: Blockabstand */
+        gap: var(--space-stack-m);
         max-width: 320px;
     }
 
     .profile-head {
         display: flex;
         flex-direction: column;
-        gap: var(--space-8);
+        gap: var(--space-stack-xs);
     }
 
     .name {
-        font: var(--font-h3);
+        font: var(--font-h4);
     }
 
     .position {
@@ -1052,7 +1086,7 @@ h2 em {
 
     /* rechte Spalte: Titel im H1-Stil, grün (Figma) */
     .module-title {
-        margin-bottom: var(--space-24);
+        margin-bottom: var(--space-stack-s);
         color: var(--color-accent);
         font: var(--font-h1);
     }
@@ -1082,13 +1116,13 @@ h2 em {
         display: flex;
         flex-direction: column;
         align-items: flex-start;
-        gap: var(--space-48);
+        gap: var(--space-stack-m);
     }
 
     .experience-head {
         display: flex;
         flex-direction: column;
-        gap: var(--space-8);
+        gap: var(--space-stack-xs);
 
         .module-title {
             margin-bottom: 0;
@@ -1110,18 +1144,18 @@ h2 em {
     /* Station: Kopf links (204 px), Inhalt rechts */
     .station {
         display: flex;
-        gap: var(--space-24);
+        gap: var(--space-stack-s);
     }
 
     .station-head {
         display: flex;
         flex: 0 0 204px;
         flex-direction: column;
-        gap: var(--space-8);
+        gap: var(--space-stack-xs);
     }
 
     .station-title {
-        font: var(--font-h3);
+        font: var(--font-h4);
     }
 
     .station-meta {
@@ -1134,31 +1168,32 @@ h2 em {
         display: flex;
         flex: 1;
         flex-direction: column;
-        gap: var(--space-8);
+        gap: var(--space-stack-xs);
         min-width: 0;
 
         .text {
-            max-width: 780px;
+            max-width: var(--measure);
             font: var(--font-body);
         }
     }
 
     /* Button 64 px unter den Stationen (Figma) */
     .button {
-        margin-top: var(--space-16);
+        margin-top: var(--space-stack-s);
     }
 }
 
 /* Erfahrung direkt nach dem Profil: 64 px Abstand statt 96 px (gleiche Fläche wie in Figma) */
 [data-module="profile"] + [data-module="experience"] {
-    padding-top: var(--space-64);
+    padding-top: var(--space-section);
 }
 
 [data-module="contact"] {
     .contact-list {
         display: grid;
-        gap: 16px;
+        gap: var(--space-stack-s);
         list-style: none;
+        /* Kontaktwege gross und klar (Ebene H3) */
         font: var(--font-h3);
 
         a {
@@ -1207,16 +1242,17 @@ h2 em {
     color: var(--color-black);
 }
 
+/* Schwarz auf Grün: Kontrast 5.3 : 1 (WCAG AA). Weiss auf Grün hätte nur 3.2 : 1 */
 .pill--accent {
     background-color: var(--color-accent);
-    color: var(--color-white);
+    color: var(--color-black);
 }
 
 /* Tags (Skills, Stationen): nur umrandet, weisser Text (bewusst anders als Figma) */
 .tags {
     display: flex;
     flex-wrap: wrap;
-    gap: var(--space-8);
+    gap: var(--space-stack-xs);
     list-style: none;
 
     .tag {
@@ -1316,7 +1352,8 @@ h2 em {
 
 /* Fliesstext aus dem Editor (Rich Text): Absätze, Zwischentitel, Listen, Links */
 .rich-text {
-    max-width: 780px;
+    /* Zeilenlänge ca. 65–75 Zeichen: angenehmer zu lesen */
+    max-width: var(--measure);
     font: var(--font-body);
 
     /* Abstand zwischen Absätzen, Listen und Zwischentiteln */
@@ -1327,10 +1364,10 @@ h2 em {
     /* Zwischentitel (Editor: Überschrift 2–3) im H3-Stil, deutlich abgesetzt */
     h2,
     h3 {
-        font: var(--font-h3);
+        font: var(--font-h4);
 
         &:not(:first-child) {
-            margin-top: var(--space-48);
+            margin-top: var(--space-stack-m);
         }
 
         /* Text direkt nach einem Zwischentitel näher dran */
@@ -1343,10 +1380,10 @@ h2 em {
     h4,
     h5,
     h6 {
-        font: var(--font-h4);
+        font: var(--font-h5);
 
         &:not(:first-child) {
-            margin-top: var(--space-32);
+            margin-top: var(--space-stack-s);
         }
 
         + * {
@@ -1396,7 +1433,7 @@ h2 em {
 [data-module="text"] {
     .title {
         max-width: 1000px;
-        margin-bottom: var(--space-48);
+        margin-bottom: var(--space-stack-m);
         color: var(--color-accent);
         text-wrap: balance;
     }
@@ -1428,9 +1465,6 @@ h2 em {
 
 /* BREAKPOINT: lg (Tablet): Zwischengrösse für H1, damit lange Titel neben den Eckdaten Platz haben */
 @media (max-width: 1024px) {
-    :root {
-        --font-h1: 500 64px/72px var(--font-sans);
-    }
 
     /* Highlights: alle Projekte aufgeklappt, mit Titel, Kategorie und Jahr (kein Akkordeon ohne Maus).
        main.js schaltet das Akkordeon unter 1024 px ebenfalls aus. */
@@ -1534,14 +1568,6 @@ h2 em {
 
 /* BREAKPOINT: md */
 @media (max-width: 768px) {
-    :root {
-        --gap-around: 24px;
-        --font-h1: 500 40px/48px var(--font-sans);
-        --font-h2: 500 36px/44px var(--font-brand-family);
-        --font-nav: 400 16px/24px var(--font-sans);
-        --font-brand: italic 700 24px/32px var(--font-brand-family);
-    }
-
     /* Header auf dem Handy niedriger (72 px): 12 px oben/unten + 44 px Touch-Ziel + Spielraum */
     :root {
         --header-height: 72px;
@@ -1570,8 +1596,9 @@ h2 em {
             display: grid;
             grid-template-columns: minmax(0, 1fr) auto;
             row-gap: var(--space-12);
-            column-gap: var(--space-16);
-            margin-bottom: var(--space-48);
+            column-gap: var(--space-stack-s);
+            /* Abgrenzung der Karten über Abstand (Blockabstand) */
+            margin-bottom: var(--space-stack-m);
         }
 
         td {
@@ -1605,11 +1632,6 @@ h2 em {
         tr:has(:focus-visible) .row-category {
             color: inherit;
         }
-    }
-
-    /* Header liegt über dem Hero: Titel beginnt unter dem Header */
-    [data-module="hero-image"] {
-        padding-top: calc(var(--header-height) + var(--space-32));
     }
 
     [data-module="logos"] {
@@ -1652,7 +1674,7 @@ h2 em {
         .photo-grid {
             grid-template-columns: 1fr;
             grid-auto-rows: auto;
-            gap: var(--space-16);
+            gap: var(--space-stack-s);
         }
 
         .photo[data-size] {
@@ -1683,7 +1705,7 @@ h2 em {
         .project-header {
             flex-direction: column;
             align-items: flex-start;
-            gap: var(--space-32);
+            gap: var(--space-stack-m);
         }
 
         .facts {
@@ -1698,7 +1720,7 @@ h2 em {
     }
 
     [data-module="profile"] {
-        row-gap: var(--space-48);
+        row-gap: var(--space-stack-m);
     }
 
     [data-module="experience"] {
@@ -1709,7 +1731,7 @@ h2 em {
         /* Station untereinander statt nebeneinander */
         .station {
             flex-direction: column;
-            gap: var(--space-12);
+            gap: var(--space-stack-xs);
         }
 
         .station-head {
@@ -1724,7 +1746,7 @@ h2 em {
         .filter {
             flex-direction: column;
             align-items: flex-start;
-            margin-bottom: var(--space-32);
+            margin-bottom: var(--space-stack-m);
         }
     }
 

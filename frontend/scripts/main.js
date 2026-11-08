@@ -287,11 +287,6 @@ document.querySelectorAll('[data-accordion]').forEach((accordion) => {
         window.scrollTo({ top: target, behavior: reducedMotion ? 'auto' : 'smooth' });
     };
 
-    // Ist das Akkordeon so weit oben, dass das Aufklappen sichtbar ist?
-    const inZone = () => {
-        const rect = accordion.getBoundingClientRect();
-        return rect.top <= headerBottom() + window.innerHeight * 0.35 && rect.bottom > headerBottom() + 120;
-    };
 
     // Mausrad/Trackpad: Scrollweg sammeln; ab ACCORDION_SCROLL_DISTANCE das nächste Projekt öffnen
     accordion.addEventListener('wheel', (event) => {
@@ -317,9 +312,11 @@ document.querySelectorAll('[data-accordion]').forEach((accordion) => {
         const next = activeIndex + direction;
         const canStep = next >= 0 && next <= items.length - 1; // immer ein Projekt offen
 
-        // Zu Beginn einer Geste entscheiden, ob das Akkordeon sie übernimmt
+        // Zu Beginn einer Geste entscheiden, ob das Akkordeon sie übernimmt:
+        // Maus ist über den Highlights (sonst käme kein wheel-Event) und es gibt in dieser Richtung
+        // noch ein Projekt → Akkordeon blättert, die Seite bleibt stehen
         if (gestureCaptured === null) {
-            gestureCaptured = inZone() && canStep;
+            gestureCaptured = canStep;
         }
         // Kein weiteres Projekt in dieser Richtung: Seite wieder normal scrollen lassen
         if (!gestureCaptured || !canStep) {
@@ -336,9 +333,9 @@ document.querySelectorAll('[data-accordion]').forEach((accordion) => {
         scrolled += delta;
 
         // Genug gescrollt und genug Zeit seit dem letzten Schritt: nächstes Projekt
+        // Seite rückt bewusst nicht nach (keepVisible nur bei der Tastatur ohne Maus)
         if (Math.abs(scrolled) >= ACCORDION_SCROLL_DISTANCE && now - lastStep >= ACCORDION_STEP_PAUSE) {
             activate(next);
-            keepVisible(next);
             lastStep = now;
             scrolled = 0;
         }
