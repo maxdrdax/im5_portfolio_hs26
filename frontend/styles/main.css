@@ -65,10 +65,15 @@
     --measure: 68ch;
 }
 
-/* Markierter Text (z. B. beim Kopieren) in der Akzentfarbe; Schwarz auf Grün hat 5.3 : 1 Kontrast */
+/* Markierter Text (z. B. beim Kopieren): halbtransparentes Grün wie das Standard-Blau der Browser.
+   Die Schrift behält ihre Farbe, der Untergrund scheint leicht durch. */
 ::selection {
-    background-color: var(--color-accent);
-    color: var(--color-black);
+    background-color: color-mix(in srgb, var(--color-accent) 50%, transparent);
+}
+
+/* Auf grünem Grund (Rolle und Team) wäre Grün unsichtbar: dort ein halbtransparentes Schwarz */
+[data-page="project"] .project-role ::selection {
+    background-color: color-mix(in srgb, var(--color-black) 25%, transparent);
 }
 
 /* WordPress-Admin-Leiste (nur eingeloggt): Auf dem Handy (unter 600 px) scrollt sie normalerweise mit

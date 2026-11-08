@@ -146,6 +146,7 @@ Zum Vergleich der Stand vor der Umsetzung des CMS-Konzepts (Beispielmodule des S
 | 08.11.2026 | Vor dem Livegang: Website nur für angemeldete Benutzer (Schalter `site_private` in Globales, `template_redirect` + `auth_redirect()`, REST-API für Gäste gesperrt), Anwendungspasswörter abgeschaltet; Testzugang mit Rolle «Abonnent» |
 | 08.11.2026 | Typografie und Abstände überarbeitet: Type-Scale (ca. 1.25) mit `clamp()`, neue Ebene H3, Zeilenlänge 68ch, Grossbuchstaben gesperrt; semantische Abstands-Tokens (`--space-stack-xs/s/m`, `--space-section`), Seitenrand fliessend; Kategorie-Pillen Schwarz auf Grün (WCAG AA); Highlights: Mausrad blättert ohne Seitenscrollen |
 | 08.11.2026 | Admin-Leiste auf dem Handy fixiert (keine Lücke über dem Header), keine Admin-Leiste für Testzugänge; Markierfarbe im Akzent-Grün (`::selection`); Vimeo-Einbettungen mit `dnt=1` (keine Tracking-Cookies) |
+| 08.11.2026 | Markierfarbe halbtransparent (`color-mix()`, 50 % Grün wie das Standard-Blau der Browser), auf der grünen Rollen-Fläche halbtransparentes Schwarz |
 
 ## Learnings
 <!-- In eigenen Worten ergänzen -->
