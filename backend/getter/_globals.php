@@ -7,6 +7,13 @@ function get_global_logo(): string
     return carbon_get_theme_option('logo') ?: get_bloginfo('name');
 }
 
+// Signet (Handy) aus der Mediathek; false, wenn leer
+// SVG hat keine Bildgrössen: get_media_by_id() liefert dann die Datei-URL direkt
+function get_global_logo_signet(): array|false
+{
+    return get_media_by_id(carbon_get_theme_option('logo_signet'), 'xs');
+}
+
 // Copyright im Footer
 function get_global_copyright(): string
 {

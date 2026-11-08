@@ -1,6 +1,6 @@
 # CMS-Konzept: Portfolio maxhutmacher.ch (v04)
 
-> **Änderungen v04:** Neue Navigation (Overlay-Menü, fixer Header: über dem Hero durchsichtig, danach Milchglas). Neue Felder am Menüeintrag: `menu_image`, `menu_video`. Neue Globals für einen gemeinsamen Menü-Hintergrund: `menu_bg_image`, `menu_bg_video`. Hero Bild: Position des Titels `title_position`.
+> **Änderungen v04:** Neue Navigation (Overlay-Menü, fixer Header: über dem Hero durchsichtig, danach Milchglas). Neue Felder am Menüeintrag: `menu_image`, `menu_video`. Neue Globals für einen gemeinsamen Menü-Hintergrund: `menu_bg_image`, `menu_bg_video`. Hero Bild: Position des Titels `title_position`. Globals: `logo_signet`.
 
 Quelle: Screendesign v06 (Figma). Felder im Carbon-Fields-Stil.
 `↳` = Unterfeld des complex-Felds direkt darüber.
@@ -185,6 +185,7 @@ Impressum und Datenschutz.
 | Name | Slug | Feldtyp |
 |---|---|---|
 | Logo | logo | text |
+| Signet (Handy) | logo_signet | image |
 | Copyright | copyright | text |
 | E-Mail | email | text |
 | Socials | socials | complex |
@@ -195,6 +196,7 @@ Impressum und Datenschutz.
 | Menü-Hintergrundvideo (MP4) | menu_bg_video | file (video) |
 
 - Logo = Schriftzug «Max Hutmacher» im Header (Link auf Startseite). Copyright im Footer.
+- `logo_signet`: Auf dem Handy (bis 768 px) zeigt der Header das Signet statt des Schriftzugs (weisses SVG). Leer = Schriftzug. Für Screenreader bleibt der Logo-Text der Name des Links.
 - Footer zeigt nur Socials mit Icon (LinkedIn). Kontaktseite listet alle (LinkedIn, Instagram).
 
 ## Statisch im Theme (nicht im CMS)

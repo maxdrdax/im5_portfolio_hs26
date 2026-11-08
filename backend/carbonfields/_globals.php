@@ -7,7 +7,11 @@ use Carbon_Fields\Field;
 Container::make('theme_options', 'Globales')
     ->add_fields([
         Field::make('text', 'logo', 'Logo (Schriftzug im Header)')
+            ->set_width(50)
             ->set_default_value('Max Hutmacher'),
+        Field::make('image', 'logo_signet', 'Signet (Handy)')
+            ->set_width(50)
+            ->set_help_text('Optional. Ersetzt auf dem Handy den Schriftzug. Weiss, am besten als SVG oder PNG mit transparentem Hintergrund.'),
         Field::make('text', 'copyright', 'Copyright (Footer)')
             ->set_default_value('© Max Hutmacher'),
         Field::make('text', 'email', 'E-Mail')

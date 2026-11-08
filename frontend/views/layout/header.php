@@ -2,6 +2,7 @@
 // -> Header: Schriftzug (Link auf Startseite), «Kontakt» und Menü-Button
 // -> Overlay-Menü: Hauptnavigation «main» mit Hintergrund pro Menüpunkt, E-Mail und Socials
 $logo = get_global_logo();
+$signet = get_global_logo_signet();
 $menu = get_menu_by_slug('main');
 $email = get_global_email();
 $socials = get_global_socials();
@@ -43,8 +44,14 @@ if ($menu_bg) {
 ?>
 
 <header data-layout="header">
-    <a class="logo-link" href="<?= esc_url(home_url('/')) ?>">
+    <a class="logo-link<?php if ($signet) : ?> has-signet<?php endif; ?>" href="<?= esc_url(home_url('/')) ?>">
+        <?php // Schriftzug: Name des Links (auch für Screenreader, wenn auf dem Handy das Signet sichtbar ist) ?>
         <span class="header-name"><?= esc_html($logo) ?></span>
+        <?php if ($signet) : ?>
+            <?php // Signet: nur auf dem Handy sichtbar (CSS); alt leer, weil der Schriftzug den Link benennt ?>
+            <img class="header-signet" src="<?= esc_url($signet['src']) ?>" alt=""
+                 <?php if (!empty($signet['width'])) : ?>width="<?= esc_attr($signet['width']) ?>" height="<?= esc_attr($signet['height']) ?>"<?php endif; ?>>
+        <?php endif; ?>
     </a>
 
     <?php if (!empty($menu)) : ?>

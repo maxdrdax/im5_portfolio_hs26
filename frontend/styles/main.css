@@ -176,6 +176,11 @@ main[data-page="project"] {
         white-space: nowrap;
     }
 
+    /* Signet: nur auf dem Handy (siehe Breakpoint md) */
+    .header-signet {
+        display: none;
+    }
+
     /* Kontakt-Link und Menü-Button: siehe _navigation.css */
 }
 
@@ -1363,6 +1368,41 @@ h2 em {
         --font-h1: 500 64px/72px var(--font-sans);
     }
 
+    /* Highlights: alle Projekte aufgeklappt, mit Titel, Kategorie und Jahr (kein Akkordeon ohne Maus).
+       main.js schaltet das Akkordeon unter 1024 px ebenfalls aus. */
+    [data-module="projects"] .card {
+        height: clamp(320px, 75vw, 648px);
+
+        .card-year,
+        .card-info,
+        .card-arrow,
+        .card-media::after {
+            opacity: 1;
+        }
+    }
+
+    /* Galerie auf der Projektseite: zum Wischen statt aufklappen, ohne sichtbaren Scrollbalken */
+    [data-page="project"] {
+        .gallery-strip {
+            height: auto;
+            overflow-x: auto;
+            scroll-snap-type: x mandatory;
+            scrollbar-width: none;
+
+            &::-webkit-scrollbar {
+                display: none;
+            }
+        }
+
+        /* jedes Bild 3:2 wie geöffnet auf dem Desktop; auf dem Tablet max. 640 px breit */
+        .strip-item,
+        .strip-item.is-active {
+            flex: 0 0 min(85%, 640px);
+            aspect-ratio: 3 / 2;
+            scroll-snap-align: center;
+        }
+    }
+
     /* Tablet und Handy: Header hat immer Milchglas (_navigation.css), darum kein Verlauf oben im Hero */
     [data-module="hero-image"]::after,
     [data-page="project"] .project-hero::after {
@@ -1387,6 +1427,28 @@ h2 em {
 
     [data-layout="header"] {
         padding-block: var(--space-12);
+
+        /* Signet statt Schriftzug (nur wenn eines hinterlegt ist) */
+        .logo-link.has-signet {
+            display: flex;
+            align-items: center;
+            text-box: none;
+
+            /* Schriftzug unsichtbar, aber für Screenreader vorhanden (Name des Links) */
+            .header-name {
+                position: absolute;
+                width: 1px;
+                height: 1px;
+                overflow: hidden;
+                clip-path: inset(50%);
+            }
+        }
+
+        .header-signet {
+            display: block;
+            width: auto;
+            height: 36px;
+        }
     }
 
     /* Projektliste: Titel und Jahr nebeneinander, Kategorie klein unter dem Titel.
@@ -1474,25 +1536,6 @@ h2 em {
             columns: 1;
         }
 
-        /* Handy: zum Wischen, ohne sichtbaren Scrollbalken */
-        .gallery-strip {
-            height: auto;
-            overflow-x: auto;
-            scroll-snap-type: x mandatory;
-            scrollbar-width: none;
-
-            &::-webkit-scrollbar {
-                display: none;
-            }
-        }
-
-        /* Handy: jedes Bild 3:2 wie geöffnet auf dem Desktop */
-        .strip-item,
-        .strip-item.is-active {
-            flex: 0 0 85%;
-            aspect-ratio: 3 / 2;
-            scroll-snap-align: center;
-        }
     }
 
     [data-module="profile"] {

@@ -79,6 +79,9 @@ document.querySelectorAll('[data-scroll-next]').forEach((button) => {
 // =====================================================================
 const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 const canHover = window.matchMedia('(hover: hover) and (pointer: fine)').matches;
+// Tablet und Handy (bis 1024 px): Highlights alle aufgeklappt, Galerie zum Wischen (kein Akkordeon).
+// Als MediaQueryList, damit .matches auch nach einer Änderung der Fensterbreite stimmt.
+const compactLayout = window.matchMedia('(max-width: 1024px)');
 
 // play() gibt ein Promise zurück; Fehler (z. B. Autoplay blockiert) still abfangen
 const playVideo = (video) => {
@@ -236,7 +239,7 @@ document.querySelectorAll('[data-accordion]').forEach((accordion) => {
         });
 
         const video = items[index]?.querySelector('video');
-        if (video && !reducedMotion) {
+        if (video && !reducedMotion && !compactLayout.matches) {
             videoTimer = setTimeout(() => playVideo(video), animationDuration());
         }
     };
@@ -292,7 +295,8 @@ document.querySelectorAll('[data-accordion]').forEach((accordion) => {
 
     // Mausrad/Trackpad: Scrollweg sammeln; ab ACCORDION_SCROLL_DISTANCE das nächste Projekt öffnen
     accordion.addEventListener('wheel', (event) => {
-        if (Math.abs(event.deltaY) < Math.abs(event.deltaX)) {
+        // Tablet/Handy: alle offen, Seite scrollt normal
+        if (compactLayout.matches || Math.abs(event.deltaY) < Math.abs(event.deltaX)) {
             return; // seitliches Wischen ignorieren
         }
         const now = performance.now();
@@ -344,16 +348,21 @@ document.querySelectorAll('[data-accordion]').forEach((accordion) => {
         // Hover klappt auf, ausser kurz nach einem Mausrad-Schritt
         // (sonst würde das nachrückende Scrollen ein anderes Projekt unter die Maus schieben)
         item.addEventListener('mouseenter', () => {
-            if (performance.now() - lastStep > ACCORDION_HOVER_PAUSE) {
+            if (!compactLayout.matches && performance.now() - lastStep > ACCORDION_HOVER_PAUSE) {
                 activate(index);
             }
         });
         // Tastatur (Tab)
-        item.addEventListener('focusin', () => activate(index));
+        item.addEventListener('focusin', () => {
+            if (!compactLayout.matches) {
+                activate(index);
+            }
+        });
 
-        // Touch: erstes Tippen klappt auf, zweites Tippen öffnet das Projekt
+        // Desktop ohne Maus (z. B. Touch-Laptop): erstes Tippen klappt auf, zweites öffnet das Projekt.
+        // Tablet/Handy: alle offen, der Link öffnet sofort.
         item.querySelector('a')?.addEventListener('click', (event) => {
-            if (!item.classList.contains('is-active')) {
+            if (!compactLayout.matches && !item.classList.contains('is-active')) {
                 event.preventDefault();
                 activate(index);
             }
@@ -507,12 +516,12 @@ if (canHover && !reducedMotion) {
 // =====================================================================
 // -> Galerie auf der Projektseite: horizontales Akkordeon
 // Desktop: Streifen gleich breit, Hover/Fokus öffnet ein Bild; das Video darin spielt.
-// Touch: Bilder zum Wischen (CSS), Videos spielen, sobald sie sichtbar sind.
+// Touch, Tablet und Handy: Bilder zum Wischen (CSS), Videos spielen, sobald sie sichtbar sind.
 // =====================================================================
 document.querySelectorAll('[data-strip]').forEach((strip) => {
     const items = strip.querySelectorAll('[data-strip-item]');
 
-    if (!canHover) {
+    if (!canHover || compactLayout.matches) {
         if (reducedMotion) {
             return;
         }

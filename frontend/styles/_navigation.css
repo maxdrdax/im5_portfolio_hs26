@@ -245,14 +245,14 @@ html {
     color: var(--color-white);
     /* clip-path: geschlossen ist das Overlay von unten bis oben «weggeschnitten» (Höhe 0) */
     clip-path: inset(0 0 100% 0);
-    visibility: hidden;
-    /* visibility erst nach der Animation umschalten, sonst wäre das Zuklappen nicht zu sehen */
-    transition: clip-path var(--menu-duration) var(--menu-ease), visibility 0s var(--menu-duration);
+    /* geschlossen: keine Klicks (für Tab und Screenreader sorgt das Attribut inert, siehe main.js).
+       Bewusst ohne visibility: Safari startet sonst den clip-path-Übergang auf dem iPhone teils nicht. */
+    pointer-events: none;
+    transition: clip-path var(--menu-duration) var(--menu-ease);
 
     &.is-open {
         clip-path: inset(0);
-        visibility: visible;
-        transition: clip-path var(--menu-duration) var(--menu-ease), visibility 0s;
+        pointer-events: auto;
     }
 }
 
