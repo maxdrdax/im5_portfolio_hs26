@@ -121,42 +121,54 @@
         transition: opacity var(--bars-step) ease var(--bars-step), visibility 0s;
     }
 
-    /* Zwei Striche, die beim Öffnen zum X werden */
+    /* Menü-Symbol: drei Striche, nach unten kürzer (wie ein Trichter), zentriert, runde Enden.
+       Beim Öffnen werden oben und unten zum X, der mittlere blendet aus. */
     .menu-toggle-bars {
         position: relative;
-        width: 24px;
-        height: 10px;
+        display: block;
+        /* 3 Striche à 3 px + 2 Abstände à 4 px */
+        width: 22px;
+        height: 17px;
+    }
 
-        &::before,
-        &::after {
-            position: absolute;
-            left: 0;
-            width: 100%;
-            height: 2px;
-            background-color: currentColor;
-            content: "";
-            /* Schliessen (X → Striche): erst zurückdrehen, dann auseinanderfahren */
-            transition: transform var(--bars-step) var(--menu-ease), top var(--bars-step) var(--menu-ease) var(--bars-step);
-        }
+    .menu-toggle-bar {
+        position: absolute;
+        left: 50%;
+        height: 3px;
+        border-radius: 3px;
+        background-color: currentColor;
+        /* translate zentriert den Strich horizontal; rotate dreht ihn (zwei eigene Eigenschaften,
+           darum stören sie sich nicht gegenseitig) */
+        translate: -50% 0;
+        /* Schliessen (X → Striche): erst zurückdrehen, dann auseinanderfahren */
+        transition: rotate var(--bars-step) var(--menu-ease),
+            top var(--bars-step) var(--menu-ease) var(--bars-step),
+            width var(--bars-step) var(--menu-ease),
+            opacity var(--bars-step) ease var(--bars-step);
 
-        &::before {
+        &:nth-child(1) {
             top: 0;
+            width: 22px;
         }
 
-        &::after {
-            top: 8px;
-            /* Hover: verkürzt sich nach rechts (Ankerpunkt rechts) */
-            transform-origin: right;
+        &:nth-child(2) {
+            top: 7px;
+            width: 15px;
+        }
+
+        &:nth-child(3) {
+            top: 14px;
+            width: 9px;
         }
     }
 
-    /* Hover (nur Maus) und Tastatur-Fokus auf den geschlossenen Button */
+    /* Hover (nur Maus) und Tastatur-Fokus, Menü geschlossen: alle Striche gleich lang */
     .menu-toggle:focus-visible .menu-toggle-text::after {
         transform: scaleX(1);
     }
 
-    .menu-toggle[aria-expanded="false"]:focus-visible .menu-toggle-bars::after {
-        transform: scaleX(.6);
+    .menu-toggle[aria-expanded="false"]:focus-visible .menu-toggle-bar {
+        width: 22px;
     }
 
     @media (hover: hover) {
@@ -164,28 +176,32 @@
             transform: scaleX(1);
         }
 
-        .menu-toggle[aria-expanded="false"]:hover .menu-toggle-bars::after {
-            transform: scaleX(.6);
+        .menu-toggle[aria-expanded="false"]:hover .menu-toggle-bar {
+            width: 22px;
         }
     }
 
-    /* Öffnen (Striche → X): erst in die Mitte fahren, dann drehen */
-    .menu-toggle[aria-expanded="true"] .menu-toggle-bars {
-        &::before,
-        &::after {
-            transition: top var(--bars-step) var(--menu-ease), transform var(--bars-step) var(--menu-ease) var(--bars-step);
+    /* Öffnen (Striche → X): erst in die Mitte fahren und gleich lang werden, dann drehen */
+    .menu-toggle[aria-expanded="true"] .menu-toggle-bar {
+        transition: top var(--bars-step) var(--menu-ease),
+            width var(--bars-step) var(--menu-ease),
+            opacity var(--bars-step) ease,
+            rotate var(--bars-step) var(--menu-ease) var(--bars-step);
+
+        &:nth-child(1) {
+            top: 7px;
+            width: 22px;
+            rotate: 45deg;
         }
 
-        &::before {
-            top: 4px;
-            transform: rotate(45deg);
+        &:nth-child(2) {
+            opacity: 0;
         }
 
-        &::after {
-            top: 4px;
-            transform: rotate(-45deg);
-            /* X dreht um die Mitte (der Hover-Ankerpunkt rechts gilt hier nicht) */
-            transform-origin: center;
+        &:nth-child(3) {
+            top: 7px;
+            width: 22px;
+            rotate: -45deg;
         }
     }
 }
@@ -539,6 +555,62 @@ html {
     [data-layout="header"]::before {
         opacity: 1;
     }
+
+    /* Aufbau: Signet links | Menü-Symbol Mitte | Kontakt rechts.
+       Raster mit drei Spalten: links und rechts gleich breit (1fr), so steht das Symbol genau in der Mitte.
+       display: contents: Die Gruppe .header-actions verschwindet für das Layout, Kontakt und Button
+       werden direkt Teil des Rasters (im HTML bleiben sie zusammen).
+       header[...] statt nur [...]: etwas spezifischer, weil main.css (später geladen) display: flex setzt. */
+    header[data-layout="header"] {
+        display: grid;
+        grid-template-columns: 1fr auto 1fr;
+
+        .header-actions {
+            display: contents;
+        }
+
+        .logo-link {
+            grid-column: 1;
+            justify-self: start;
+        }
+
+        .menu-toggle {
+            grid-column: 2;
+            grid-row: 1;
+        }
+
+        /* Kontakt bleibt bei offenem Menü sichtbar: Ohne Beschriftung «Schliessen» braucht es
+           seinen Platz nicht (stärker als die Regel body.menu-open weiter oben) */
+        body.menu-open & .header-link {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        /* Kontakt als Button: dünne Linie, ganz abgerundet, ohne Unterstreichung */
+        .header-link {
+            grid-column: 3;
+            grid-row: 1;
+            justify-self: end;
+            min-height: 40px;
+            padding-inline: var(--space-16);
+            border: 1px solid currentColor;
+            border-radius: 999px;
+
+            &::after {
+                display: none;
+            }
+        }
+
+        /* Nur das Symbol: Beschriftung «Menü»/«Schliessen» bleibt für Screenreader vorhanden */
+        .menu-toggle-label {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            overflow: hidden;
+            clip-path: inset(50%);
+            white-space: nowrap;
+        }
+    }
 }
 
 @media (max-width: 768px) {
@@ -553,18 +625,6 @@ html {
     .menu-foot {
         flex-direction: column;
         gap: 0;
-    }
-}
-
-/* Sehr schmale Handys: «Menü» nur für Screenreader, sichtbar bleiben die Striche */
-@media (max-width: 480px) {
-    [data-layout="header"] .menu-toggle-label {
-        position: absolute;
-        width: 1px;
-        height: 1px;
-        overflow: hidden;
-        clip-path: inset(50%);
-        white-space: nowrap;
     }
 }
 
@@ -583,10 +643,8 @@ html {
     [data-layout="header"] .menu-toggle .menu-toggle-text,
     [data-layout="header"] .menu-toggle .menu-toggle-text::after,
     [data-layout="header"] .menu-toggle[aria-expanded] .menu-toggle-text,
-    [data-layout="header"] .menu-toggle .menu-toggle-bars::before,
-    [data-layout="header"] .menu-toggle .menu-toggle-bars::after,
-    [data-layout="header"] .menu-toggle[aria-expanded="true"] .menu-toggle-bars::before,
-    [data-layout="header"] .menu-toggle[aria-expanded="true"] .menu-toggle-bars::after {
+    [data-layout="header"] .menu-toggle .menu-toggle-bar,
+    [data-layout="header"] .menu-toggle[aria-expanded="true"] .menu-toggle-bar {
         transition: none;
     }
 

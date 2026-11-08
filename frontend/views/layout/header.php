@@ -70,7 +70,12 @@ if ($menu_bg) {
                     <span class="menu-toggle-text menu-toggle-text--closed">Menü</span>
                     <span class="menu-toggle-text menu-toggle-text--open">Schliessen</span>
                 </span>
-                <span class="menu-toggle-bars" aria-hidden="true"></span>
+                <?php // Menü-Symbol: drei Striche (werden beim Öffnen zum X), nur Dekoration ?>
+                <span class="menu-toggle-bars" aria-hidden="true">
+                    <span class="menu-toggle-bar"></span>
+                    <span class="menu-toggle-bar"></span>
+                    <span class="menu-toggle-bar"></span>
+                </span>
             </button>
         </div>
     <?php endif; ?>

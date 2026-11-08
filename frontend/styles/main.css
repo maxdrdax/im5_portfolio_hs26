@@ -176,7 +176,7 @@ main[data-page="project"] {
         white-space: nowrap;
     }
 
-    /* Signet: nur auf dem Handy (siehe Breakpoint md) */
+    /* Signet: nur auf Tablet und Handy (siehe Breakpoint lg) */
     .header-signet {
         display: none;
     }
@@ -1403,6 +1403,30 @@ h2 em {
         }
     }
 
+    /* Tablet und Handy: Signet statt Schriftzug (nur wenn eines hinterlegt ist) */
+    [data-layout="header"] {
+        .logo-link.has-signet {
+            display: flex;
+            align-items: center;
+            text-box: none;
+
+            /* Schriftzug unsichtbar, aber für Screenreader vorhanden (Name des Links) */
+            .header-name {
+                position: absolute;
+                width: 1px;
+                height: 1px;
+                overflow: hidden;
+                clip-path: inset(50%);
+            }
+        }
+
+        .header-signet {
+            display: block;
+            width: auto;
+            height: 36px;
+        }
+    }
+
     /* Tablet und Handy: Header hat immer Milchglas (_navigation.css), darum kein Verlauf oben im Hero */
     [data-module="hero-image"]::after,
     [data-page="project"] .project-hero::after {
@@ -1427,28 +1451,6 @@ h2 em {
 
     [data-layout="header"] {
         padding-block: var(--space-12);
-
-        /* Signet statt Schriftzug (nur wenn eines hinterlegt ist) */
-        .logo-link.has-signet {
-            display: flex;
-            align-items: center;
-            text-box: none;
-
-            /* Schriftzug unsichtbar, aber für Screenreader vorhanden (Name des Links) */
-            .header-name {
-                position: absolute;
-                width: 1px;
-                height: 1px;
-                overflow: hidden;
-                clip-path: inset(50%);
-            }
-        }
-
-        .header-signet {
-            display: block;
-            width: auto;
-            height: 36px;
-        }
     }
 
     /* Projektliste: Titel und Jahr nebeneinander, Kategorie klein unter dem Titel.
