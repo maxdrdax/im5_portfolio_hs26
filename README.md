@@ -142,9 +142,11 @@ Zum Vergleich der Stand vor der Umsetzung des CMS-Konzepts (Beispielmodule des S
 | 08.11.2026 | Tablet/Handy (bis 1024 px): Highlights alle aufgeklappt mit Infos, Galerie zum Wischen statt Akkordeon (`matchMedia`); Menü-Overlay ohne `visibility` (Safari); Signet statt Schriftzug auf dem Handy (`logo_signet` in Globals, SVG als `<img>`) |
 | 08.11.2026 | Header auf Tablet/Handy: Signet links, Menü-Symbol in der Mitte, «Kontakt» als umrandeter Button rechts (Raster `1fr auto 1fr`, `display: contents`); neues Menü-Symbol mit drei unterschiedlich langen Strichen, Animation zum X |
 | 08.11.2026 | Typografie (kleinste Schrift 14 px, H1 mobil 40 px), Eckdaten als Datenblatt mit Linien; eigene Icon-Bibliothek (`frontend/assets/icons/`, `get_icon()`, Pfeile als abgerundete Flächen, Scroll-Pfeil mit Kontur → Füllung beim Hover); Galerie auf Tablet/Handy in voller Breite mit Punkten; aktiver Kontakt-Button ausgefüllt; Logos auf dem Handy grösser |
+| 08.11.2026 | Hover nur mit Maus (keine hängenden Zustände auf Touch), Datenblatt-Stil auch für den Steckbrief, Logos mit gleicher Fläche (Höhe = Grösse ÷ √Seitenverhältnis), Projektliste auf dem Handy als Karten mit Vorschaubild 1:1; Galerie per Mausrad und Pfeiltasten blättern (wie Highlights); Bildformate auf dem Handy: Hochformat 4:5, Fotos einspaltig (1:1 / 4:5 / 3:2), `sizes` angepasst |
 
 ## Learnings
 <!-- In eigenen Worten ergänzen -->
+<!-- Vorschlag (Bildformate Mobile): «Auf dem Handy wirken Hochformate (4:5) grösser als Querformate. Mit aspect-ratio und object-fit: cover lässt sich das Format pro Bildschirmgrösse festlegen, ohne andere Bilder hochzuladen; das Feld focus bestimmt per object-position den Ausschnitt. Wichtig: sizes im srcset an die neue Breite anpassen, sonst lädt der Browser zu kleine Bilder.» -->
 - _Folgt._
 
 ## Schwierigkeiten

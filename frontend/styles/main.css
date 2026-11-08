@@ -214,11 +214,17 @@ main[data-page="project"] {
         transition: transform 220ms ease;
     }
 
-    &:hover::after,
     &:focus-visible::after,
     &[aria-current="page"]::after,
     &[aria-pressed="true"]::after {
         transform: scaleX(1);
+    }
+
+    /* Hover nur mit Maus (auf Touch bliebe die Linie nach dem Tippen stehen) */
+    @media (hover: hover) {
+        &:hover::after {
+            transform: scaleX(1);
+        }
     }
 }
 
@@ -342,37 +348,11 @@ main[data-page="project"] {
         font: var(--font-h1);
     }
 
-    /* Eckdaten als Datenblatt: jede Zeile mit feiner Linie, Bezeichnung klein und grau
-       in Grossbuchstaben, Wert weiss (gleiche Linien-Sprache wie die Projektliste) */
+    /* Eckdaten (Stil: Datenblatt, siehe .facts unten): rechts, 360 px breit */
     .facts {
-        --facts-line: color-mix(in srgb, var(--color-white) 25%, transparent);
         flex: 0 0 360px;
         /* bleibt rechts, auch wenn der Titel ausgeblendet ist */
         margin-left: auto;
-        gap: 0;
-        border-bottom: 1px solid var(--facts-line);
-        font: var(--font-body);
-
-        .fact {
-            display: grid;
-            grid-template-columns: 2fr 3fr;
-            gap: var(--space-16);
-            /* Bezeichnung (14 px) und Wert (16 px) auf derselben Grundlinie */
-            align-items: baseline;
-            padding-block: var(--space-12);
-            border-top: 1px solid var(--facts-line);
-        }
-
-        dt {
-            color: var(--color-border);
-            font: var(--font-caption);
-            letter-spacing: .06em;
-            text-transform: uppercase;
-        }
-
-        dd {
-            text-align: left;
-        }
     }
 
     .project-subtitle {
@@ -408,9 +388,14 @@ main[data-page="project"] {
             font: var(--font-body-large);
 
             /* auf Grün: Link beim Hover schwarz statt grün */
-            a:hover,
             a:focus-visible {
                 color: var(--color-black);
+            }
+
+            @media (hover: hover) {
+                a:hover {
+                    color: var(--color-black);
+                }
             }
         }
 
@@ -786,8 +771,9 @@ h2 em {
             }
         }
 
-        /* Kategorie unter dem Titel: nur auf dem Handy (siehe Breakpoint md) */
-        .row-category {
+        /* Kategorie unter dem Titel und Vorschaubild: nur auf dem Handy (siehe Breakpoint md) */
+        .row-category,
+        .cell-thumb {
             display: none;
         }
 
@@ -962,9 +948,8 @@ h2 em {
 }
 
 [data-module="logos"] {
-    /* Alle Logos in einer gleich grossen Box (eingepasst mit contain) */
-    --logo-width: 240px;
-    --logo-height: 100px;
+    /* Grundgrösse: Kantenlänge, die ein quadratisches Logo hätte (alle Logos gleich viel Fläche) */
+    --logo-size: 150px;
 
     /* Sichtbarer Bereich = Inhaltsbreite; was darüber hinausgeht, wird abgeschnitten */
     .logo-marquee {
@@ -989,10 +974,13 @@ h2 em {
             display: block;
         }
 
+        /* Gleiche optische Grösse: jedes Logo bekommt ungefähr dieselbe Fläche.
+           Höhe = Grundgrösse ÷ √(Seitenverhältnis), Breite ergibt sich aus dem Verhältnis.
+           Breite Logos werden so flacher, quadratische höher. --logo-ratio setzt logos.php. */
         img {
             display: block;
-            width: var(--logo-width);
-            height: var(--logo-height);
+            width: calc(var(--logo-size) * sqrt(var(--logo-ratio, 2)));
+            height: calc(var(--logo-size) / sqrt(var(--logo-ratio, 2)));
             object-fit: contain;
         }
     }
@@ -1240,23 +1228,30 @@ h2 em {
     }
 }
 
-/* Steckbrief: Bezeichnung links, Wert rechtsbündig auf derselben Zeile */
+/* Datenblatt (Steckbrief auf Über mich, Eckdaten auf der Projektseite): jede Zeile mit feiner Linie,
+   Bezeichnung klein und grau in Grossbuchstaben, Wert weiss */
 .facts {
+    --facts-line: color-mix(in srgb, var(--color-white) 25%, transparent);
     display: flex;
     flex-direction: column;
-    gap: var(--space-12);
-    font: var(--font-caption);
+    border-bottom: 1px solid var(--facts-line);
+    font: var(--font-body);
 
     .fact {
-        display: flex;
-        justify-content: space-between;
-        /* oben bündig: bei mehrzeiligen Werten steht die Bezeichnung auf Höhe der ersten Zeile */
-        align-items: flex-start;
-        gap: var(--space-24);
+        display: grid;
+        grid-template-columns: 2fr 3fr;
+        gap: var(--space-16);
+        /* Bezeichnung (14 px) und erste Zeile des Werts (16 px) auf derselben Grundlinie */
+        align-items: baseline;
+        padding-block: var(--space-12);
+        border-top: 1px solid var(--facts-line);
     }
 
-    dd {
-        text-align: right;
+    dt {
+        color: var(--color-border);
+        font: var(--font-caption);
+        letter-spacing: .06em;
+        text-transform: uppercase;
     }
 }
 
@@ -1274,9 +1269,14 @@ h2 em {
     text-decoration: none;
     transition: background-color 300ms ease;
 
-    &:hover,
     &:focus-visible {
         background-color: var(--color-white);
+    }
+
+    @media (hover: hover) {
+        &:hover {
+            background-color: var(--color-white);
+        }
     }
 }
 
@@ -1294,20 +1294,21 @@ h2 em {
 
     color: var(--color-white);
 
-    /* langer Pfeil (24 × 32): nur Kontur; Hover/Fokus füllt ihn */
+    /* langer Pfeil (24 × 32), ausgefüllt (Touch-Geräte) */
     .icon {
         width: 39px;
         height: 52px;
-        fill: transparent;
         transition: fill 300ms ease;
     }
 
-    &:focus-visible .icon {
-        fill: currentColor;
-    }
-
+    /* Mit Maus: nur Kontur, Hover/Fokus füllt ihn */
     @media (hover: hover) {
-        &:hover .icon {
+        .icon {
+            fill: transparent;
+        }
+
+        &:hover .icon,
+        &:focus-visible .icon {
             fill: currentColor;
         }
     }
@@ -1379,9 +1380,14 @@ h2 em {
         text-underline-offset: 3px;
         transition: color 200ms ease;
 
-        &:hover,
         &:focus-visible {
             color: var(--color-accent);
+        }
+
+        @media (hover: hover) {
+            &:hover {
+                color: var(--color-accent);
+            }
         }
     }
 }
@@ -1515,7 +1521,7 @@ h2 em {
         .header-signet {
             display: block;
             width: auto;
-            height: 36px;
+            height: 32px;
         }
     }
 
@@ -1558,15 +1564,34 @@ h2 em {
             display: none;
         }
 
+        /* Jede Zeile wird zu einer Karte: Vorschaubild 1:1 oben, darunter Titel (links) und Jahr (rechts).
+           Abgrenzung über Abstand statt Linien. */
         tr {
             display: grid;
             grid-template-columns: minmax(0, 1fr) auto;
+            row-gap: var(--space-12);
+            column-gap: var(--space-16);
+            margin-bottom: var(--space-48);
         }
 
         td {
             height: auto;
-            min-height: 56px;
-            padding-block: var(--space-12);
+            min-height: 0;
+            padding: 0;
+            border-bottom: 0;
+        }
+
+        .cell-thumb {
+            display: block;
+            grid-column: 1 / -1;
+
+            img {
+                display: block;
+                width: 100%;
+                aspect-ratio: 1;
+                border-radius: var(--radius);
+                object-fit: cover;
+            }
         }
 
         .row-category {
@@ -1588,27 +1613,62 @@ h2 em {
     }
 
     [data-module="logos"] {
-        /* Handy: Logos grösser, Abstand kleiner */
-        --logo-width: 200px;
-        --logo-height: 80px;
+        /* Handy: Logos etwas grösser im Verhältnis zur Breite, Abstand kleiner */
+        --logo-size: 135px;
 
         .logo-item {
             padding-inline: var(--space-12);
         }
     }
 
-    /* Handy: 2 Spalten; grosse Kacheln über die volle Breite */
-    [data-module="gallery-photos"] {
-        --photo-cols: 2;
+    /* ---------- Bildformate auf dem Handy: Hochformat wirkt grösser (Hero ausgenommen) ----------
+       aspect-ratio legt das Seitenverhältnis der Box fest; object-fit: cover füllt sie mit dem Bild
+       (Überstehendes wird abgeschnitten); object-position bestimmt, welcher Teil sichtbar bleibt. */
 
-        .photo[data-size="large"],
-        .photo[data-size="panorama"] {
-            grid-column: 1 / -1;
+    /* Highlights: jedes Projekt im Format 4:5 (alle sind auf dem Handy offen, siehe Breakpoint lg) */
+    /* .is-active mitnennen: Die Desktop-Regel für die offene Karte ist sonst stärker */
+    [data-module="projects"] .card,
+    [data-module="projects"] .card.is-active {
+        height: auto;
+        aspect-ratio: 4 / 5;
+    }
+
+    /* Galerie im Projektbeitrag (zum Wischen) und Bild «Rolle und Team»: 4:5 */
+    [data-page="project"] {
+        .strip-item,
+        .strip-item.is-active {
+            aspect-ratio: 4 / 5;
         }
 
+        .project-role .role-image img {
+            aspect-ratio: 4 / 5;
+        }
+    }
+
+    /* Fotogalerie einspaltig. Format aus dem Feld «Grösse im Raster»
+       («Automatisch» ist im Getter schon zu Klein/Breit/Hoch aufgelöst):
+       Klein 1:1, Hoch und Gross 4:5, Breit und Panorama 3:2. Ausschnitt weiter über «focus». */
+    [data-module="gallery-photos"] {
         .photo-grid {
-            gap: var(--space-12);
-            grid-auto-rows: calc((100cqw - var(--space-12)) / 2 * var(--photo-row-ratio));
+            grid-template-columns: 1fr;
+            grid-auto-rows: auto;
+            gap: var(--space-16);
+        }
+
+        .photo[data-size] {
+            grid-column: auto;
+            grid-row: auto;
+            aspect-ratio: 1;
+        }
+
+        .photo[data-size="tall"],
+        .photo[data-size="large"] {
+            aspect-ratio: 4 / 5;
+        }
+
+        .photo[data-size="wide"],
+        .photo[data-size="panorama"] {
+            aspect-ratio: 3 / 2;
         }
     }
 
@@ -1660,10 +1720,11 @@ h2 em {
     [data-module="projects"][data-layout-type="list"] {
         grid-template-columns: 1fr;
 
+        /* Filter untereinander */
         .filter {
-            flex-direction: row;
-            flex-wrap: wrap;
-            margin-bottom: var(--space-24);
+            flex-direction: column;
+            align-items: flex-start;
+            margin-bottom: var(--space-32);
         }
     }
 

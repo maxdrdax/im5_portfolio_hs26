@@ -7,10 +7,11 @@ if (empty($photos)) {
     return;
 }
 
-// Angezeigte Breite pro Kachelgrösse (für sizes): Desktop 3 Spalten à 411 px, Handy 2 Spalten
+// Angezeigte Breite pro Kachelgrösse (für sizes): Desktop 3 Spalten à 411 px, Handy einspaltig (volle Breite).
+// sizes sagt dem Browser vor dem Laden, wie breit das Bild wird; daraus wählt er die passende Datei aus srcset.
 $sizes_attr = [
-    'small' => '(max-width: 768px) 50vw, 411px',
-    'tall' => '(max-width: 768px) 50vw, 411px',
+    'small' => '(max-width: 768px) 100vw, 411px',
+    'tall' => '(max-width: 768px) 100vw, 411px',
     'wide' => '(max-width: 768px) 100vw, 845px',
     'large' => '(max-width: 768px) 100vw, 845px',
     'panorama' => '(max-width: 1440px) 100vw, 1280px',

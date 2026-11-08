@@ -15,6 +15,8 @@ function get_project_by_id(int $id): array
         'title' => get_the_title($id),
         'url' => get_permalink($id),
         'cover' => get_media_by_id(carbon_get_post_meta($id, 'cover'), 'l'),
+        // kleine Version (600 px) für Vorschaubilder, z. B. Projektliste auf dem Handy
+        'cover_small' => get_media_by_id(carbon_get_post_meta($id, 'cover'), 's'),
         'cover_video' => get_video_by_id(carbon_get_post_meta($id, 'cover_video')),
         'year' => carbon_get_post_meta($id, 'year'),
         'context' => carbon_get_post_meta($id, 'context'),

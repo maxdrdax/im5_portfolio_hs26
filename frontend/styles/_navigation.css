@@ -373,11 +373,18 @@ html {
     transform: translateY(110%);
     transition: transform var(--menu-duration) var(--menu-ease), color 250ms ease, opacity 400ms ease;
 
-    /* Hover/Fokus: Wort wechselt in die kursive Serif (wie im Screendesign) */
-    &:hover .menu-word,
+    /* Hover (nur Maus) und Tastatur-Fokus: Wort wechselt in die kursive Serif (wie im Screendesign).
+       Auf Touch nicht: Beim Antippen würde sonst kurz die Schrift wechseln. */
     &:focus-visible .menu-word {
         font-family: var(--font-brand-family);
         font-style: italic;
+    }
+
+    @media (hover: hover) {
+        &:hover .menu-word {
+            font-family: var(--font-brand-family);
+            font-style: italic;
+        }
     }
 }
 
@@ -394,9 +401,14 @@ html {
     transition: transform 500ms var(--accordion-ease);
 }
 
-.menu-link:hover .menu-word,
 .menu-link:focus-visible .menu-word {
     transform: translateX(var(--space-32));
+}
+
+@media (hover: hover) {
+    .menu-link:hover .menu-word {
+        transform: translateX(var(--space-32));
+    }
 }
 
 .menu-nr {
@@ -498,9 +510,16 @@ html {
         color: var(--color-white);
         text-decoration: none;
 
-        &:hover {
+        &:focus-visible {
             text-decoration: underline;
             text-underline-offset: 4px;
+        }
+
+        @media (hover: hover) {
+            &:hover {
+                text-decoration: underline;
+                text-underline-offset: 4px;
+            }
         }
     }
 }
@@ -611,6 +630,20 @@ html {
                 background-color: var(--color-white);
                 color: var(--color-black);
             }
+        }
+
+        /* Menü-Symbol grösser, damit es neben Signet und Kontakt nicht untergeht.
+           scale vergrössert nur die Darstellung (Striche, X-Animation bleiben gleich) */
+        .menu-toggle-bars {
+            scale: 1.4;
+        }
+
+        /* Kontakt-Button etwas kleiner (Schrift 14 px) */
+        .header-link {
+            min-height: 36px;
+            padding-inline: var(--space-12);
+            font: var(--font-caption);
+            text-transform: uppercase;
         }
 
         /* Nur das Symbol: Beschriftung «Menü»/«Schliessen» bleibt für Screenreader vorhanden */

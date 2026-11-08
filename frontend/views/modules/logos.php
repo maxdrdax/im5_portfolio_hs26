@@ -17,7 +17,14 @@ $logos = array_filter($data['logos'] ?? [], function ($item) {
         <div class="logo-marquee" data-marquee>
             <ul class="logo-track" data-marquee-track>
                 <?php foreach ($logos as $item) : ?>
-                    <li class="logo-item">
+                    <?php
+                    // Seitenverhältnis (Breite / Höhe) für gleiche optische Grösse (CSS: --logo-ratio).
+                    // SVG ohne Grössenangaben: Annahme 2 : 1
+                    $w = (int) ($item['logo']['width'] ?? 0);
+                    $h = (int) ($item['logo']['height'] ?? 0);
+                    $ratio = ($w > 0 && $h > 0) ? round($w / $h, 3) : 2;
+                    ?>
+                    <li class="logo-item" style="--logo-ratio: <?= esc_attr($ratio) ?>">
                         <?php if (!empty($item['link'])) : ?>
                             <a href="<?= esc_url($item['link']) ?>" target="_blank" rel="noopener">
                         <?php endif; ?>

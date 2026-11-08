@@ -369,6 +369,41 @@ document.querySelectorAll('[data-accordion]').forEach((accordion) => {
         });
     });
 
+    // -> Pfeiltasten: ↓ nächstes Projekt, ↑ vorheriges, wenn die Maus über den Highlights ist
+    // oder der Fokus darin liegt. Am Anfang/Ende scrollt die Seite normal.
+    let pointerOver = false;
+    accordion.addEventListener('mouseenter', () => { pointerOver = true; });
+    accordion.addEventListener('mouseleave', () => { pointerOver = false; });
+
+    document.addEventListener('keydown', (event) => {
+        if (compactLayout.matches || !(pointerOver || accordion.contains(document.activeElement))) {
+            return;
+        }
+        const direction = { ArrowDown: 1, ArrowUp: -1 }[event.key];
+        if (!direction) {
+            return;
+        }
+        // Maus über den Highlights: Pfeiltasten scrollen die Seite nie (auch nicht am Anfang/Ende)
+        if (pointerOver) {
+            event.preventDefault();
+        }
+        const next = activeIndex + direction;
+        if (next < 0 || next > items.length - 1) {
+            return;
+        }
+        event.preventDefault();
+        activate(next);
+        // Nur ohne Maus (Tastatur) die Seite nachrücken, damit das offene Projekt sichtbar bleibt
+        if (!pointerOver) {
+            keepVisible(next);
+        }
+        lastStep = performance.now();
+        // Tastatur: Fokus auf den Link des offenen Projekts (Enter öffnet es)
+        if (accordion.contains(document.activeElement)) {
+            items[next].querySelector('a')?.focus({ preventScroll: true });
+        }
+    });
+
     // Maus oder Fokus verlässt die Liste: das zuletzt geöffnete Projekt bleibt offen
     // (sonst würde es nach dem Scrollen beim kleinsten Mauswackeln auf Projekt 1 zurückspringen)
 
@@ -572,7 +607,11 @@ document.querySelectorAll('[data-strip]').forEach((strip) => {
         return;
     }
 
+    const itemList = [...items];
+    let activeIndex = -1; // -1 = kein Bild offen (alle Streifen gleich breit)
+
     const activate = (activeItem) => {
+        activeIndex = itemList.indexOf(activeItem);
         items.forEach((item) => {
             const isActive = item === activeItem;
             item.classList.toggle('is-active', isActive);
@@ -589,8 +628,119 @@ document.querySelectorAll('[data-strip]').forEach((strip) => {
         });
     };
 
+    // -> Mausrad/Trackpad: horizontal durch die Bilder blättern (gleiches Prinzip wie die Highlights)
+    // Scrollweg wird gesammelt; nach ACCORDION_SCROLL_DISTANCE öffnet sich das nächste bzw. vorherige Bild.
+    // Am ersten/letzten Bild scrollt die Seite normal weiter. Konstanten: siehe Highlights-Akkordeon.
+    let lastWheel = 0;
+    let lastStep = 0;
+    let scrolled = 0;
+    let gestureCaptured = null;
+
+    // Galerie ganz ins Bild rücken (sanft), falls sie beim Blättern oben oder unten angeschnitten ist
+    const ensureVisible = () => {
+        const rect = strip.getBoundingClientRect();
+        const header = document.querySelector('[data-layout="header"]');
+        const top = header ? header.getBoundingClientRect().bottom : 0;
+        if (rect.top < top || rect.bottom > window.innerHeight) {
+            window.scrollBy({
+                top: rect.top - top - (window.innerHeight - top - rect.height) / 2,
+                behavior: reducedMotion ? 'auto' : 'smooth',
+            });
+        }
+    };
+
+    // Ein Bild weiter (+1) oder zurück (-1); false am Anfang/Ende (dann scrollt die Seite normal)
+    const step = (direction, { scrollPage = true } = {}) => {
+        const next = activeIndex + direction;
+        if (next < 0 || next > items.length - 1) {
+            return false;
+        }
+        activate(items[next]);
+        if (scrollPage) {
+            ensureVisible();
+        }
+        lastStep = performance.now();
+        return true;
+    };
+
+    strip.addEventListener('wheel', (event) => {
+        if (compactLayout.matches || Math.abs(event.deltaY) < Math.abs(event.deltaX)) {
+            return; // Tablet/Handy (Wischen) und seitliches Wischen auf dem Trackpad: nicht abfangen
+        }
+        const now = performance.now();
+        if (now - lastWheel > ACCORDION_GESTURE_GAP) {
+            scrolled = 0;
+            gestureCaptured = null;
+        }
+        lastWheel = now;
+
+        const delta = event.deltaMode === 1 ? event.deltaY * 16 : event.deltaY;
+        const direction = Math.sign(delta);
+        if (!direction) {
+            return;
+        }
+        const next = activeIndex + direction;
+        const canStep = next >= 0 && next <= items.length - 1;
+
+        // Maus ist über der Galerie (sonst käme kein wheel-Event): Galerie übernimmt die Geste,
+        // solange es in dieser Richtung noch ein Bild gibt
+        if (gestureCaptured === null) {
+            gestureCaptured = canStep;
+        }
+        if (!gestureCaptured || !canStep) {
+            gestureCaptured = false;
+            return;
+        }
+
+        event.preventDefault(); // Seite nicht scrollen, solange die Galerie blättert
+
+        if (Math.sign(scrolled) !== direction) {
+            scrolled = 0;
+        }
+        scrolled += delta;
+
+        if (Math.abs(scrolled) >= ACCORDION_SCROLL_DISTANCE && now - lastStep >= ACCORDION_STEP_PAUSE) {
+            step(direction);
+            scrolled = 0;
+        }
+    }, { passive: false });
+
+    // -> Pfeiltasten: ↓/→ nächstes Bild, ↑/← vorheriges, wenn die Maus über der Galerie ist
+    // oder der Fokus darin liegt. Am Anfang/Ende scrollt die Seite normal.
+    let pointerOver = false;
+    strip.addEventListener('mouseenter', () => { pointerOver = true; });
+    strip.addEventListener('mouseleave', () => { pointerOver = false; });
+
+    document.addEventListener('keydown', (event) => {
+        if (compactLayout.matches || !(pointerOver || strip.contains(document.activeElement))) {
+            return;
+        }
+        const keys = { ArrowDown: 1, ArrowRight: 1, ArrowUp: -1, ArrowLeft: -1 };
+        const direction = keys[event.key];
+        if (!direction) {
+            return;
+        }
+        // Maus über der Galerie: Pfeiltasten scrollen die Seite nie, und die Seite rückt nicht nach
+        if (pointerOver) {
+            event.preventDefault();
+        }
+        if (step(direction, { scrollPage: !pointerOver })) {
+            event.preventDefault();
+            // Tastatur: Fokus wandert mit, damit Screenreader das offene Bild kennen
+            if (strip.contains(document.activeElement)) {
+                items[activeIndex].focus({ preventScroll: true });
+            }
+        }
+    });
+
     items.forEach((item) => {
-        item.addEventListener('mouseenter', () => activate(item));
+        // Hover öffnet das Bild, ausser kurz nach einem Mausrad-Schritt (die Streifen verschieben sich
+        // beim Blättern unter der Maus; sonst würde sofort ein anderes Bild aufgehen)
+        item.addEventListener('mouseenter', () => {
+            if (performance.now() - lastStep > ACCORDION_HOVER_PAUSE) {
+                activate(item);
+            }
+        });
         item.addEventListener('focusin', () => activate(item));
     });
 

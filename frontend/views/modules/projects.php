@@ -94,6 +94,12 @@ $has_featured = in_array(true, array_column($projects, 'featured'), true);
                         data-preview-target="<?= esc_attr($project['id']) ?>">
                         <?php // Der Link deckt per CSS die ganze Zeile ab (.row-link::after) ?>
                         <?php $category_list = implode(', ', array_column($project['categories'], 'name')); ?>
+                        <?php // Nur Handy: Vorschaubild 1:1 über dem Titel (auf dem Desktop übernimmt das die Hover-Vorschau) ?>
+                        <td class="cell-thumb">
+                            <?php if (!empty($project['cover_small']['src'])) : ?>
+                                <img src="<?= esc_url($project['cover_small']['src']) ?>" alt="" loading="lazy" decoding="async">
+                            <?php endif; ?>
+                        </td>
                         <td>
                             <a class="row-link" href="<?= esc_url($project['url']) ?>"><?= esc_html($project['title']) ?></a>
                             <?php // Nur Handy: Kategorie klein unter dem Titel (die Kategorie-Spalte ist dort ausgeblendet) ?>

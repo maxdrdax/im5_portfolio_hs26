@@ -36,7 +36,7 @@ Alle 7 Seiten (Startseite, Projekte, Fotos, Über mich, Kontakt, Impressum, Date
 - `video_url` ist optional (volle Videos, YouTube/Vimeo): wird per oEmbed eingebettet (vor der Galerie), leer = nicht ausgeben.
 - `featured` markiert das Projekt für den Filter «Ausgewählte Projekte».
 - Unter dem Hero stehen Kategorie und Titel sichtbar (Figma). `hide_title` blendet sie aus, z. B. wenn der Schriftzug schon im Titelbild steht; für Screenreader bleibt der Titel erhalten.
-- Bildergalerie als horizontales Akkordeon (Figma): Streifen gleich breit, beim Hover öffnet sich ein Bild. Auf dem Handy nebeneinander zum Wischen.
+- Bildergalerie als horizontales Akkordeon (Figma): Streifen gleich breit, beim Hover öffnet sich ein Bild; mit Mausrad/Trackpad blättert man durch die Bilder (gleiches Prinzip wie die Highlights). Auf Tablet und Handy Bilder in voller Breite zum Wischen, mit Punkten darunter.
 
 ### Foto `photo`: gleichförmiger Aufbau
 | Name | Slug | Feldtyp |
@@ -90,7 +90,7 @@ Projekte (Text leer), Fotos, Kontakt.
 | Darstellung | layout | select (Karussell / Liste) |
 | Projekte | projects | association (Post Type project) |
 
-Startseite: «Highlights» als Karussell mit ausgewählten Projekten. Seite Projekte: Liste als Tabelle mit Hover-Vorschau und Filterliste (aus `project_category`). Leeres Feld «Projekte» = alle Projekte automatisch. Daten kommen immer aus dem Post Type Projekt.
+Startseite: «Highlights» als Karussell mit ausgewählten Projekten. Seite Projekte: Liste als Tabelle mit Hover-Vorschau und Filterliste (aus `project_category`); auf dem Handy pro Projekt ein Vorschaubild 1:1 über Titel und Jahr, Filter untereinander. Leeres Feld «Projekte» = alle Projekte automatisch. Daten kommen immer aus dem Post Type Projekt.
 
 ### Fotogalerie `gallery_photos`
 Keine Felder. Listet alle Fotos, Filter aus `photo_category`.
