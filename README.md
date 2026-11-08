@@ -150,6 +150,7 @@ Zum Vergleich der Stand vor der Umsetzung des CMS-Konzepts (Beispielmodule des S
 | 08.11.2026 | Overlay-Menü: «Start» als erster Punkt (in Design > Menüs), Schrift verkleinert sich automatisch bei vielen Punkten oder niedrigem Fenster (`--menu-count`, `min()` aus Breite und Höhe), gestaffelte Animation über `--i` statt fester `nth-child`-Regeln |
 | 09.11.2026 | Highlights: offenes Projekt wird in die Mitte gescrollt, eigene Scroll-Animation mit `requestAnimationFrame` und derselben Kurve wie das Aufklappen (`cubic-bezier` in JS nachgebaut); Trackpad-Nachlauf (Momentum) erkannt, ein Wischer = ein Schritt; Cursor-Label als grüne Pille («Scrollen ↓» bis zum ersten Blättern, danach «Ansehen»; `sessionStorage`) und Zähler «01 / 05» mit Fortschrittslinie |
 | 09.11.2026 | Galerie: gleiches Cursor-Label und Zähler (eingeblendet nur bei offenem Bild), Bilder ohne Zoom beim Aufklappen (feste Bildgrösse, Streifen deckt auf), Cursor-Punkt gross über interaktiven Elementen (`tabindex="0"`); Handy/Tablet: nächstes Bild angeschnitten (88 %) und Anleitung «← Wischen →» bis zum ersten Wischen |
+| 09.11.2026 | Galerie: beim Aufklappen gleitet die ganze Galerie in die Bildschirmmitte (gleiche Dauer und Kurve wie das Aufklappen, `animateScrollTo`), «Maus hat verlassen» durch Scrollen wird ignoriert |
 
 ## Learnings
 <!-- In eigenen Worten ergänzen -->

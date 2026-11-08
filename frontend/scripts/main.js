@@ -946,29 +946,30 @@ document.querySelectorAll('[data-strip]').forEach((strip) => {
     let gestureCaptured = null;
     const momentum = createMomentumLock(); // Trackpad-Nachlauf (siehe Highlights)
 
-    // Galerie ganz ins Bild rücken (sanft), falls sie beim Blättern oben oder unten angeschnitten ist
-    const ensureVisible = () => {
+    // Galerie in die Mitte des sichtbaren Bereichs (zwischen Header und unterem Fensterrand) scrollen.
+    // Gleiche Dauer und Kurve wie das Aufklappen der Bilder (--gallery-duration, --accordion-ease),
+    // damit Scrollen und Aufklappen eine Bewegung sind. Die Galerie ist horizontal: Senkrechtes Scrollen
+    // ändert nicht, welches Bild unter der Maus liegt.
+    const centerStrip = () => {
         const rect = strip.getBoundingClientRect();
         const header = document.querySelector('[data-layout="header"]');
         const top = header ? header.getBoundingClientRect().bottom : 0;
-        if (rect.top < top || rect.bottom > window.innerHeight) {
-            window.scrollBy({
-                top: rect.top - top - (window.innerHeight - top - rect.height) / 2,
-                behavior: reducedMotion ? 'auto' : 'smooth',
-            });
+        const offset = rect.top + rect.height / 2 - (top + (window.innerHeight - top) / 2);
+        if (Math.abs(offset) < 4) {
+            return; // steht schon in der Mitte
         }
+        const duration = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--gallery-duration')) || 0;
+        animateScrollTo(window.scrollY + offset, duration, easingFromCss('--accordion-ease'));
     };
 
-    // Ein Bild weiter (+1) oder zurück (-1); false am Anfang/Ende (dann scrollt die Seite normal)
-    const step = (direction, { scrollPage = true } = {}) => {
+    // Ein Bild weiter (+1) oder zurück (-1) und Galerie zentrieren; false am Anfang/Ende (dann scrollt die Seite normal)
+    const step = (direction) => {
         const next = activeIndex + direction;
         if (next < 0 || next > items.length - 1) {
             return false;
         }
         activate(items[next]);
-        if (scrollPage) {
-            ensureVisible();
-        }
+        centerStrip();
         lastStep = performance.now();
         return true;
     };
@@ -1004,6 +1005,7 @@ document.querySelectorAll('[data-strip]').forEach((strip) => {
         }
         if (!gestureCaptured || !canStep) {
             gestureCaptured = false;
+            stopScrollAnimation(); // laufendes Zentrieren abbrechen, die Seite scrollt normal weiter
             return;
         }
 
@@ -1042,7 +1044,7 @@ document.querySelectorAll('[data-strip]').forEach((strip) => {
         if (pointerOver) {
             event.preventDefault();
         }
-        if (step(direction, { scrollPage: !pointerOver })) {
+        if (step(direction)) {
             event.preventDefault();
             strip.dispatchEvent(new CustomEvent('accordion:step'));
             // Tastatur: Fokus wandert mit, damit Screenreader das offene Bild kennen
@@ -1058,13 +1060,29 @@ document.querySelectorAll('[data-strip]').forEach((strip) => {
         item.addEventListener('mouseenter', () => {
             if (performance.now() - lastStep > ACCORDION_HOVER_PAUSE) {
                 activate(item);
+                centerStrip();
             }
         });
-        item.addEventListener('focusin', () => activate(item));
+        item.addEventListener('focusin', () => {
+            activate(item);
+            centerStrip();
+        });
+    });
+
+    // Letzte Mausposition über der Galerie: Schiebt das Zentrieren die Galerie unter der stillstehenden
+    // Maus weg, meldet der Browser «Maus hat verlassen», obwohl sie sich nicht bewegt hat → ignorieren
+    let lastPointer = { x: -1, y: -1 };
+    strip.addEventListener('mousemove', (event) => {
+        lastPointer = { x: event.clientX, y: event.clientY };
     });
 
     // Maus verlässt die Galerie: alle Streifen wieder gleich breit
-    strip.addEventListener('mouseleave', () => activate(null));
+    strip.addEventListener('mouseleave', (event) => {
+        if (event.clientX === lastPointer.x && event.clientY === lastPointer.y) {
+            return;
+        }
+        activate(null);
+    });
     strip.addEventListener('focusout', (event) => {
         if (!strip.contains(event.relatedTarget)) {
             activate(null);
