@@ -43,6 +43,19 @@ add_action('wp_enqueue_scripts', function () {
     );
 });
 
+// -> Favicon (Symbol im Browser-Tab) aus «Globales» (Feld favicon)
+// PNG zusätzlich als apple-touch-icon: Symbol, wenn man die Website auf dem iPhone zum Homescreen hinzufügt.
+add_action('wp_head', function () {
+    $favicon = get_global_favicon();
+    if (!$favicon) {
+        return;
+    }
+    echo '<link rel="icon" type="' . esc_attr($favicon['mime']) . '" href="' . esc_url($favicon['url']) . '">' . "\n";
+    if ($favicon['mime'] === 'image/png') {
+        echo '<link rel="apple-touch-icon" href="' . esc_url($favicon['url']) . '">' . "\n";
+    }
+}, 2);
+
 // -> Wichtigste Schriften vorab laden (preload): Sie sind sofort sichtbar (Text, Logo im Header).
 // Ohne preload entdeckt der Browser sie erst, nachdem main.css und _fonts.css geladen sind.
 // crossorigin ist bei Schriften Pflicht, sonst lädt der Browser die Datei doppelt.

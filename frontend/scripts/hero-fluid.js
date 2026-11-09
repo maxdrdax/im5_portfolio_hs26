@@ -184,10 +184,13 @@ function initHeroFluid(hero) {
     // Video verwenden, sobald es läuft (sonst liegt das Bild sichtbar oben)
     const currentSource = () => (video && video.classList.contains('is-playing') && video.readyState >= 2 ? video : image);
 
+    // Animiertes Bild (WebP/GIF, data-animated aus PHP): wie ein Video jedes Bild neu hochladen
+    const animatedImage = image.hasAttribute('data-animated');
+
     const uploadMedia = () => {
         const source = currentSource();
-        // Bild nur einmal hochladen, Video jedes Bild neu (es läuft ja)
-        if (source === mediaSource && source === image) {
+        // Standbild nur einmal hochladen, Video und animiertes Bild jedes Bild neu (sie laufen ja)
+        if (source === mediaSource && source === image && !animatedImage) {
             return true;
         }
         if (source === image && !(image.complete && image.naturalWidth)) {

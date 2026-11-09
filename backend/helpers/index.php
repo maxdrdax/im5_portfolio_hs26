@@ -25,7 +25,22 @@ function get_media_by_id(int|string $id, string $size = 'm'): false|array
     $data = [
         'title' => get_the_title($id),
         'alt' => get_post_meta($id, '_wp_attachment_image_alt', true) ?: get_the_title($id),
+        'animated' => false,
     ];
+
+    // Animiertes WebP/GIF: Die verkleinerten Bildgrössen von WordPress enthalten nur das erste Bild
+    // (die Animation geht beim Verkleinern verloren). Darum hier immer die Originaldatei verwenden.
+    if (is_animated_image($id)) {
+        $file = wp_get_original_image_path($id);
+        $size_info = $file ? wp_getimagesize($file) : false;
+        $data['src'] = wp_get_original_image_url($id);
+        $data['type'] = 'image';
+        $data['animated'] = true;
+        $data['width'] = (int) ($size_info[0] ?? 0);
+        $data['height'] = (int) ($size_info[1] ?? 0);
+        return $data;
+    }
+
     $image = wp_get_attachment_image_src($id, $size);
     if ($image) {
         $data['src'] = $image[0];
@@ -38,6 +53,37 @@ function get_media_by_id(int|string $id, string $size = 'm'): false|array
         $data['type'] = get_post_mime_type($id);
     }
     return $data;
+}
+
+// -> Prüfen, ob ein Bild animiert ist (WebP oder GIF mit mehreren Bildern)
+// Gelesen wird nur der Anfang der Datei (WebP) bzw. bis zum zweiten Bild (GIF). Das Ergebnis wird im
+// Bild gespeichert (_is_animated), damit die Datei nicht bei jedem Seitenaufruf geöffnet werden muss.
+function is_animated_image(int $id): bool
+{
+    $mime = get_post_mime_type($id);
+    if (!in_array($mime, ['image/webp', 'image/gif'], true)) {
+        return false;
+    }
+    $cached = get_post_meta($id, '_is_animated', true);
+    if ($cached !== '') {
+        return $cached === '1';
+    }
+
+    $animated = false;
+    $file = wp_get_original_image_path($id);
+    if ($file && is_readable($file)) {
+        if ($mime === 'image/webp') {
+            // Animierte WebP-Dateien haben einen «ANIM»-Abschnitt gleich am Anfang
+            $head = (string) file_get_contents($file, false, null, 0, 64);
+            $animated = str_contains($head, 'ANIM');
+        } else {
+            // GIF: Jedes Einzelbild beginnt mit einem «Graphic Control Extension»-Block; ab zwei = animiert
+            $content = (string) file_get_contents($file);
+            $animated = preg_match_all('/\x00\x21\xF9\x04/', $content) > 1;
+        }
+    }
+    update_post_meta($id, '_is_animated', $animated ? '1' : '0');
+    return $animated;
 }
 
 // -> Details einer Videodatei anhand der ID laden; false, wenn es kein Video ist

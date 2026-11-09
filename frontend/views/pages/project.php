@@ -14,7 +14,7 @@ $embed = get_video_embed($project['video_url']);
         <?php if ($cover) : ?>
             <img class="image" src="<?= esc_url($cover['src']) ?>" alt="<?= esc_attr($cover['alt']) ?>"
                  width="<?= esc_attr($cover['width'] ?? '') ?>" height="<?= esc_attr($cover['height'] ?? '') ?>"
-                 fetchpriority="high">
+                 fetchpriority="high"<?= !empty($cover['animated']) ? ' data-animated' : '' ?>>
         <?php endif; ?>
 
         <?php get_template_part('frontend/views/teaser/video', null, [

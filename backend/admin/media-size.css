@@ -1,0 +1,57 @@
+/* Mediathek: Dateigrösse anzeigen und zu grosse Dateien markieren (siehe _media-size.php) */
+
+/* Listenansicht: Spalte «Dateigrösse» */
+.fixed .column-media_size {
+    width: 9em;
+}
+
+.media-size.is-too-large,
+.media-size-warning {
+    color: #b32d2e; /* WordPress-Rot für Fehler */
+    font-weight: 600;
+}
+
+.media-size-dimensions {
+    color: #646970; /* WordPress-Grau für Nebeninfos */
+}
+
+/* Kachelansicht: Checkbox neben dem Seitentitel */
+.media-size-toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    margin: 0 0 0 12px;
+    vertical-align: middle;
+}
+
+/* Etikett oben links auf der Kachel: unten liegt bei Dateien ohne Vorschau der Dateiname,
+   oben rechts das Häkchen der Auswahl. Nur sichtbar, wenn die Checkbox aktiv ist. */
+.media-size-badge {
+    position: absolute;
+    top: 6px;
+    left: 6px;
+    z-index: 2;
+    display: none;
+    padding: 2px 6px;
+    border-radius: 3px;
+    background: rgb(0 0 0 / .7);
+    color: #fff;
+    font-size: 11px;
+    line-height: 1.5;
+    pointer-events: none;
+}
+
+.media-size-visible {
+    .media-size-badge {
+        display: block;
+    }
+
+    /* zu gross: roter Rahmen um die Kachel und rotes Etikett */
+    .attachment.is-too-large .attachment-preview {
+        box-shadow: inset 0 0 0 3px #d63638;
+    }
+
+    .attachment.is-too-large .media-size-badge {
+        background: #d63638;
+    }
+}

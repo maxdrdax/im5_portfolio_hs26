@@ -32,6 +32,21 @@ function get_global_project_titles(): array
     ];
 }
 
+// Favicon (Symbol im Browser-Tab) aus den Globals: Adresse und Dateityp; false, wenn leer.
+// Volle Datei (Originalgrösse): Das Favicon ist klein, und ein SVG hat ohnehin keine Bildgrössen.
+function get_global_favicon(): array|false
+{
+    $id = (int) carbon_get_theme_option('favicon');
+    $url = $id ? wp_get_attachment_url($id) : false;
+    if (!$url) {
+        return false;
+    }
+    return [
+        'url' => $url,
+        'mime' => (string) get_post_mime_type($id),
+    ];
+}
+
 // Copyright im Footer
 function get_global_copyright(): string
 {

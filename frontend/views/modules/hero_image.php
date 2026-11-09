@@ -12,7 +12,7 @@ $has_video = !empty($data['video']);
         <?php // Hero ist sofort sichtbar: kein Lazy Loading, dafür hohe Priorität ?>
         <img class="image" src="<?= esc_url($image['src']) ?>" alt="<?= esc_attr($image['alt']) ?>"
              width="<?= esc_attr($image['width'] ?? '') ?>" height="<?= esc_attr($image['height'] ?? '') ?>"
-             fetchpriority="high">
+             fetchpriority="high"<?= !empty($image['animated']) ? ' data-animated' : '' ?>>
     <?php endif; ?>
 
     <?php // Optionales Video liegt über dem Bild; das Bild bleibt Vorschau und Fallback ?>
