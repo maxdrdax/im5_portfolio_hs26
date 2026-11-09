@@ -20,12 +20,22 @@ Alle 7 Seiten (Startseite, Projekte, Fotos, Über mich, Kontakt, Impressum, Date
 | Titelvideo (MP4) | cover_video | file (video) |
 | Jahr | year | text |
 | Kontext | context | text |
-| Meine Rolle | role | text |
+| Meine Rolle (kurz) | role | text |
+| Titel über dem Projektbeschrieb | description_title | text |
 | Projektbeschrieb | description | rich_text |
-| Rolle und Teamabgrenzung (Text) | role_text | rich_text |
-| Rolle und Teamabgrenzung (Bild) | role_image | image |
+| Titel über «Meine Rolle» | role_title | text |
+| Meine Rolle | role_text | rich_text |
+| Meine Rolle (Bild) | role_image | image |
 | Bildergalerie (Bilder und Videos) | gallery | media_gallery (image, video) |
 | Video (YouTube/Vimeo-Link) | video_url | text (type url) |
+| Titel über dem Video | video_title | text |
+| Titel über der Bildergalerie | gallery_title | text |
+| Titel über «Weiterführende Informationen» | links_title | text |
+| Weiterführende Informationen | links | complex |
+| ↳ Titel | title | text |
+| ↳ Quelle | source | text |
+| ↳ Link | url | url |
+| ↳ Vorschaubild | image | image |
 | Ausgewähltes Projekt | featured | checkbox |
 | Titel unter dem Hero ausblenden | hide_title | checkbox |
 
@@ -33,6 +43,10 @@ Alle 7 Seiten (Startseite, Projekte, Fotos, Über mich, Kontakt, Impressum, Date
 - `cover` ist Hero im Projektbeitrag, Karte im Highlights-Karussell und Hover-Vorschau im Directory. Der Schriftzug im Hero («Interaktiver Film») ist Teil des Bildes.
 - Kategorie kommt aus der Taxonomie `project_category`.
 - Rollen-Sektion ist optional: Text und Bild leer = nicht ausgeben.
+- Projektbeschrieb und Meine Rolle im gleichen Raster: Zwischentitel links (1/3), Text rechts (2/3) in einer Spalte (begrenzte Zeilenlänge statt zwei Spalten), Trennlinie darüber, dunkler Seitenhintergrund (kein grüner Block). `role_image` optional unter dem Rollentext, Format 3:2. Handy: Titel über dem Text.
+- `description_title` und `role_title` sind optional: leer = Standard aus den Globals (dort leer = «Projektbeschrieb», «Meine Rolle» bzw. «Weiterführende Informationen»). Gleich für `video_title` (Standard «Video») und `gallery_title` (Standard «Einblicke»): Video, Galerie und Links haben einen Zwischentitel mit Linie darüber (Handy ohne Linie), damit sie nicht wie ein Teil von «Meine Rolle» wirken.
+- `links` ist optional: Linkliste am Ende der Projektseite (nach der Galerie), z. B. Festival, Artikel, Making-of. Gestaltung wie die Projektliste (Zeilen mit Trennlinie, Grossbuchstaben, Quelle grau, Pfeil ↗, Hover grün). Externe Links öffnen in einem neuen Tab. Leer = nicht ausgeben.
+- Hover-Vorschau pro Link (wie in der Projektliste, folgt dem Mauszeiger, nur Desktop): eigenes `image`; sonst bei Social-Media-Links (Domain passt zu einem Eintrag in den Globals `socials`) das Icon der Plattform weiss auf grüner Fläche; sonst holt der Server beim Speichern des Projekts das Vorschaubild der Website (Open Graph `og:image`) und legt es in der Mediathek ab (Besucher laden nichts von fremden Servern). Kein Bild = keine Vorschau.
 - `cover_video` ist optional: läuft ohne Ton in Schleife im Hero; im Highlights-Karussell und im Directory startet es beim Hover. `cover` bleibt Vorschaubild und Fallback (Touch-Geräte, «Bewegung reduzieren»).
 - Videos in der Galerie laufen ohne Ton in Schleife, sobald sie sichtbar sind.
 - `video_url` ist optional (volle Videos, YouTube/Vimeo): wird per oEmbed eingebettet (vor der Galerie), leer = nicht ausgeben.
@@ -206,6 +220,11 @@ Impressum und Datenschutz.
 | ↳ Link | url | url |
 | ↳ Icon | icon | image |
 | Website nur für angemeldete Benutzer | site_private | checkbox |
+| Projektseite: Titel «Projektbeschrieb» | description_title | text |
+| Projektseite: Titel «Meine Rolle» | role_title | text |
+| Projektseite: Titel «Video» | video_title | text |
+| Projektseite: Titel «Einblicke» (Galerie) | gallery_title | text |
+| Projektseite: Titel «Weiterführende Informationen» | links_title | text |
 | Menü-Hintergrundbild | menu_bg_image | image |
 | Menü-Hintergrundvideo (MP4) | menu_bg_video | file (video) |
 
@@ -215,7 +234,7 @@ Impressum und Datenschutz.
 - Footer zeigt nur Socials mit Icon (LinkedIn). Kontaktseite listet alle (LinkedIn, Instagram).
 
 ## Statisch im Theme (nicht im CMS)
-Icons aus der eigenen Icon-Bibliothek (`frontend/assets/icons/`, Ausgabe über `get_icon()`; Pfeil nach unten = Scroll-Pfeil, schräg nach rechts oben = Teaser, Kontakt, Socials), Punkte unter der Galerie (Tablet/Handy), Hover-Vorschau im Directory (folgt dem Mauszeiger), Beschriftungen Jahr / Kontext / Kategorie / Meine Rolle, Zwischentitel «Projektbeschrieb» und «Meine Rolle und Teamabgrenzung», Button-Text Lebenslauf, Standardfilter, Karussell, Hover-Effekt (Chroma/Verflüssigen, Cursor), Cursor-Label über Highlights und Galerie (grüne Pille, ersetzt dort den Cursor-Punkt; «Scrollen ↓» bis zum ersten Blättern, danach bei den Highlights «Ansehen», bei der Galerie ausgeblendet), Zähler «01 / 05» mit Fortschrittslinie unter Highlights und Galerie (nur Desktop), Streifen-Galerie, Foto-Raster, Verlauf oben im Hero, Menü-Button, Overlay-Animation, Nummerierung der Menüpunkte, Seitenübergänge, Einblenden beim Scrollen, Text-Hervorhebung beim Scrollen (Intro).
+Icons aus der eigenen Icon-Bibliothek (`frontend/assets/icons/`, Ausgabe über `get_icon()`; Pfeil nach unten = Scroll-Pfeil, schräg nach rechts oben = Teaser, Kontakt, Socials), Punkte unter der Galerie (Tablet/Handy), Hover-Vorschau im Directory (folgt dem Mauszeiger), Beschriftungen Jahr / Kontext / Kategorie / Meine Rolle, Standard der Zwischentitel «Projektbeschrieb» und «Meine Rolle» (anpassbar in den Globals und pro Projekt), Button-Text Lebenslauf, Standardfilter, Karussell, Hover-Effekt (Chroma/Verflüssigen, Cursor), Cursor-Label über Highlights und Galerie (grüne Pille, ersetzt dort den Cursor-Punkt; «Scrollen ↓» bis zum ersten Blättern, danach bei den Highlights «Ansehen», bei der Galerie ausgeblendet), Zähler «01 / 05» mit Fortschrittslinie unter Highlights und Galerie (nur Desktop), Streifen-Galerie, Foto-Raster, Verlauf oben im Hero, Menü-Button, Overlay-Animation, Nummerierung der Menüpunkte, Seitenübergänge, Einblenden beim Scrollen (gilt für alle Inhalte, auch neue Module und Sektionen; ausser Hero und Intro), Text-Hervorhebung beim Scrollen (Intro).
 
 ## Offen
 - Video: entschieden. Kurze Clips als MP4 (`video`, `cover_video`, Galerie), volle Videos über `video_url`.

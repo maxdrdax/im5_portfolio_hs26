@@ -127,11 +127,12 @@ if (canHover && !reducedMotion) {
 }
 
 // -> Directory: Vorschau (Bild/Video) folgt dem Mauszeiger
+// Projektliste (Tabelle, Bereich = tbody) und «Weiterführende Informationen» (Liste, Bereich = [data-preview-area])
 if (canHover) {
     document.querySelectorAll('[data-directory]').forEach((directory) => {
         const preview = directory.querySelector('[data-directory-preview]');
         const rows = directory.querySelectorAll('[data-preview-target]');
-        const body = directory.querySelector('tbody');
+        const body = directory.querySelector('[data-preview-area], tbody');
         if (!preview || !body) {
             return;
         }
@@ -181,8 +182,10 @@ if (canHover) {
 
         rows.forEach((row) => {
             row.addEventListener('mouseenter', () => {
-                showItem(row.dataset.previewTarget);
-                preview.classList.add('is-visible');
+                const id = row.dataset.previewTarget;
+                showItem(id);
+                // Nur sichtbar, wenn es zu dieser Zeile ein Vorschaubild gibt (sonst bliebe das vorherige stehen)
+                preview.classList.toggle('is-visible', [...items].some((item) => item.dataset.previewId === id));
             });
         });
 
@@ -1011,11 +1014,10 @@ document.querySelectorAll('[data-strip]').forEach((strip) => {
     let lastWheel = 0;
     let lastStep = 0;
     let scrolled = 0;
-    let gestureCaptured = null;
     const momentum = createMomentumLock(); // Trackpad-Nachlauf (siehe Highlights)
 
     // Galerie in die Mitte des sichtbaren Bereichs (zwischen Header und unterem Fensterrand) scrollen.
-    // Gleiche Dauer und Kurve wie das Aufklappen der Bilder (--gallery-duration, --accordion-ease),
+    // Gleiche Dauer und Kurve wie das Aufklappen der Bilder (--accordion-duration, --accordion-ease),
     // damit Scrollen und Aufklappen eine Bewegung sind. Die Galerie ist horizontal: Senkrechtes Scrollen
     // ändert nicht, welches Bild unter der Maus liegt.
     const centerStrip = () => {
@@ -1026,7 +1028,7 @@ document.querySelectorAll('[data-strip]').forEach((strip) => {
         if (Math.abs(offset) < 4) {
             return; // steht schon in der Mitte
         }
-        const duration = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--gallery-duration')) || 0;
+        const duration = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--accordion-duration')) || 0;
         animateScrollTo(window.scrollY + offset, duration, easingFromCss('--accordion-ease'));
     };
 
@@ -1042,14 +1044,36 @@ document.querySelectorAll('[data-strip]').forEach((strip) => {
         return true;
     };
 
-    strip.addEventListener('wheel', (event) => {
+    // Regel: Ist die Maus über der Galerie (Rechteck der Streifen, inkl. Lücken dazwischen), wird geblättert,
+    // immer, solange es in dieser Richtung noch ein Bild gibt. Ausserhalb scrollt die Seite normal.
+    // Am ersten/letzten Bild scrollt die Seite weiter (sonst käme man ohne Maus-Umweg nie an der Galerie vorbei).
+    //
+    // Warum auf window statt auf der Galerie: Browser schicken während einer Scroll-Geste alle Signale an
+    // das Element, auf dem die Geste begonnen hat («Scroll-Latching»). Beginnt man kurz neben der Galerie
+    // zu scrollen, käme bei ihr nichts an. Darum entscheidet die aktuelle Mausposition (clientX/clientY).
+    let lastCaptured = 0; // Zeitpunkt des letzten Signals, das die Galerie übernommen hat
+
+    window.addEventListener('wheel', (event) => {
         if (compactLayout.matches || Math.abs(event.deltaY) < Math.abs(event.deltaX)) {
             return; // Tablet/Handy (Wischen) und seitliches Wischen auf dem Trackpad: nicht abfangen
         }
         const now = performance.now();
+        const rect = strip.getBoundingClientRect();
+        const inside = event.clientX >= rect.left && event.clientX <= rect.right
+            && event.clientY >= rect.top && event.clientY <= rect.bottom;
+
+        // Ausserhalb: Seite scrollt normal. Ausnahme: Nachlauf einer Galerie-Geste, die gerade erst
+        // die Galerie verlassen hat (Signale ohne Pause) → schlucken, bis kurz Ruhe ist.
+        if (!inside) {
+            if (now - lastCaptured <= ACCORDION_MOMENTUM_GAP) {
+                event.preventDefault();
+                lastCaptured = now;
+            }
+            return;
+        }
+
         if (now - lastWheel > ACCORDION_GESTURE_GAP) {
-            scrolled = 0;
-            gestureCaptured = null;
+            scrolled = 0; // neue Geste: Scrollweg beginnt bei 0
         }
         lastWheel = now;
 
@@ -1061,23 +1085,17 @@ document.querySelectorAll('[data-strip]').forEach((strip) => {
         // Nachlauf des Trackpads nach einem Schritt ignorieren (siehe createMomentumLock)
         if (momentum.isMomentum(delta, now)) {
             event.preventDefault();
+            lastCaptured = now;
             return;
         }
         const next = activeIndex + direction;
-        const canStep = next >= 0 && next <= items.length - 1;
-
-        // Maus ist über der Galerie (sonst käme kein wheel-Event): Galerie übernimmt die Geste,
-        // solange es in dieser Richtung noch ein Bild gibt
-        if (gestureCaptured === null) {
-            gestureCaptured = canStep;
-        }
-        if (!gestureCaptured || !canStep) {
-            gestureCaptured = false;
-            stopScrollAnimation(); // laufendes Zentrieren abbrechen, die Seite scrollt normal weiter
+        if (next < 0 || next > items.length - 1) {
+            stopScrollAnimation(); // Ende erreicht: laufendes Zentrieren abbrechen, Seite scrollt weiter
             return;
         }
 
         event.preventDefault(); // Seite nicht scrollen, solange die Galerie blättert
+        lastCaptured = now;
 
         if (Math.sign(scrolled) !== direction) {
             scrolled = 0;
@@ -1123,25 +1141,38 @@ document.querySelectorAll('[data-strip]').forEach((strip) => {
     });
 
     items.forEach((item) => {
-        // Hover öffnet das Bild, ausser kurz nach einem Mausrad-Schritt (die Streifen verschieben sich
-        // beim Blättern unter der Maus; sonst würde sofort ein anderes Bild aufgehen)
-        item.addEventListener('mouseenter', () => {
-            if (performance.now() - lastStep > ACCORDION_HOVER_PAUSE) {
-                activate(item);
-                centerStrip();
-            }
-        });
         item.addEventListener('focusin', () => {
             activate(item);
             centerStrip();
         });
     });
 
-    // Letzte Mausposition über der Galerie: Schiebt das Zentrieren die Galerie unter der stillstehenden
-    // Maus weg, meldet der Browser «Maus hat verlassen», obwohl sie sich nicht bewegt hat → ignorieren
+    // -> Hover öffnet das Bild, aber nur, wenn die Maus sich wirklich bewegt hat.
+    // Scrollt man die Seite, schiebt sich die Galerie unter die stillstehende Maus; der Browser meldet
+    // dann ebenfalls Maus-Ereignisse (mit gleicher Position). Ohne diese Prüfung würde die Galerie
+    // aufklappen und sich in die Mitte scrollen, gegen die Scrollrichtung (ruckelt). Gleich wie bei den Highlights.
+    // Ausserdem nicht kurz nach einem Mausrad-Schritt (die Streifen verschieben sich beim Blättern unter der Maus).
+    // Position auf der ganzen Seite merken: Auch das erste Ereignis beim Hineinscrollen wird so erkannt.
+    // Wie bei den Highlights: Aufklappen erst, wenn die Maus kurz auf einem Bild ruht (ACCORDION_HOVER_INTENT).
+    // Jede Bewegung startet die Wartezeit neu. So gehen beim Überfahren nicht alle Streifen nacheinander auf.
     let lastPointer = { x: -1, y: -1 };
-    strip.addEventListener('mousemove', (event) => {
+    let hoverTimer = null;
+    document.addEventListener('mousemove', (event) => {
+        const moved = event.clientX !== lastPointer.x || event.clientY !== lastPointer.y;
         lastPointer = { x: event.clientX, y: event.clientY };
+        if (!moved || !strip.contains(event.target) || compactLayout.matches || performance.now() - lastStep <= ACCORDION_HOVER_PAUSE) {
+            return;
+        }
+        clearTimeout(hoverTimer);
+        const item = event.target.closest('[data-strip-item]');
+        // In der Lücke zwischen zwei Bildern oder schon offen: nichts tun
+        if (!item || itemList.indexOf(item) === activeIndex) {
+            return;
+        }
+        hoverTimer = setTimeout(() => {
+            activate(item);
+            centerStrip();
+        }, ACCORDION_HOVER_INTENT);
     });
 
     // Maus verlässt die Galerie: alle Streifen wieder gleich breit
@@ -1149,6 +1180,9 @@ document.querySelectorAll('[data-strip]').forEach((strip) => {
         if (event.clientX === lastPointer.x && event.clientY === lastPointer.y) {
             return;
         }
+        clearTimeout(hoverTimer);
+        // Maus wirklich weg: laufendes Zentrieren abbrechen, sonst scrollt die Seite danach noch weiter
+        stopScrollAnimation();
         activate(null);
     });
     strip.addEventListener('focusout', (event) => {
@@ -1404,6 +1438,8 @@ const REVEAL_SELECTOR = [
     '[data-page="project"] .project-role',
     '[data-page="project"] .project-video',
     '[data-page="project"] .project-gallery',
+    '[data-page="project"] .project-links .project-subtitle',
+    '[data-page="project"] .link-list > li',
 ].join(', ');
 const REVEAL_STAGGER = 80; // ms Versatz, wenn mehrere Elemente gleichzeitig erscheinen
 

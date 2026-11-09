@@ -20,6 +20,18 @@ function get_global_logo_signet(): array|false
     return get_media_by_id(carbon_get_theme_option('logo_signet'), 'xs');
 }
 
+// Zwischentitel der Projektseite (Standard für alle Projekte); leer = fester Text im Theme
+function get_global_project_titles(): array
+{
+    return [
+        'description' => carbon_get_theme_option('description_title') ?: 'Projektbeschrieb',
+        'role' => carbon_get_theme_option('role_title') ?: 'Meine Rolle',
+        'video' => carbon_get_theme_option('video_title') ?: 'Video',
+        'gallery' => carbon_get_theme_option('gallery_title') ?: 'Einblicke',
+        'links' => carbon_get_theme_option('links_title') ?: 'Weiterführende Informationen',
+    ];
+}
+
 // Copyright im Footer
 function get_global_copyright(): string
 {
@@ -46,6 +58,26 @@ function get_global_menu_background(): array|false
 }
 
 // Socials; mit $only_with_icon = true nur Einträge mit Icon (für den Footer)
+// Icon der Social-Media-Plattform zu einem Link (z. B. instagram.com/… → Instagram-Icon aus den Socials);
+// false, wenn der Link zu keiner Plattform in den Socials passt oder diese kein Icon hat.
+// Verglichen wird die Domain ohne «www.». Grösse xs: wird in der Hover-Vorschau grösser gezeigt als im Footer.
+function get_social_icon_for_url(string $url): array|false
+{
+    $normalize = function (string $address): string {
+        return preg_replace('/^www\./', '', strtolower((string) wp_parse_url($address, PHP_URL_HOST)));
+    };
+    $host = $normalize($url);
+    if ($host === '') {
+        return false;
+    }
+    foreach (carbon_get_theme_option('socials') ?: [] as $social) {
+        if (!empty($social['icon']) && $normalize($social['url'] ?? '') === $host) {
+            return get_media_by_id($social['icon'], 'xs');
+        }
+    }
+    return false;
+}
+
 function get_global_socials(bool $only_with_icon = false): array
 {
     $socials = carbon_get_theme_option('socials') ?: [];

@@ -31,6 +31,26 @@ Container::make('theme_options', 'Globales')
             ])
             ->set_header_template('<% if (title) { %><%- title %><% } %>')
             ->set_layout('tabbed-vertical'),
+        // Zwischentitel auf allen Projektseiten (Standard); pro Projekt überschreibbar
+        Field::make('text', 'description_title', 'Projektseite: Titel «Projektbeschrieb»')
+            ->set_width(50)
+            ->set_default_value('Projektbeschrieb')
+            ->set_help_text('Standard für alle Projekte. Akzent mit *Sternchen*.'),
+        Field::make('text', 'role_title', 'Projektseite: Titel «Meine Rolle»')
+            ->set_width(50)
+            ->set_default_value('Meine Rolle')
+            ->set_help_text('Standard für alle Projekte. Akzent mit *Sternchen*.'),
+        Field::make('text', 'video_title', 'Projektseite: Titel «Video»')
+            ->set_width(50)
+            ->set_default_value('Video')
+            ->set_help_text('Standard für alle Projekte. Akzent mit *Sternchen*.'),
+        Field::make('text', 'gallery_title', 'Projektseite: Titel «Einblicke» (Galerie)')
+            ->set_width(50)
+            ->set_default_value('Einblicke')
+            ->set_help_text('Standard für alle Projekte. Akzent mit *Sternchen*.'),
+        Field::make('text', 'links_title', 'Projektseite: Titel «Weiterführende Informationen»')
+            ->set_default_value('Weiterführende Informationen')
+            ->set_help_text('Standard für alle Projekte. Akzent mit *Sternchen*.'),
         // Gemeinsamer Hintergrund fürs Overlay-Menü: hat Vorrang vor den Bildern der einzelnen Menüpunkte
         Field::make('image', 'menu_bg_image', 'Menü-Hintergrundbild')
             ->set_width(50)

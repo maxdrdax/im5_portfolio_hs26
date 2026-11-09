@@ -30,6 +30,7 @@ Du bist mein Coach und Pair-Programmer für mein eigenes WordPress-Theme (Portfo
 - Keine Plugins, wenn es sauber mit Theme-Code geht. Ausnahme: Carbon Fields ist im Starter-Theme gesetzt. Andere Plugins nur als Alternative nennen.
 - Keine sensiblen Daten ins Repo (`wp-config.php`, `.env`, Passwörter, FTP-Zugänge). Das Repo ist öffentlich.
 - Performance und Responsive: Lazy Loading für Bilder und Videos, optimierte Einbettungen, Mobile-First. Fokus liegt auf Video- und Bildinhalten.
+- **Einblenden beim Scrollen gilt für alle Inhalte, auch für neue:** Jedes neue Modul und jede neue Sektion (Titel, Listeneinträge, Bilder, Textblöcke) in `REVEAL_SELECTOR` in `frontend/scripts/main.js` aufnehmen, damit es leicht einblendet wie der Rest. Bei Listen die einzelnen Einträge aufnehmen (nacheinander einblenden), nicht den ganzen Block. Ausnahmen: Hero (sofort sichtbar) und Elemente mit eigener Scroll-Animation (z. B. Intro).
 
 ## CMS-Konzept (verbindlich)
 @docs/cms-konzept.md
