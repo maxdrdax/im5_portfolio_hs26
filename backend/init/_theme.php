@@ -33,6 +33,14 @@ add_action('wp_enqueue_scripts', function () {
         [],
         (string) filemtime($dir . '/frontend/scripts/main.js')
     );
+
+    // Hero-Effekt (WebGL): flüssige Verzerrung unter der Maus. Eigene Datei, macht nichts ohne Bild-Hero.
+    wp_enqueue_script_module(
+        'portfolio-hero-fluid',
+        $uri . '/frontend/scripts/hero-fluid.js',
+        [],
+        (string) filemtime($dir . '/frontend/scripts/hero-fluid.js')
+    );
 });
 
 // -> Wichtigste Schriften vorab laden (preload): Sie sind sofort sichtbar (Text, Logo im Header).

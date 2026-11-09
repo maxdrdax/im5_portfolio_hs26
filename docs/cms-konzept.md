@@ -64,7 +64,7 @@ Alle 7 Seiten (Startseite, Projekte, Fotos, Über mich, Kontakt, Impressum, Date
 
 ## C | Module
 
-Titel-Felder (text) unterstützen einen kursiven Akzent: Wort in `*Sternchen*`. Ausgabe: erst `esc_html()`, dann Sternchen zu `<em>`.
+Titel-Felder (text) unterstützen einen kursiven Akzent: Wort in `*Sternchen*`. Zusätzlich `**doppelte Sternchen**` = Markierung (grün hinterlegt; im Intro wird sie beim Scrollen von links nach rechts gezogen). Ausgabe: erst `esc_html()`, dann `**…**` zu `<mark>` und `*…*` zu `<em>`.
 
 ### Hero Bild `hero_image`
 | Name | Slug | Feldtyp |
@@ -93,7 +93,7 @@ Projekte (Text leer), Fotos, Kontakt.
 | Link-Text | link_text | text |
 | Link | link | association (Seite) |
 
-Startseite, direkt nach dem Hero: kurze Vorstellung in zwei, drei Sätzen (auf dem Handy steht im Header nur das Signet). Grosse Schrift, beim Scrollen färbt sich der Text Wort für Wort von gedimmt zu weiss (Referenz: structureengineering.com.au). Akzent mit `*Sternchen*` (kursiv, grün). Link optional (z. B. «Mehr über mich» → Über mich), leer = nicht ausgeben. Bei «Bewegung reduzieren» ist der Text von Anfang an weiss.
+Startseite, direkt nach dem Hero: kurze Vorstellung in zwei, drei Sätzen (auf dem Handy steht im Header nur das Signet). Grosse Schrift, beim Scrollen färbt sich der Text Wort für Wort von gedimmt zu weiss (Referenz: structureengineering.com.au). Akzent mit `*Sternchen*` (kursiv, grün) oder `**doppelten Sternchen**` (grün hinterlegt). Link optional (z. B. «Mehr über mich» → Über mich), leer = nicht ausgeben. Bei «Bewegung reduzieren» ist der Text von Anfang an weiss.
 
 ### Projekte `projects`
 | Name | Slug | Feldtyp |

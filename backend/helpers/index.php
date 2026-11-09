@@ -130,11 +130,13 @@ function get_icon(string $name, string $direction = 'down', string $class = ''):
     return preg_replace('/^<svg\b/', '<svg class="' . esc_attr($classes) . '" aria-hidden="true" focusable="false"', $svg, 1);
 }
 
-// -> Titel mit kursivem Akzent: *Wort* wird zu <em>Wort</em>
+// -> Titel mit Akzent: **Wort** wird zu <mark>Wort</mark> (grün hinterlegt), *Wort* zu <em>Wort</em> (kursiv)
 // Zuerst escapen, dann Sternchen ersetzen. Die Rückgabe ist sicher und kann direkt ausgegeben werden.
+// Reihenfolge wichtig: zuerst die doppelten Sternchen, sonst würde *…* sie zerlegen.
 function format_accent(?string $text): string
 {
     $safe = esc_html($text ?? '');
+    $safe = preg_replace('/\*\*(.+?)\*\*/', '<mark>$1</mark>', $safe);
     return preg_replace('/\*(.+?)\*/', '<em>$1</em>', $safe);
 }
 

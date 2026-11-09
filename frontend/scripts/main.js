@@ -1482,6 +1482,12 @@ if (!reducedMotion) {
         });
 
         const words = [...text.querySelectorAll('.word')];
+        // Markierungen (**Wort**): werden mit ihren Wörtern von links nach rechts «gezogen».
+        // Indizes der Wörter in der Markierung merken, damit beim Scrollen nicht gesucht werden muss.
+        const marks = [...text.querySelectorAll('mark')].map((mark) => ({
+            mark,
+            indexes: [...mark.querySelectorAll('.word')].map((word) => words.indexOf(word)),
+        }));
         let ticking = false;
 
         // -> 2. und 3. Fortschritt berechnen und auf die Wörter verteilen
@@ -1492,9 +1498,18 @@ if (!reducedMotion) {
             const distance = rect.height + height * (INTRO_START - INTRO_END);
             const progress = Math.min(Math.max((height * INTRO_START - rect.top) / distance, 0), 1);
             const position = progress * (words.length + INTRO_SOFTNESS);
-            words.forEach((word, index) => {
+            const litValues = words.map((word, index) => {
                 const lit = Math.min(Math.max((position - index) / INTRO_SOFTNESS, 0), 1);
                 word.style.setProperty('--lit', lit.toFixed(3));
+                return lit;
+            });
+            // Markierung: Breite = Durchschnitt ihrer Wörter (0 = noch nichts markiert, 1 = ganz)
+            marks.forEach(({ mark, indexes }) => {
+                if (!indexes.length) {
+                    return;
+                }
+                const sum = indexes.reduce((total, index) => total + litValues[index], 0);
+                mark.style.setProperty('--lit', (sum / indexes.length).toFixed(3));
             });
         };
 

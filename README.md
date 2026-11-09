@@ -181,6 +181,8 @@ Entwicklung der Startseite: erste Umsetzung der Module, danach angepasst an das 
 | 09.11.2026 | Galerie: beim Aufklappen gleitet die ganze Galerie in die Bildschirmmitte (gleiche Dauer und Kurve wie das Aufklappen, `animateScrollTo`), «Maus hat verlassen» durch Scrollen wird ignoriert |
 | 09.11.2026 | Handy/Tablet: Projekt in der Bildschirmmitte hervorheben (Projektliste und Highlights, gemeinsame Funktion `initScrollHighlight`), grüne Zeile beim Hover nur noch bei breitem Fenster; Einblenden beim Scrollen räumt nach der Animation auf (sonst überstimmt `fill-mode` andere Regeln) |
 | 09.11.2026 | Neues Modul `intro` (Startseite nach dem Hero): kurze Vorstellung in grosser Schrift, färbt sich beim Scrollen Wort für Wort ein (Wörter per `TreeWalker` in `<span>`, Fortschritt pro Wort als CSS-Variable `--lit`); Ursache «leere Startseite»: doppelte Seite «Startseite» unter Einstellungen > Lesen |
+| 09.11.2026 | Intro: Schrift als eigene Stufe zwischen H3 und H2 (`--font-lead`, konkurriert nicht mit den Titeln), mehr Luft, mittig mit linksbündigem Text; Markierung mit `**doppelten Sternchen**` (`<mark>`), wird beim Scrollen von links nach rechts gezogen (Breite des Hintergrunds = `--lit`) |
+| 09.11.2026 | Hero: flüssige Verzerrung unter der Maus mit leichtem Farbsaum (WebGL, eigene Shader, zwei Feld-Texturen im Wechsel «Ping-Pong»), auch mit Video; rechnet nur, solange sich die Maus bewegt; ohne Maus, WebGL oder bei «Bewegung reduzieren» unverändert |
 
 ## Learnings
 <!-- In eigenen Worten ergänzen -->

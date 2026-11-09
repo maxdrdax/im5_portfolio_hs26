@@ -37,7 +37,7 @@ Container::make('post_meta', 'Module')
                 Field::make('textarea', 'text', 'Text')
                     ->set_required()
                     ->set_rows(4)
-                    ->set_help_text('Zwei, drei Sätze. Akzent mit *Sternchen* (kursiv, grün).'),
+                    ->set_help_text('Zwei, drei Sätze. **Doppelte Sternchen** = grün hinterlegt, *einfache* = kursiv, grün.'),
                 Field::make('text', 'link_text', 'Link-Text')
                     ->set_width(50)
                     ->set_help_text('z. B. «Mehr über mich». Leer = kein Link.'),
