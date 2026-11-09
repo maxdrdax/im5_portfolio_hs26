@@ -90,6 +90,13 @@ Zum Vergleich der Stand vor der Umsetzung des CMS-Konzepts (Beispielmodule des S
 |---|---|
 | <img src="docs/screenshots/01_landing-page.jpg" alt="Startseite mit Starter-Modulen" width="400"> | <img src="docs/screenshots/01_modules-wordpress.jpg" alt="Backend: Starter-Module" width="400"> |
 
+### Zwischenstände Startseite
+Entwicklung der Startseite: erste Umsetzung der Module, danach angepasst an das Screendesign (Figma), heute mit Overlay-Menü, Zentrieren und Cursor-Label (siehe oben).
+
+| Erste Umsetzung | Nach Figma | Backend damals (Hero Bild ohne Titelposition) |
+|---|---|---|
+| <img src="docs/screenshots/02.6_startseite_website.jpg" alt="Erste Umsetzung der Startseite: Hero, Highlights-Karussell und Logos" width="260"> | <img src="docs/screenshots/03.1_startseite_website.jpg" alt="Startseite nach Figma: Hero, Highlights-Akkordeon und Logo-Laufschrift" width="260"> | <img src="docs/screenshots/02.6_startseite1-wordpress.jpg" alt="Backend: Modul Hero Bild (früherer Stand)" width="260"> |
+
 ## Technische Umsetzung
 
 ### Aufbau
