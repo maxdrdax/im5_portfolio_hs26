@@ -20,7 +20,16 @@ Hero Bild → Projekte (Karussell «Highlights») → Logos
 
 | Website | Backend |
 |---|---|
-| <img src="docs/screenshots/03.1_startseite_website.jpg" alt="Startseite nach Figma: Hero, Highlights-Akkordeon und Logo-Laufschrift" width="400"> | <img src="docs/screenshots/02.6_startseite1-wordpress.jpg" alt="Backend: Modul Hero Bild" width="400"><br><img src="docs/screenshots/02.6_startseite2-wordpress.jpg" alt="Backend: Modul Projekte als Karussell" width="400"><br><img src="docs/screenshots/02.6_startseite3-wordpress.jpg" alt="Backend: Modul Logos" width="400"> |
+| <img src="docs/screenshots/06.1_startseite_highlights_website.jpg" alt="Startseite: Hero, Highlights mit offenem Projekt in der Mitte, Cursor-Label als grüne Pille und Zähler, Logo-Laufschrift" width="400"> | <img src="docs/screenshots/06.13_hero-position-wordpress.jpg" alt="Backend: Modul Hero Bild mit Auswahlfeld «Position des Titels»" width="400"><br><img src="docs/screenshots/02.6_startseite2-wordpress.jpg" alt="Backend: Modul Projekte als Karussell" width="400"><br><img src="docs/screenshots/02.6_startseite3-wordpress.jpg" alt="Backend: Modul Logos" width="400"> |
+
+Highlights: Mausrad/Trackpad blättert durch die Projekte, das offene Projekt gleitet in die Bildschirmmitte. Die grüne Pille am Mauszeiger zeigt beim ersten Mal «Scrollen ↓», danach «Ansehen»; der Zähler «01 / 05» zeigt die Position.
+
+### Projektseite
+Hero (Titelbild/-video) → Eckdaten und Projektbeschrieb → Rolle und Teamabgrenzung → Video → Galerie. Alle Angaben kommen aus dem Post Type Projekt.
+
+| Website | Backend |
+|---|---|
+| <img src="docs/screenshots/06.3_projekt_inhalt_website.jpg" alt="Projektseite: Hero, Eckdaten, Projektbeschrieb und grüne Fläche Rolle und Team" width="400"><br><img src="docs/screenshots/06.4_projekt_galerie_website.jpg" alt="Galerie als horizontales Akkordeon mit offenem Bild und Zähler" width="400"> | <img src="docs/screenshots/06.10_projekt-wordpress.jpg" alt="Backend: Projekt bearbeiten mit Titelbild, Eckdaten, Rolle, Galerie und Video-Link" width="400"> |
 
 ### Projekte (Directory)
 Hero Text → Projekte (Liste) mit Filter «Ausgewählte Projekte» und Hover-Vorschau
@@ -34,7 +43,7 @@ Fotogalerie mit Filter nach Fotokategorie; das Raster ergibt sich aus dem Bildfo
 
 | Website | Backend |
 |---|---|
-| <img src="docs/screenshots/02.2_fotos_website.jpg" alt="Fotogalerie mit Filter" width="400"> | <img src="docs/screenshots/02.2_fotos-wordpress.jpg" alt="Backend: Seite Fotos mit Modul Fotogalerie" width="400"> |
+| <img src="docs/screenshots/02.2_fotos_website.jpg" alt="Fotogalerie mit Filter" width="400"> | <img src="docs/screenshots/02.2_fotos-wordpress.jpg" alt="Backend: Seite Fotos mit Modul Fotogalerie" width="400"><br><img src="docs/screenshots/06.11_foto-wordpress.jpg" alt="Backend: Foto bearbeiten mit Grösse im Raster und Bildausschnitt" width="400"> |
 
 ### Über mich
 Hero Bild → Profil → Erfahrung
@@ -57,10 +66,22 @@ Vollbild-Menü mit Hintergrund (gemeinsam oder pro Menüpunkt); Hover: Wort kurs
 |---|---|
 | <img src="docs/screenshots/05.1_navigation_website.jpg" alt="Offenes Overlay-Menü mit Hintergrundbild, Hover auf «Projekte»" width="400"> | <img src="docs/screenshots/05.2_navigation_wordpress.jpg" alt="Backend: Design > Menüs mit Button «Alle aufklappen», Hintergrundbild und -video nebeneinander" width="400"> |
 
+### Mobile
+Header mit Signet, Menü-Symbol und Kontakt-Button (Milchglas); Highlights alle offen; Projektliste als Karten; Galerie zum Wischen mit angeschnittenem nächstem Bild und Punkten.
+
+| Startseite | Menü | Projekte | Galerie |
+|---|---|---|---|
+| <img src="docs/screenshots/06.6_startseite_mobile.jpg" alt="Startseite auf dem Handy" width="180"> | <img src="docs/screenshots/06.7_menu_mobile.jpg" alt="Offenes Overlay-Menü auf dem Handy mit Start als erstem Punkt" width="180"> | <img src="docs/screenshots/06.8_projekte_mobile.jpg" alt="Projektliste auf dem Handy als Karten mit Vorschaubild 1:1" width="180"> | <img src="docs/screenshots/06.9_galerie_mobile.jpg" alt="Galerie auf dem Handy mit angeschnittenem nächstem Bild und Punkten" width="180"> |
+
 ### Backend: Struktur
 | Admin-Menü | Seitenübersicht | Impressum (Modul Text) |
 |---|---|---|
 | <img src="docs/screenshots/02_neue-reiter-wordpress.jpg" alt="Admin-Menü mit Projekte, Fotos und Globales" width="120"> | <img src="docs/screenshots/02.1_neue-seiten-wordpress.jpg" alt="Alle Seiten im Backend" width="320"> | <img src="docs/screenshots/02.3_impressum-wordpress.jpg" alt="Backend: Impressum mit Modul Text" width="320"> |
+
+### Backend: Globales
+Website nur für angemeldete Benutzer (`site_private`), Logo und Signet, Copyright, E-Mail, Socials, gemeinsamer Menü-Hintergrund.
+
+<img src="docs/screenshots/06.12_globales-wordpress.jpg" alt="Backend: Globale Einstellungen" width="500">
 
 ### Vorher: Stand mit dem Starter-Theme
 Zum Vergleich der Stand vor der Umsetzung des CMS-Konzepts (Beispielmodule des Starter-Themes).
