@@ -1787,7 +1787,7 @@ mark {
             aspect-ratio: 3 / 2;
             scroll-snap-align: start;
 
-$            /* kein Aufklappen: Bild füllt einfach die Kachel */
+            /* kein Aufklappen: Bild füllt einfach die Kachel */
             img,
             video {
                 left: 0;
@@ -1797,8 +1797,6 @@ $            /* kein Aufklappen: Bild füllt einfach die Kachel */
         }
     }
 
-    /* Galerie: Punkte unter dem Wisch-Bereich (main.js erzeugt sie). Aktiver Punkt breiter und weiss.
-       Der Button ist grösser als der sichtbare Punkt (Tippfläche), der Punkt ist ::before. */
     /* Anleitung «← Wischen →» unter den Punkten; blendet nach dem ersten Wischen aus (.is-learned, main.js) */
     .strip-hint {
         display: flex;
@@ -1825,6 +1823,8 @@ $            /* kein Aufklappen: Bild füllt einfach die Kachel */
         }
     }
 
+    /* Galerie: Punkte unter dem Wisch-Bereich (main.js erzeugt sie). Aktiver Punkt breiter und weiss.
+       Der Button ist grösser als der sichtbare Punkt (Tippfläche), der Punkt ist ::before. */
     .strip-dots {
         display: flex;
         justify-content: center;

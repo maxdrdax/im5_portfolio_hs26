@@ -1450,8 +1450,8 @@ if (!reducedMotion) {
 //    (INTRO_SOFTNESS), statt hart eins nach dem anderen umzuspringen.
 // Bei «Bewegung reduzieren» passiert nichts: Der Text ist dann einfach weiss.
 // =====================================================================
-const INTRO_START = 0.85; // Anteil der Fensterhöhe: hier beginnt das Einfärben (Oberkante des Texts)
-const INTRO_END = 0.4; // hier ist alles eingefärbt (Unterkante des Texts)
+const INTRO_START = 0.65; // Anteil der Fensterhöhe: hier beginnt das Einfärben (Oberkante des Texts)
+const INTRO_END = 0.3; // hier ist alles eingefärbt (Unterkante des Texts)
 const INTRO_SOFTNESS = 4; // über wie viele Wörter der Übergang verläuft (mehr = weicher)
 
 if (!reducedMotion) {
