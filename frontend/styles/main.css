@@ -615,6 +615,56 @@ h2 em {
     pointer-events: none;
 }
 
+/* Intro (Startseite nach dem Hero): kurze Vorstellung in grosser Schrift.
+   Wörter starten gedimmt und färben sich beim Scrollen weiss (main.js setzt --lit pro Wort, 0 bis 1). */
+[data-module="intro"] {
+    .intro-text {
+        max-width: 24em;
+        /* 28 px (Handy) bis 56 px (grosse Bildschirme), fliessend */
+        font: 400 clamp(28px, 21.2px + 1.81vw, 56px)/1.2 var(--font-sans);
+        letter-spacing: -.01em;
+        text-wrap: pretty;
+
+        /* Akzent *Wort*: kursiv in Playfair und grün (wie der Titel der Highlights) */
+        em {
+            color: var(--color-accent);
+            font-family: var(--font-brand-family);
+            font-style: italic;
+        }
+
+        /* einzelnes Wort (span erzeugt main.js): 20 % Deckkraft gedimmt → 100 % eingefärbt */
+        .word {
+            opacity: calc(.2 + .8 * var(--lit, 0));
+            transition: opacity 150ms linear;
+        }
+    }
+
+    .intro-link {
+        display: inline-flex;
+        align-items: center;
+        gap: var(--space-8);
+        min-height: 44px;
+        margin-top: var(--space-stack-m);
+        color: var(--color-white);
+        font: var(--font-nav);
+        letter-spacing: var(--tracking-caps);
+        text-decoration: none;
+        text-transform: uppercase;
+
+        &:focus-visible {
+            text-decoration: underline;
+            text-underline-offset: 4px;
+        }
+
+        @media (hover: hover) {
+            &:hover {
+                text-decoration: underline;
+                text-underline-offset: 4px;
+            }
+        }
+    }
+}
+
 /* Seitentitel (Hero Text) und das Modul darunter gehören zusammen (z. B. «Projekte» + Liste):
    Blockabstand statt Sektionsabstand (Gesetz der Nähe) */
 [data-module="hero-text"] + [data-module] {
@@ -655,6 +705,12 @@ h2 em {
         /* Elemente einer Liste: kleiner Abstand */
         gap: var(--space-stack-s);
         list-style: none;
+
+        /* Handy/Tablet: Projekt in der Bildschirmmitte hervorheben, die anderen treten zurück
+           (wie in der Projektliste; Klassen setzt main.js) */
+        &.is-scroll-highlight:has(.is-current) .card:not(.is-current) {
+            opacity: .4;
+        }
     }
 
     .card {
@@ -665,7 +721,8 @@ h2 em {
         /* Inhalt der Karte (Bild, Video, Texte) beeinflusst nichts ausserhalb:
            Der Browser berechnet beim Animieren der Höhe weniger neu → flüssiger */
         contain: layout paint;
-        transition: height var(--accordion-duration) var(--accordion-ease);
+        /* opacity: Hervorheben beim Scrollen auf Handy/Tablet (siehe .carousel.is-scroll-highlight) */
+        transition: height var(--accordion-duration) var(--accordion-ease), opacity 400ms ease;
 
         &.is-active {
             height: clamp(320px, 75vw, 648px);
@@ -823,10 +880,24 @@ h2 em {
             color: var(--color-black);
         }
 
+        /* Nicht im schmalen Fenster (bis 1024 px, .is-scroll-highlight setzt main.js): Dort gilt wie auf
+           dem Handy nur das Hervorheben beim Scrollen, sonst wären zwei Zeilen gleichzeitig markiert. */
         @media (hover: hover) {
-            tr:hover td {
+            &:not(.is-scroll-highlight) tr:hover td {
                 background-color: var(--color-accent);
                 color: var(--color-black);
+            }
+        }
+
+        /* Handy/Tablet: Projekt in der Bildschirmmitte hervorheben, die anderen treten zurück.
+           .is-scroll-highlight und .is-current setzt main.js (nur ohne Maus bzw. bis 1024 px). */
+        &.is-scroll-highlight {
+            tbody tr {
+                transition: opacity 400ms ease;
+            }
+
+            tbody:has(.is-current) tr:not(.is-current) {
+                opacity: .4;
             }
         }
 

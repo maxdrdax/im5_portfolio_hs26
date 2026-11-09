@@ -1,5 +1,7 @@
 # CMS-Konzept: Portfolio maxhutmacher.ch (v04)
 
+> **Ergänzung v04:** Neues Modul `intro` (Vorstellung auf der Startseite nach dem Hero).
+>
 > **Änderungen v04:** Neue Navigation (Overlay-Menü, fixer Header: über dem Hero durchsichtig, danach Milchglas). Neue Felder am Menüeintrag: `menu_image`, `menu_video`. Neue Globals für einen gemeinsamen Menü-Hintergrund: `menu_bg_image`, `menu_bg_video`. Hero Bild: Position des Titels `title_position`. Globals: `logo_signet`, `site_private`.
 
 Quelle: Screendesign v06 (Figma). Felder im Carbon-Fields-Stil.
@@ -84,6 +86,15 @@ Ist `hero_image` das erste Modul einer Seite, beginnt der Hero ganz oben und der
 
 Projekte (Text leer), Fotos, Kontakt.
 
+### Intro `intro`
+| Name | Slug | Feldtyp |
+|---|---|---|
+| Text | text | textarea |
+| Link-Text | link_text | text |
+| Link | link | association (Seite) |
+
+Startseite, direkt nach dem Hero: kurze Vorstellung in zwei, drei Sätzen (auf dem Handy steht im Header nur das Signet). Grosse Schrift, beim Scrollen färbt sich der Text Wort für Wort von gedimmt zu weiss (Referenz: structureengineering.com.au). Akzent mit `*Sternchen*` (kursiv, grün). Link optional (z. B. «Mehr über mich» → Über mich), leer = nicht ausgeben. Bei «Bewegung reduzieren» ist der Text von Anfang an weiss.
+
 ### Projekte `projects`
 | Name | Slug | Feldtyp |
 |---|---|---|
@@ -91,7 +102,7 @@ Projekte (Text leer), Fotos, Kontakt.
 | Darstellung | layout | select (Karussell / Liste) |
 | Projekte | projects | association (Post Type project) |
 
-Startseite: «Highlights» als Karussell mit ausgewählten Projekten. Seite Projekte: Liste als Tabelle mit Hover-Vorschau und Filterliste (aus `project_category`); auf dem Handy pro Projekt ein Vorschaubild 1:1 über Titel und Jahr, Filter untereinander. Leeres Feld «Projekte» = alle Projekte automatisch. Daten kommen immer aus dem Post Type Projekt.
+Startseite: «Highlights» als Karussell mit ausgewählten Projekten. Seite Projekte: Liste als Tabelle mit Hover-Vorschau und Filterliste (aus `project_category`); auf dem Handy pro Projekt ein Vorschaubild 1:1 über Titel und Jahr, Filter untereinander. Auf Handy und Tablet wird beim Scrollen das Projekt in der Bildschirmmitte hervorgehoben, die anderen treten zurück (Liste und Highlights). Leeres Feld «Projekte» = alle Projekte automatisch. Daten kommen immer aus dem Post Type Projekt.
 
 ### Fotogalerie `gallery_photos`
 Keine Felder. Listet alle Fotos, Filter aus `photo_category`.
@@ -151,7 +162,7 @@ Impressum und Datenschutz.
 ### Module pro Seite
 | Seite | Slug | Module (Reihenfolge) |
 |---|---|---|
-| Startseite | startseite | hero_image → projects (Karussell) → logos |
+| Startseite | startseite | hero_image → intro → projects (Karussell) → logos |
 | Projekte | projekte | hero_text → projects (Liste) |
 | Fotos | fotos | hero_text → gallery_photos |
 | Über mich | ueber-mich | hero_image → profile → experience |
@@ -204,7 +215,7 @@ Impressum und Datenschutz.
 - Footer zeigt nur Socials mit Icon (LinkedIn). Kontaktseite listet alle (LinkedIn, Instagram).
 
 ## Statisch im Theme (nicht im CMS)
-Icons aus der eigenen Icon-Bibliothek (`frontend/assets/icons/`, Ausgabe über `get_icon()`; Pfeil nach unten = Scroll-Pfeil, schräg nach rechts oben = Teaser, Kontakt, Socials), Punkte unter der Galerie (Tablet/Handy), Hover-Vorschau im Directory (folgt dem Mauszeiger), Beschriftungen Jahr / Kontext / Kategorie / Meine Rolle, Zwischentitel «Projektbeschrieb» und «Meine Rolle und Teamabgrenzung», Button-Text Lebenslauf, Standardfilter, Karussell, Hover-Effekt (Chroma/Verflüssigen, Cursor), Cursor-Label über Highlights und Galerie (grüne Pille, ersetzt dort den Cursor-Punkt; «Scrollen ↓» bis zum ersten Blättern, danach bei den Highlights «Ansehen», bei der Galerie ausgeblendet), Zähler «01 / 05» mit Fortschrittslinie unter Highlights und Galerie (nur Desktop), Streifen-Galerie, Foto-Raster, Verlauf oben im Hero, Menü-Button, Overlay-Animation, Nummerierung der Menüpunkte, Seitenübergänge, Einblenden beim Scrollen.
+Icons aus der eigenen Icon-Bibliothek (`frontend/assets/icons/`, Ausgabe über `get_icon()`; Pfeil nach unten = Scroll-Pfeil, schräg nach rechts oben = Teaser, Kontakt, Socials), Punkte unter der Galerie (Tablet/Handy), Hover-Vorschau im Directory (folgt dem Mauszeiger), Beschriftungen Jahr / Kontext / Kategorie / Meine Rolle, Zwischentitel «Projektbeschrieb» und «Meine Rolle und Teamabgrenzung», Button-Text Lebenslauf, Standardfilter, Karussell, Hover-Effekt (Chroma/Verflüssigen, Cursor), Cursor-Label über Highlights und Galerie (grüne Pille, ersetzt dort den Cursor-Punkt; «Scrollen ↓» bis zum ersten Blättern, danach bei den Highlights «Ansehen», bei der Galerie ausgeblendet), Zähler «01 / 05» mit Fortschrittslinie unter Highlights und Galerie (nur Desktop), Streifen-Galerie, Foto-Raster, Verlauf oben im Hero, Menü-Button, Overlay-Animation, Nummerierung der Menüpunkte, Seitenübergänge, Einblenden beim Scrollen, Text-Hervorhebung beim Scrollen (Intro).
 
 ## Offen
 - Video: entschieden. Kurze Clips als MP4 (`video`, `cover_video`, Galerie), volle Videos über `video_url`.

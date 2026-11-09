@@ -196,6 +196,74 @@ if (canHover) {
     });
 }
 
+// -> Handy/Tablet: Projekt in der Bildschirmmitte hervorheben (Ersatz für Hover)
+// Gilt für die Projektliste (Directory) und die Highlights auf der Startseite.
+// Beim Scrollen wird das Element gesucht, dessen Mitte am nächsten an der Bildschirmmitte liegt.
+// Gerechnet statt IntersectionObserver: So ist auch das letzte Element erreichbar, obwohl es
+// am Seitenende nie ganz in die Mitte kommt. requestAnimationFrame: höchstens einmal pro Bild rechnen.
+// Klassen für das CSS: .is-scroll-highlight am Container, .is-current am hervorgehobenen Element.
+function initScrollHighlight(container, items) {
+    let ticking = false;
+
+    const update = () => {
+        ticking = false;
+        const active = !canHover || compactLayout.matches;
+        container.classList.toggle('is-scroll-highlight', active);
+        if (!active) {
+            items.forEach((item) => item.classList.remove('is-current'));
+            return;
+        }
+        const center = window.innerHeight / 2;
+        let closest = null;
+        let closestDistance = Infinity;
+        items.forEach((item) => {
+            if (item.hidden) {
+                return; // vom Filter ausgeblendet
+            }
+            const rect = item.getBoundingClientRect();
+            // nur Elemente, die gerade im Fenster sind
+            if (rect.bottom < 0 || rect.top > window.innerHeight) {
+                return;
+            }
+            const distance = Math.abs(rect.top + rect.height / 2 - center);
+            if (distance < closestDistance) {
+                closest = item;
+                closestDistance = distance;
+            }
+        });
+        items.forEach((item) => item.classList.toggle('is-current', item === closest));
+    };
+
+    const requestUpdate = () => {
+        if (!ticking) {
+            ticking = true;
+            requestAnimationFrame(update);
+        }
+    };
+
+    window.addEventListener('scroll', requestUpdate, { passive: true });
+    window.addEventListener('resize', requestUpdate);
+    requestUpdate();
+    return requestUpdate;
+}
+
+// Projektliste (Seite Projekte)
+document.querySelectorAll('[data-directory] .directory').forEach((table) => {
+    const requestUpdate = initScrollHighlight(table, [...table.querySelectorAll('tbody tr')]);
+    // Nach dem Filtern ändern sich die sichtbaren Zeilen. Der Filter tauscht sie in einem
+    // Seitenübergang (View Transition) aus, der etwas später läuft → kurz warten, dann neu rechnen.
+    table.closest('[data-directory]').addEventListener('click', (event) => {
+        if (event.target.closest('[data-filter]')) {
+            setTimeout(requestUpdate, 100);
+        }
+    });
+});
+
+// Highlights (Startseite): auf Handy/Tablet sind alle Projekte offen
+document.querySelectorAll('[data-accordion]').forEach((accordion) => {
+    initScrollHighlight(accordion, [...accordion.querySelectorAll('[data-accordion-item]')]);
+});
+
 // =====================================================================
 // -> Highlights-Akkordeon (Startseite)
 // Mausrad/Trackpad: Ist die Maus über den Highlights, wird der Scrollweg gezählt; nach einer
@@ -1349,6 +1417,15 @@ if (!reducedMotion) {
             // Gleichzeitig sichtbare Elemente nacheinander einblenden (z. B. Fotos im Raster)
             entry.target.style.animationDelay = `${index * REVEAL_STAGGER}ms`;
             entry.target.classList.add('is-revealed');
+            // Nach dem Einblenden aufräumen: Die Animation hält sonst opacity: 1 fest (fill-mode both)
+            // und überstimmt andere Regeln, z. B. das Dimmen der Projektliste beim Scrollen auf dem Handy
+            entry.target.addEventListener('animationend', (event) => {
+                if (event.animationName !== 'reveal') {
+                    return; // Animation eines Kindelements (z. B. Pfeil) ignorieren
+                }
+                entry.target.classList.remove('reveal', 'is-revealed');
+                entry.target.style.removeProperty('animation-delay');
+            });
             revealObserver.unobserve(entry.target); // nur einmal einblenden
             index++;
         });
@@ -1361,6 +1438,76 @@ if (!reducedMotion) {
         }
         element.classList.add('reveal');
         revealObserver.observe(element);
+    });
+}
+
+// =====================================================================
+// -> Intro: Text färbt sich beim Scrollen Wort für Wort ein (Markup: modules/intro.php)
+// 1. Jedes Wort bekommt ein <span class="word"> (Text bleibt für Screenreader normal lesbar).
+// 2. Beim Scrollen wird der Fortschritt berechnet: 0 = Text taucht unten auf (Oberkante bei 85 %
+//    der Fensterhöhe), 1 = Text ist durch (Unterkante bei 40 %).
+// 3. Daraus bekommt jedes Wort --lit (0–1). Mehrere Wörter blenden gleichzeitig weich über
+//    (INTRO_SOFTNESS), statt hart eins nach dem anderen umzuspringen.
+// Bei «Bewegung reduzieren» passiert nichts: Der Text ist dann einfach weiss.
+// =====================================================================
+const INTRO_START = 0.85; // Anteil der Fensterhöhe: hier beginnt das Einfärben (Oberkante des Texts)
+const INTRO_END = 0.4; // hier ist alles eingefärbt (Unterkante des Texts)
+const INTRO_SOFTNESS = 4; // über wie viele Wörter der Übergang verläuft (mehr = weicher)
+
+if (!reducedMotion) {
+    document.querySelectorAll('[data-scroll-text]').forEach((text) => {
+        // -> 1. Wörter in <span> verpacken. TreeWalker geht durch alle Textstücke, auch die im <em>.
+        const walker = document.createTreeWalker(text, NodeFilter.SHOW_TEXT);
+        const textNodes = [];
+        while (walker.nextNode()) {
+            textNodes.push(walker.currentNode);
+        }
+        textNodes.forEach((node) => {
+            const fragment = document.createDocumentFragment();
+            // split mit Klammern behält die Leerzeichen als eigene Teile
+            node.textContent.split(/(\s+)/).forEach((part) => {
+                if (part === '') {
+                    return;
+                }
+                if (/^\s+$/.test(part)) {
+                    fragment.append(part);
+                    return;
+                }
+                const word = document.createElement('span');
+                word.className = 'word';
+                word.textContent = part;
+                fragment.append(word);
+            });
+            node.replaceWith(fragment);
+        });
+
+        const words = [...text.querySelectorAll('.word')];
+        let ticking = false;
+
+        // -> 2. und 3. Fortschritt berechnen und auf die Wörter verteilen
+        const update = () => {
+            ticking = false;
+            const rect = text.getBoundingClientRect();
+            const height = window.innerHeight;
+            const distance = rect.height + height * (INTRO_START - INTRO_END);
+            const progress = Math.min(Math.max((height * INTRO_START - rect.top) / distance, 0), 1);
+            const position = progress * (words.length + INTRO_SOFTNESS);
+            words.forEach((word, index) => {
+                const lit = Math.min(Math.max((position - index) / INTRO_SOFTNESS, 0), 1);
+                word.style.setProperty('--lit', lit.toFixed(3));
+            });
+        };
+
+        const requestUpdate = () => {
+            if (!ticking) {
+                ticking = true;
+                requestAnimationFrame(update);
+            }
+        };
+
+        window.addEventListener('scroll', requestUpdate, { passive: true });
+        window.addEventListener('resize', requestUpdate);
+        requestUpdate();
     });
 }
 

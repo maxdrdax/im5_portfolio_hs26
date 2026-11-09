@@ -32,6 +32,22 @@ Container::make('post_meta', 'Module')
                     ->set_help_text('Akzent mit *Sternchen*.'),
                 Field::make('textarea', 'text', 'Text'),
             ])
+            // -> intro (Startseite nach dem Hero: kurze Vorstellung, Text färbt sich beim Scrollen ein)
+            ->add_fields('intro', 'Intro', [
+                Field::make('textarea', 'text', 'Text')
+                    ->set_required()
+                    ->set_rows(4)
+                    ->set_help_text('Zwei, drei Sätze. Akzent mit *Sternchen* (kursiv, grün).'),
+                Field::make('text', 'link_text', 'Link-Text')
+                    ->set_width(50)
+                    ->set_help_text('z. B. «Mehr über mich». Leer = kein Link.'),
+                Field::make('association', 'link', 'Link')
+                    ->set_types([
+                        ['type' => 'post', 'post_type' => 'page'],
+                    ])
+                    ->set_max(1)
+                    ->set_width(50),
+            ])
             // -> projects (Highlights-Karussell oder Liste); Daten kommen aus dem Post Type Projekt
             ->add_fields('projects', 'Projekte', [
                 Field::make('text', 'title', 'Titel'),
@@ -150,6 +166,11 @@ function render_modules(): void
                 $module['title_position'] = array_key_exists($position, $positions) ? $position : 'center-left';
                 $module['image'] = get_media_by_id($module['image'] ?? 0, 'xl');
                 $module['video'] = get_video_by_id($module['video'] ?? 0);
+                break;
+            case 'intro':
+                // Association liefert eine Liste mit höchstens einem Eintrag → Adresse der Seite oder false
+                $page_id = (int) ($module['link'][0]['id'] ?? 0);
+                $module['link'] = $page_id ? get_permalink($page_id) : false;
                 break;
             case 'projects':
                 // Association liefert Einträge mit 'id'; leer = alle Projekte

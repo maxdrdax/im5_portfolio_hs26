@@ -179,6 +179,8 @@ Entwicklung der Startseite: erste Umsetzung der Module, danach angepasst an das 
 | 09.11.2026 | Highlights: offenes Projekt wird in die Mitte gescrollt, eigene Scroll-Animation mit `requestAnimationFrame` und derselben Kurve wie das Aufklappen (`cubic-bezier` in JS nachgebaut); Trackpad-Nachlauf (Momentum) erkannt, ein Wischer = ein Schritt; Cursor-Label als grüne Pille («Scrollen ↓» bis zum ersten Blättern, danach «Ansehen»; `sessionStorage`) und Zähler «01 / 05» mit Fortschrittslinie |
 | 09.11.2026 | Galerie: gleiches Cursor-Label und Zähler (eingeblendet nur bei offenem Bild), Bilder ohne Zoom beim Aufklappen (feste Bildgrösse, Streifen deckt auf), Cursor-Punkt gross über interaktiven Elementen (`tabindex="0"`); Handy/Tablet: nächstes Bild angeschnitten (88 %) und Anleitung «← Wischen →» bis zum ersten Wischen |
 | 09.11.2026 | Galerie: beim Aufklappen gleitet die ganze Galerie in die Bildschirmmitte (gleiche Dauer und Kurve wie das Aufklappen, `animateScrollTo`), «Maus hat verlassen» durch Scrollen wird ignoriert |
+| 09.11.2026 | Handy/Tablet: Projekt in der Bildschirmmitte hervorheben (Projektliste und Highlights, gemeinsame Funktion `initScrollHighlight`), grüne Zeile beim Hover nur noch bei breitem Fenster; Einblenden beim Scrollen räumt nach der Animation auf (sonst überstimmt `fill-mode` andere Regeln) |
+| 09.11.2026 | Neues Modul `intro` (Startseite nach dem Hero): kurze Vorstellung in grosser Schrift, färbt sich beim Scrollen Wort für Wort ein (Wörter per `TreeWalker` in `<span>`, Fortschritt pro Wort als CSS-Variable `--lit`); Ursache «leere Startseite»: doppelte Seite «Startseite» unter Einstellungen > Lesen |
 
 ## Learnings
 <!-- In eigenen Worten ergänzen -->
