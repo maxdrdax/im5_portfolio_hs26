@@ -18,7 +18,8 @@ function js_log(mixed ...$content): void
 function get_media_by_id(int|string $id, string $size = 'm'): false|array
 {
     $id = (int) $id;
-    if ($id <= 0) {
+    // Leer oder gelöscht: Felder speichern nur die ID, auch wenn das Bild in der Mediathek gelöscht wurde
+    if ($id <= 0 || get_post_type($id) !== 'attachment') {
         return false;
     }
 

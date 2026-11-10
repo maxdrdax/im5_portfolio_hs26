@@ -6,9 +6,11 @@
 function get_project_by_id(int $id): array
 {
     // Galerie: Videos als Video laden, alles andere als Bild
-    $gallery = array_map(function ($media_id) {
+    // array_filter entfernt Einträge, deren Datei in der Mediathek gelöscht wurde (false),
+    // array_values nummeriert danach neu (0, 1, 2 …), damit Zähler und Punkte stimmen.
+    $gallery = array_values(array_filter(array_map(function ($media_id) {
         return get_video_by_id($media_id) ?: get_media_by_id($media_id, 'l');
-    }, carbon_get_post_meta($id, 'gallery') ?: []);
+    }, carbon_get_post_meta($id, 'gallery') ?: [])));
 
     // Standard-Zwischentitel aus den Globals (gilt, wenn im Projekt nichts eingetragen ist)
     $titles = get_global_project_titles();
