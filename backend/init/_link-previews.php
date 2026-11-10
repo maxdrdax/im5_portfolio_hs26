@@ -28,7 +28,8 @@ function update_link_previews(int $post_id): void
     $saved = get_post_meta($post_id, '_link_previews', true) ?: [];
     $previews = [];
 
-    foreach (carbon_get_post_meta($post_id, 'links') ?: [] as $link) {
+    // Links aus allen Modulen «Weiterführende Informationen» (backend/getter/_project.php)
+    foreach (get_project_link_rows($post_id) as $link) {
         $url = esc_url_raw(trim($link['url'] ?? ''));
         // Eigenes Vorschaubild oder Logo der Plattform (Social-Media-Link) hat Vorrang: nichts holen
         if ($url === '' || !empty($link['image']) || get_social_icon_for_url($url)) {

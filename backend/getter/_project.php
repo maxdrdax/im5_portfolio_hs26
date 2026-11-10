@@ -2,19 +2,10 @@
 // -> Getter für den Post Type «Projekt»
 // Detailseite, Highlights und Liste nutzen alle diese Funktionen: Daten werden nur einmal erfasst.
 
-// Alle Daten eines Projekts
+// Feste Angaben eines Projekts (Highlights, Projektliste und Kopf der Projektseite)
+// Die Module der Projektseite lädt get_project_modules() separat: Liste und Karussell brauchen sie nicht.
 function get_project_by_id(int $id): array
 {
-    // Galerie: Videos als Video laden, alles andere als Bild
-    // array_filter entfernt Einträge, deren Datei in der Mediathek gelöscht wurde (false),
-    // array_values nummeriert danach neu (0, 1, 2 …), damit Zähler und Punkte stimmen.
-    $gallery = array_values(array_filter(array_map(function ($media_id) {
-        return get_video_by_id($media_id) ?: get_media_by_id($media_id, 'l');
-    }, carbon_get_post_meta($id, 'gallery') ?: [])));
-
-    // Standard-Zwischentitel aus den Globals (gilt, wenn im Projekt nichts eingetragen ist)
-    $titles = get_global_project_titles();
-
     return [
         'id' => $id,
         'title' => get_the_title($id),
@@ -26,35 +17,106 @@ function get_project_by_id(int $id): array
         'year' => carbon_get_post_meta($id, 'year'),
         'context' => carbon_get_post_meta($id, 'context'),
         'role' => carbon_get_post_meta($id, 'role'),
-        'description' => carbon_get_post_meta($id, 'description'),
-        'role_text' => carbon_get_post_meta($id, 'role_text'),
-        // Zwischentitel: eigener Titel im Projekt, sonst Standard aus den Globals
-        'description_title' => carbon_get_post_meta($id, 'description_title') ?: $titles['description'],
-        'role_title' => carbon_get_post_meta($id, 'role_title') ?: $titles['role'],
-        'video_title' => carbon_get_post_meta($id, 'video_title') ?: $titles['video'],
-        'gallery_title' => carbon_get_post_meta($id, 'gallery_title') ?: $titles['gallery'],
-        'links_title' => carbon_get_post_meta($id, 'links_title') ?: $titles['links'],
-        'links' => get_project_links($id),
-        'role_image' => get_media_by_id(carbon_get_post_meta($id, 'role_image'), 'l'),
-        'gallery' => array_values(array_filter($gallery)),
-        // Nur der Link; eingebettet wird erst auf der Detailseite (spart Anfragen in Liste/Karussell)
-        'video_url' => carbon_get_post_meta($id, 'video_url'),
         'featured' => (bool) carbon_get_post_meta($id, 'featured'),
         'hide_title' => (bool) carbon_get_post_meta($id, 'hide_title'),
         'categories' => get_term_list($id, 'project_category'),
     ];
 }
 
-// Weiterführende Informationen eines Projekts (Linkliste)
+// Module der Projektseite in der gespeicherten Reihenfolge, bereit für die Ausgabe
+// Jedes Modul: 'type' (= Dateiname in frontend/views/project-modules/), 'title', 'index' und seine Daten.
+// Leere Module (z. B. Galerie ohne Bilder) werden weggelassen; unbekannte Typen ebenfalls (Whitelist).
+function get_project_modules(int $id): array
+{
+    // Standard-Zwischentitel aus den Globals (gilt, wenn im Modul nichts eingetragen ist)
+    $titles = get_global_project_titles();
+    $modules = [];
+
+    foreach (carbon_get_post_meta($id, 'project_modules') ?: [] as $index => $raw) {
+        $type = $raw['_type'] ?? '';
+        $module = [
+            'type' => $type,
+            'index' => $index,
+            'title' => trim($raw['title'] ?? '') ?: ($titles[$type] ?? ''),
+        ];
+
+        switch ($type) {
+            case 'description':
+                $module['text'] = (string) ($raw['text'] ?? '');
+                $show = has_rich_text($module['text']);
+                break;
+            case 'role':
+                $module['text'] = (string) ($raw['text'] ?? '');
+                $module['image'] = get_media_by_id($raw['image'] ?? 0, 'l');
+                // Text und Bild leer = nicht ausgeben
+                $show = has_rich_text($module['text']) || $module['image'];
+                break;
+            case 'video':
+                // Embed-Code ist bereits durch wp_kses() gefiltert (siehe get_video_embed)
+                $module['embed'] = get_video_embed((string) ($raw['url'] ?? ''));
+                $show = (bool) $module['embed'];
+                break;
+            case 'gallery':
+                $module['items'] = get_gallery_items($raw['gallery'] ?? []);
+                $show = !empty($module['items']);
+                break;
+            case 'links':
+                $module['links'] = get_project_links($id, $raw['links'] ?? []);
+                $show = !empty($module['links']);
+                break;
+            default:
+                $show = false;
+        }
+
+        if ($show) {
+            $modules[] = $module;
+        }
+    }
+    return $modules;
+}
+
+// Rich Text hat sichtbaren Inhalt (nicht nur leere Absätze oder Leerzeichen)
+function has_rich_text(string $html): bool
+{
+    return trim(wp_strip_all_tags($html)) !== '';
+}
+
+// Galerie: Videos als Video laden, alles andere als Bild; nur Bilder und Videos behalten
+// array_filter entfernt Einträge, deren Datei in der Mediathek gelöscht wurde (false),
+// array_values nummeriert danach neu (0, 1, 2 …), damit Zähler und Punkte stimmen.
+function get_gallery_items(array $ids): array
+{
+    $items = array_map(function ($media_id) {
+        return get_video_by_id($media_id) ?: get_media_by_id($media_id, 'l');
+    }, $ids);
+    return array_values(array_filter($items, function ($media) {
+        return $media && in_array($media['type'] ?? '', ['image', 'video'], true);
+    }));
+}
+
+// Alle Links aus allen Modulen «Weiterführende Informationen» eines Projekts (Rohdaten)
+// Gebraucht beim Speichern (Vorschaubilder holen, backend/init/_link-previews.php).
+function get_project_link_rows(int $id): array
+{
+    $rows = [];
+    foreach (carbon_get_post_meta($id, 'project_modules') ?: [] as $module) {
+        if (($module['_type'] ?? '') === 'links') {
+            $rows = array_merge($rows, $module['links'] ?? []);
+        }
+    }
+    return $rows;
+}
+
+// Weiterführende Informationen (Linkliste) eines Moduls
 // Einträge ohne gültigen Link werden übersprungen. «external»: Link führt auf eine andere Website
 // (dann öffnet er in einem neuen Tab); Links auf die eigene Website bleiben im selben Tab.
-function get_project_links(int $id): array
+function get_project_links(int $id, array $rows): array
 {
     $home_host = wp_parse_url(home_url(), PHP_URL_HOST);
     // Automatisch geholte Vorschaubilder (backend/init/_link-previews.php): Link (md5) → Bild-ID
     $auto_previews = get_post_meta($id, '_link_previews', true) ?: [];
     $links = [];
-    foreach (carbon_get_post_meta($id, 'links') ?: [] as $link) {
+    foreach ($rows as $link) {
         $url = esc_url_raw(trim($link['url'] ?? ''));
         $title = trim($link['title'] ?? '');
         if ($url === '' || $title === '') {

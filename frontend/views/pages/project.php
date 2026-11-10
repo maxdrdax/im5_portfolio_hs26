@@ -1,11 +1,10 @@
 <?php
 // -> Detailseite eines Projekts; alle Daten kommen aus dem Getter
+// Fest: Hero und Kopf (Titel, Eckdaten). Danach die Module in der Reihenfolge aus dem Backend.
 $project = get_project_by_id(get_the_ID());
+$modules = get_project_modules(get_the_ID());
 $cover = $project['cover'];
-$has_role = !empty($project['role_text']) || !empty($project['role_image']);
 $category_names = implode(', ', array_column($project['categories'], 'name'));
-// Volles Video (YouTube/Vimeo): Embed-Code ist bereits durch wp_kses() gefiltert und kann direkt ausgegeben werden
-$embed = get_video_embed($project['video_url']);
 ?>
 
 <main data-page="project">
@@ -29,7 +28,7 @@ $embed = get_video_embed($project['video_url']);
         </button>
     </section>
 
-    <?php // 2. Projektinfos: Kategorie und Titel links, Eckdaten rechts; darunter der Projektbeschrieb ?>
+    <?php // 2. Projektinfos: Kategorie und Titel links, Eckdaten rechts ?>
     <section class="project-intro">
         <div class="project-header">
             <?php // Ausgeblendet (Feld «Titel unter dem Hero ausblenden»): nur noch für Screenreader ?>
@@ -55,133 +54,11 @@ $embed = get_video_embed($project['video_url']);
                 <?php endif; ?>
             </dl>
         </div>
-
-        <?php // Projektbeschrieb und Meine Rolle im gleichen Raster (.project-block):
-              // Zwischentitel links, Text rechts in einer Spalte, Trennlinie darüber ?>
-        <?php if ($project['description']) : ?>
-            <div class="project-block project-description">
-                <h2 class="project-subtitle"><?= format_accent($project['description_title']) ?></h2>
-                <div class="project-block-body">
-                    <div class="rich-text"><?= format_rich_text($project['description']) ?></div>
-                </div>
-            </div>
-        <?php endif; ?>
-
-        <?php // 3. Meine Rolle (optional): Text und/oder Bild; beides leer = nicht ausgeben ?>
-        <?php if ($has_role) : ?>
-            <div class="project-block project-role">
-                <h2 class="project-subtitle"><?= format_accent($project['role_title']) ?></h2>
-                <div class="project-block-body">
-                    <?php if ($project['role_text']) : ?>
-                        <div class="rich-text"><?= format_rich_text($project['role_text']) ?></div>
-                    <?php endif; ?>
-                    <?php if ($project['role_image']) : ?>
-                        <img class="role-image" src="<?= esc_url($project['role_image']['src']) ?>" alt="<?= esc_attr($project['role_image']['alt']) ?>"
-                             width="<?= esc_attr($project['role_image']['width'] ?? '') ?>" height="<?= esc_attr($project['role_image']['height'] ?? '') ?>"
-                             loading="lazy" decoding="async">
-                    <?php endif; ?>
-                </div>
-            </div>
-        <?php endif; ?>
     </section>
 
-    <?php // 4. Volles Video (YouTube/Vimeo) ?>
-    <?php if ($embed) : ?>
-        <section class="project-video">
-            <h2 class="project-subtitle project-subtitle--ruled"><?= format_accent($project['video_title']) ?></h2>
-            <div class="video-wrapper"><?= $embed ?></div>
-        </section>
-    <?php endif; ?>
-
-    <?php // 5. Galerie als horizontales Akkordeon (Steuerung in main.js) ?>
-    <?php
-    // Nur Bilder und Videos (andere Dateitypen überspringen); vorher filtern, damit der Zähler stimmt
-    $gallery = array_values(array_filter($project['gallery'] ?? [], function ($media) {
-        return in_array($media['type'] ?? '', ['image', 'video'], true);
-    }));
-    ?>
-    <?php if (!empty($gallery)) : ?>
-        <section class="project-gallery">
-            <?php // Titel trennt die Galerie sichtbar von «Meine Rolle» (sonst wirkt sie wie ein Teil davon) ?>
-            <h2 class="project-subtitle project-subtitle--ruled"><?= format_accent($project['gallery_title']) ?></h2>
-            <ul class="gallery-strip" data-strip>
-                <?php foreach ($gallery as $index => $media) : ?>
-                    <?php // tabindex: auch mit der Tastatur (Tab) aufklappbar ?>
-                    <li class="strip-item" data-strip-item tabindex="0">
-                        <?php if ($media['type'] === 'video') : ?>
-                            <?php get_template_part('frontend/views/teaser/video', null, [
-                                'video' => $media,
-                                'mode' => 'hover',
-                                'preload' => 'metadata',
-                            ]); ?>
-                        <?php else : ?>
-                            <img src="<?= esc_url($media['src']) ?>" alt="<?= esc_attr($media['alt']) ?>"
-                                 width="<?= esc_attr($media['width'] ?? '') ?>" height="<?= esc_attr($media['height'] ?? '') ?>"
-                                 loading="lazy" decoding="async">
-                        <?php endif; ?>
-                    </li>
-                <?php endforeach; ?>
-            </ul>
-
-            <?php if (count($gallery) > 1) : ?>
-                <?php // Zähler wie bei den Highlights; ausgeblendet (is-idle), bis ein Bild offen ist (main.js) ?>
-                <div class="carousel-progress is-idle" aria-hidden="true" data-accordion-progress>
-                    <span class="carousel-progress-count">
-                        <span data-progress-current>01</span> / <?= esc_html(sprintf('%02d', count($gallery))) ?>
-                    </span>
-                    <span class="carousel-progress-bar">
-                        <span class="carousel-progress-fill" data-progress-fill></span>
-                    </span>
-                </div>
-
-                <?php // Anleitung «Scrollen ↓» am Mauszeiger, bis zum ersten Mal geblättert wurde (main.js).
-                      // Ohne «Ansehen»: Ein Klick auf ein Bild öffnet nichts, darum blendet die Pille danach aus. ?>
-                <span class="cursor-label pill pill--accent" aria-hidden="true" data-cursor-label="gallery">
-                    <span class="cursor-label-text cursor-label-text--scroll">Scrollen <?= get_icon('arrow', 'down') ?></span>
-                </span>
-
-                <?php // Tablet/Handy: Anleitung «← Wischen →» unter den Punkten, bis zum ersten Mal gewischt wurde
-                      // (nur dort sichtbar, CSS; ausblenden: main.js). Dekoration, darum aria-hidden. ?>
-                <p class="strip-hint" aria-hidden="true" data-strip-hint>
-                    <?= get_icon('arrow', 'left') ?> Wischen <?= get_icon('arrow', 'right') ?>
-                </p>
-            <?php endif; ?>
-        </section>
-    <?php endif; ?>
-
-    <?php // 6. Weiterführende Informationen: Linkliste (Stil wie die Projektliste), leer = nicht ausgeben ?>
-    <?php if (!empty($project['links'])) : ?>
-        <?php // data-directory: gleiche Hover-Vorschau wie die Projektliste (main.js), Bereich = [data-preview-area] ?>
-        <section class="project-links" data-directory>
-            <h2 class="project-subtitle project-subtitle--ruled"><?= format_accent($project['links_title']) ?></h2>
-            <ul class="link-list" data-preview-area>
-                <?php foreach ($project['links'] as $index => $link) : ?>
-                    <?php // Ohne Vorschaubild leerer Wert: Vorschau blendet über dieser Zeile aus ?>
-                    <li data-preview-target="<?= $link['preview'] ? esc_attr('link-' . $index) : '' ?>">
-                        <a class="link-row" href="<?= esc_url($link['url']) ?>"
-                           <?php if ($link['external']) : ?>target="_blank" rel="noopener"<?php endif; ?>>
-                            <span class="link-title"><?= esc_html($link['title']) ?></span>
-                            <?php if ($link['source'] !== '') : ?>
-                                <span class="link-source"><?= esc_html($link['source']) ?></span>
-                            <?php endif; ?>
-                            <?= get_icon('arrow', 'up-right', 'link-icon') ?>
-                            <?php if ($link['external']) : ?>
-                                <span class="screen-reader-text">(öffnet in neuem Tab)</span>
-                            <?php endif; ?>
-                        </a>
-                    </li>
-                <?php endforeach; ?>
-            </ul>
-
-            <?php // Hover-Vorschau: folgt dem Mauszeiger; nur Links mit Vorschaubild ?>
-            <div class="directory-preview" data-directory-preview aria-hidden="true">
-                <?php foreach ($project['links'] as $index => $link) : ?>
-                    <?php if (!$link['preview']) { continue; } ?>
-                    <div class="preview-item<?= $link['preview_logo'] ? ' preview-item--logo' : '' ?>" data-preview-id="link-<?= esc_attr($index) ?>">
-                        <img src="<?= esc_url($link['preview']['src']) ?>" alt="" loading="lazy">
-                    </div>
-                <?php endforeach; ?>
-            </div>
-        </section>
-    <?php endif; ?>
+    <?php // 3. Module (Projektbeschrieb, Meine Rolle, Video, Galerie, Links) in beliebiger Reihenfolge.
+          // Der Typ kommt aus der Whitelist im Getter (get_project_modules), darum ist der Pfad sicher. ?>
+    <?php foreach ($modules as $module) : ?>
+        <?php get_template_part('frontend/views/project-modules/' . $module['type'], null, ['data' => $module]); ?>
+    <?php endforeach; ?>
 </main>

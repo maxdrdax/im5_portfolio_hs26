@@ -17,13 +17,25 @@ function filter_existing_attachment_ids(array $ids, int $exclude_id = 0): array
     }));
 }
 
-// -> Galerie eines Projekts nur speichern, wenn sich etwas geändert hat
+// -> Galerien eines Projekts (alle Module «Galerie») nur speichern, wenn sich etwas geändert hat
 function cleanup_project_gallery(int $project_id, int $exclude_id = 0): void
 {
-    $ids = array_map('intval', carbon_get_post_meta($project_id, 'gallery') ?: []);
-    $clean = filter_existing_attachment_ids($ids, $exclude_id);
-    if ($clean !== $ids) {
-        carbon_set_post_meta($project_id, 'gallery', $clean);
+    $modules = carbon_get_post_meta($project_id, 'project_modules') ?: [];
+    $changed = false;
+    foreach ($modules as &$module) {
+        if (($module['_type'] ?? '') !== 'gallery') {
+            continue;
+        }
+        $ids = array_map('intval', $module['gallery'] ?? []);
+        $clean = filter_existing_attachment_ids($ids, $exclude_id);
+        if ($clean !== $ids) {
+            $module['gallery'] = $clean;
+            $changed = true;
+        }
+    }
+    unset($module);
+    if ($changed) {
+        carbon_set_post_meta($project_id, 'project_modules', $modules);
     }
 }
 

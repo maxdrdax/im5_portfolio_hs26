@@ -1,4 +1,6 @@
-# CMS-Konzept: Portfolio maxhutmacher.ch (v04)
+# CMS-Konzept: Portfolio maxhutmacher.ch (v05)
+
+> **Änderung v05:** Projektseite mit Modulen (`project_modules`): Projektbeschrieb, Meine Rolle, Video, Galerie und Weiterführende Informationen lassen sich pro Projekt verschieben, weglassen und ergänzen. Favicon über das WordPress-Website-Icon statt eigenes Feld.
 
 > **Ergänzung v04:** Neues Modul `intro` (Vorstellung auf der Startseite nach dem Hero).
 >
@@ -21,35 +23,35 @@ Alle 7 Seiten (Startseite, Projekte, Fotos, Über mich, Kontakt, Impressum, Date
 | Jahr | year | text |
 | Kontext | context | text |
 | Meine Rolle (kurz) | role | text |
-| Titel über dem Projektbeschrieb | description_title | text |
-| Projektbeschrieb | description | rich_text |
-| Titel über «Meine Rolle» | role_title | text |
-| Meine Rolle | role_text | rich_text |
-| Meine Rolle (Bild) | role_image | image |
-| Bildergalerie (Bilder und Videos) | gallery | media_gallery (image, video) |
-| Video (YouTube/Vimeo-Link) | video_url | text (type url) |
-| Titel über dem Video | video_title | text |
-| Titel über der Bildergalerie | gallery_title | text |
-| Titel über «Weiterführende Informationen» | links_title | text |
-| Weiterführende Informationen | links | complex |
-| ↳ Titel | title | text |
-| ↳ Quelle | source | text |
-| ↳ Link | url | url |
-| ↳ Vorschaubild | image | image |
 | Ausgewähltes Projekt | featured | checkbox |
 | Titel unter dem Hero ausblenden | hide_title | checkbox |
+| Module der Projektseite | project_modules | complex (Module, siehe unten) |
 
-- Alle Angaben werden nur hier erfasst. Highlights und Directory rufen sie ab und zeigen nur einen Teil.
+#### Module der Projektseite `project_modules`
+Inhalt unter dem Kopf (Titel, Eckdaten) als Module: verschieben, weglassen, ergänzen, auch mehrfach (z. B. zwei Galerien). Neues Projekt startet mit dem Standardaufbau Projektbeschrieb → Meine Rolle → Video → Galerie → Weiterführende Informationen. Leere Module werden nicht ausgegeben. Feldname `project_modules` statt `modules`, weil Carbon Fields Felder gleichen Namens über alle Container verwechselt (Seiten haben `modules`).
+
+| Modul | Slug | Felder |
+|---|---|---|
+| Projektbeschrieb | description | title (text), text (rich_text) |
+| Meine Rolle | role | title (text), text (rich_text), image (image) |
+| Video | video | title (text), url (text, type url) |
+| Galerie | gallery | title (text), gallery (media_gallery: image, video) |
+| Weiterführende Informationen | links | title (text), links (complex: title, source, url, image) |
+
+- `title` ist in jedem Modul optional: leer = Standard aus den Globals.
+- Umzug (v05): Die früheren festen Felder (`description`, `description_title`, `role_text`, `role_title`, `role_image`, `video_url`, `video_title`, `gallery`, `gallery_title`, `links`, `links_title`) wurden einmalig in die Module übertragen (Script danach entfernt). Die alten Werte bleiben in der Datenbank, werden aber nicht mehr gelesen.
+
+- Alle Angaben werden nur hier erfasst. Highlights und Directory rufen sie ab und zeigen nur einen Teil (nur die festen Felder oben, nicht die Module).
 - `cover` ist Hero im Projektbeitrag, Karte im Highlights-Karussell und Hover-Vorschau im Directory. Der Schriftzug im Hero («Interaktiver Film») ist Teil des Bildes.
 - Kategorie kommt aus der Taxonomie `project_category`.
 - Rollen-Sektion ist optional: Text und Bild leer = nicht ausgeben.
-- Projektbeschrieb und Meine Rolle im gleichen Raster: Zwischentitel links (1/3), Text rechts (2/3) in einer Spalte (begrenzte Zeilenlänge statt zwei Spalten), Trennlinie darüber, dunkler Seitenhintergrund (kein grüner Block). `role_image` optional unter dem Rollentext, Format 3:2. Handy: Titel über dem Text.
-- `description_title` und `role_title` sind optional: leer = Standard aus den Globals (dort leer = «Projektbeschrieb», «Meine Rolle» bzw. «Weiterführende Informationen»). Gleich für `video_title` (Standard «Video») und `gallery_title` (Standard «Einblicke»): Video, Galerie und Links haben einen Zwischentitel mit Linie darüber (Handy ohne Linie), damit sie nicht wie ein Teil von «Meine Rolle» wirken.
-- `links` ist optional: Linkliste am Ende der Projektseite (nach der Galerie), z. B. Festival, Artikel, Making-of. Gestaltung wie die Projektliste (Zeilen mit Trennlinie, Grossbuchstaben, Quelle grau, Pfeil ↗, Hover grün). Externe Links öffnen in einem neuen Tab. Leer = nicht ausgeben.
+- Projektbeschrieb und Meine Rolle im gleichen Raster: Zwischentitel links (1/3), Text rechts (2/3) in einer Spalte (begrenzte Zeilenlänge statt zwei Spalten), Trennlinie darüber, dunkler Seitenhintergrund (kein grüner Block). Bild im Modul `role` optional unter dem Rollentext, Format 3:2. Handy: Titel über dem Text.
+- Zwischentitel (`title` in jedem Modul) sind optional: leer = Standard aus den Globals (dort leer = «Projektbeschrieb», «Meine Rolle», «Video», «Einblicke» bzw. «Weiterführende Informationen»). Video, Galerie und Links haben einen Zwischentitel mit Linie darüber (Handy ohne Linie), damit sie nicht wie ein Teil von «Meine Rolle» wirken.
+- Modul `links` (Weiterführende Informationen): Linkliste, standardmässig am Ende der Projektseite, z. B. Festival, Artikel, Making-of. Gestaltung wie die Projektliste (Zeilen mit Trennlinie, Grossbuchstaben, Quelle grau, Pfeil ↗, Hover grün). Externe Links öffnen in einem neuen Tab. Leer = nicht ausgeben.
 - Hover-Vorschau pro Link (wie in der Projektliste, folgt dem Mauszeiger, nur Desktop): eigenes `image`; sonst bei Social-Media-Links (Domain passt zu einem Eintrag in den Globals `socials`) das Icon der Plattform weiss auf grüner Fläche; sonst holt der Server beim Speichern des Projekts das Vorschaubild der Website (Open Graph `og:image`) und legt es in der Mediathek ab (Besucher laden nichts von fremden Servern). Kein Bild = keine Vorschau.
 - `cover_video` ist optional: läuft ohne Ton in Schleife im Hero; im Highlights-Karussell und im Directory startet es beim Hover. `cover` bleibt Vorschaubild und Fallback (Touch-Geräte, «Bewegung reduzieren»).
 - Videos in der Galerie laufen ohne Ton in Schleife, sobald sie sichtbar sind.
-- `video_url` ist optional (volle Videos, YouTube/Vimeo): wird per oEmbed eingebettet (vor der Galerie), leer = nicht ausgeben.
+- Modul `video` (volle Videos, YouTube/Vimeo): wird per oEmbed eingebettet, standardmässig vor der Galerie; leerer Link = nicht ausgeben.
 - `featured` markiert das Projekt für den Filter «Ausgewählte Projekte».
 - Unter dem Hero stehen Kategorie und Titel sichtbar (Figma). `hide_title` blendet sie aus, z. B. wenn der Schriftzug schon im Titelbild steht; für Screenreader bleibt der Titel erhalten.
 - Bildergalerie als horizontales Akkordeon (Figma): Streifen gleich breit, beim Hover öffnet sich ein Bild; mit Mausrad/Trackpad blättert man durch die Bilder (gleiches Prinzip wie die Highlights). Auf Tablet und Handy Bilder zum Wischen (88 % breit, das nächste Bild schaut rechts herein), mit Punkten darunter und der Anleitung «← Wischen →», die nach dem ersten Wischen ausblendet.
@@ -238,7 +240,7 @@ Impressum und Datenschutz.
 Icons aus der eigenen Icon-Bibliothek (`frontend/assets/icons/`, Ausgabe über `get_icon()`; Pfeil nach unten = Scroll-Pfeil, schräg nach rechts oben = Teaser, Kontakt, Socials), Punkte unter der Galerie (Tablet/Handy), Hover-Vorschau im Directory (folgt dem Mauszeiger), Beschriftungen Jahr / Kontext / Kategorie / Meine Rolle, Standard der Zwischentitel «Projektbeschrieb» und «Meine Rolle» (anpassbar in den Globals und pro Projekt), Button-Text Lebenslauf, Standardfilter, Karussell, Hover-Effekt (Chroma/Verflüssigen, Cursor), Cursor-Label über Highlights und Galerie (grüne Pille, ersetzt dort den Cursor-Punkt; «Scrollen ↓» bis zum ersten Blättern, danach bei den Highlights «Ansehen», bei der Galerie ausgeblendet), Zähler «01 / 05» mit Fortschrittslinie unter Highlights und Galerie (nur Desktop), Streifen-Galerie, Foto-Raster, Verlauf oben im Hero, Menü-Button, Overlay-Animation, Nummerierung der Menüpunkte, Seitenübergänge, Einblenden beim Scrollen (gilt für alle Inhalte, auch neue Module und Sektionen; ausser Hero und Intro), Text-Hervorhebung beim Scrollen (Intro).
 
 ## Offen
-- Video: entschieden. Kurze Clips als MP4 (`video`, `cover_video`, Galerie), volle Videos über `video_url`.
+- Video: entschieden. Kurze Clips als MP4 (`video`, `cover_video`, Galerie), volle Videos über das Projektmodul `video`.
 - Directory-Hover: Referenz houmahani.com/directory, Umsetzung vorerst «Vorschau folgt Mauszeiger», ohne Chroma-Effekt.
 - Impressum und Datenschutz ohne Screen.
 - Platzhalter im Design: Lorem ipsum, email@gmail.com, «Projekt 04/05», Instagram-Link.

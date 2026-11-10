@@ -2,7 +2,9 @@
 use Carbon_Fields\Container;
 use Carbon_Fields\Field;
 
-// -> Inhaltsfelder Post Type «Projekt» (alle Angaben werden nur hier erfasst)
+// -> Inhaltsfelder Post Type «Projekt»
+// Oben die festen Angaben: Highlights und Projektliste brauchen sie (Titelbild, Jahr usw.).
+// Darunter der Inhalt der Projektseite als Module (verschieben, weglassen, ergänzen).
 Container::make('post_meta', 'Projekt')
     ->where('post_type', '=', 'project')
     ->add_fields([
@@ -21,52 +23,91 @@ Container::make('post_meta', 'Projekt')
         Field::make('text', 'year', 'Jahr')->set_width(33),
         Field::make('text', 'context', 'Kontext')->set_width(33),
         Field::make('text', 'role', 'Meine Rolle (kurz)')->set_width(33),
-        Field::make('text', 'video_url', 'Video (YouTube/Vimeo-Link)')
-            ->set_attribute('type', 'url')
-            ->set_attribute('placeholder', 'https://vimeo.com/123456789')
-            ->set_help_text('Optional. Link aus der Adresszeile von YouTube oder Vimeo einfügen.'),
-        // Zwischentitel: leer = Standard aus «Globales» (siehe get_global_project_titles)
-        Field::make('text', 'video_title', 'Titel über dem Video')
-            ->set_attribute('placeholder', 'Standard aus «Globales»')
-            ->set_help_text('Optional. Akzent mit *Sternchen*.'),
-        Field::make('text', 'description_title', 'Titel über dem Projektbeschrieb')
-            ->set_attribute('placeholder', 'Standard aus «Globales»')
-            ->set_help_text('Optional. Akzent mit *Sternchen*.'),
-        Field::make('rich_text', 'description', 'Projektbeschrieb'),
-        Field::make('text', 'role_title', 'Titel über «Meine Rolle»')
-            ->set_attribute('placeholder', 'Standard aus «Globales»')
-            ->set_help_text('Optional. Akzent mit *Sternchen*.'),
-        Field::make('rich_text', 'role_text', 'Meine Rolle')
-            ->set_help_text('Optional. Text und Bild leer = Sektion wird nicht angezeigt.'),
-        Field::make('image', 'role_image', 'Meine Rolle (Bild)'),
-        Field::make('text', 'gallery_title', 'Titel über der Bildergalerie')
-            ->set_attribute('placeholder', 'Standard aus «Globales»')
-            ->set_help_text('Optional. Akzent mit *Sternchen*.'),
-        Field::make('media_gallery', 'gallery', 'Bildergalerie (Bilder und Videos)')
-            ->set_type(['image', 'video'])
-            ->set_help_text('Videos laufen ohne Ton in Schleife. Volle Videos besser über das Feld «Video (YouTube/Vimeo-Link)».'),
-        // Weiterführende Informationen: Linkliste am Ende der Projektseite, leer = nicht ausgeben
-        Field::make('text', 'links_title', 'Titel über «Weiterführende Informationen»')
-            ->set_attribute('placeholder', 'Standard aus «Globales»')
-            ->set_help_text('Optional. Akzent mit *Sternchen*.'),
-        Field::make('complex', 'links', 'Weiterführende Informationen')
-            ->set_help_text('Optional. Z. B. Festival, Artikel, Making-of. Leer = Sektion wird nicht angezeigt.')
-            ->add_fields([
+    ]);
+
+// -> Module der Projektseite
+// Name «project_modules» statt «modules»: Die Seiten haben schon ein Feld «modules». Carbon Fields
+// sucht Felder über alle Container gleichen Typs; gleiche Namen würden verwechselt.
+// Zwischentitel (title): leer = Standard aus «Globales» (siehe get_global_project_titles).
+Container::make('post_meta', 'Module der Projektseite')
+    ->where('post_type', '=', 'project')
+    ->add_fields([
+        Field::make('complex', 'project_modules', 'Module')
+            ->set_help_text('Reihenfolge per Drag-and-Drop. Leere Module werden nicht angezeigt.')
+            // -> Projektbeschrieb: Titel links, Text rechts
+            ->add_fields('description', 'Projektbeschrieb', [
                 Field::make('text', 'title', 'Titel')
-                    ->set_width(50)
-                    ->set_required(),
-                Field::make('text', 'source', 'Quelle')
-                    ->set_width(50)
-                    ->set_help_text('Optional. Z. B. «Solothurner Filmtage, 2026».'),
-                Field::make('text', 'url', 'Link')
-                    ->set_attribute('type', 'url')
-                    ->set_attribute('placeholder', 'https://')
-                    ->set_width(50)
-                    ->set_required(),
-                Field::make('image', 'image', 'Vorschaubild')
-                    ->set_width(50)
-                    ->set_help_text('Optional. Erscheint beim Hover. Leer = bei Social Media das Logo aus «Globales» (Socials), sonst wird das Bild beim Speichern automatisch von der Website geholt.'),
+                    ->set_attribute('placeholder', 'Standard aus «Globales»')
+                    ->set_help_text('Optional. Akzent mit *Sternchen*.'),
+                Field::make('rich_text', 'text', 'Text'),
             ])
-            ->set_header_template('<% if (title) { %><%- title %><% } %>')
+            // -> Meine Rolle: Text und/oder Bild (3:2) unter dem Text
+            ->add_fields('role', 'Meine Rolle', [
+                Field::make('text', 'title', 'Titel')
+                    ->set_attribute('placeholder', 'Standard aus «Globales»')
+                    ->set_help_text('Optional. Akzent mit *Sternchen*.'),
+                Field::make('rich_text', 'text', 'Text'),
+                Field::make('image', 'image', 'Bild')
+                    ->set_help_text('Optional. Format 3:2.'),
+            ])
+            // -> Video: YouTube/Vimeo per oEmbed
+            ->add_fields('video', 'Video', [
+                Field::make('text', 'title', 'Titel')
+                    ->set_attribute('placeholder', 'Standard aus «Globales»')
+                    ->set_help_text('Optional. Akzent mit *Sternchen*.'),
+                Field::make('text', 'url', 'YouTube/Vimeo-Link')
+                    ->set_attribute('type', 'url')
+                    ->set_attribute('placeholder', 'https://vimeo.com/123456789')
+                    ->set_help_text('Link aus der Adresszeile von YouTube oder Vimeo einfügen.'),
+            ])
+            // -> Galerie: horizontales Akkordeon (Bilder und Videos)
+            ->add_fields('gallery', 'Galerie', [
+                Field::make('text', 'title', 'Titel')
+                    ->set_attribute('placeholder', 'Standard aus «Globales»')
+                    ->set_help_text('Optional. Akzent mit *Sternchen*.'),
+                Field::make('media_gallery', 'gallery', 'Bilder und Videos')
+                    ->set_type(['image', 'video'])
+                    ->set_help_text('Videos laufen ohne Ton in Schleife. Volle Videos besser über das Modul «Video».'),
+            ])
+            // -> Weiterführende Informationen: Linkliste mit Hover-Vorschau
+            ->add_fields('links', 'Weiterführende Informationen', [
+                Field::make('text', 'title', 'Titel')
+                    ->set_attribute('placeholder', 'Standard aus «Globales»')
+                    ->set_help_text('Optional. Akzent mit *Sternchen*.'),
+                Field::make('complex', 'links', 'Links')
+                    ->set_help_text('Z. B. Festival, Artikel, Making-of.')
+                    ->add_fields([
+                        Field::make('text', 'title', 'Titel')
+                            ->set_width(50)
+                            ->set_required(),
+                        Field::make('text', 'source', 'Quelle')
+                            ->set_width(50)
+                            ->set_help_text('Optional. Z. B. «Solothurner Filmtage, 2026».'),
+                        Field::make('text', 'url', 'Link')
+                            ->set_attribute('type', 'url')
+                            ->set_attribute('placeholder', 'https://')
+                            ->set_width(50)
+                            ->set_required(),
+                        Field::make('image', 'image', 'Vorschaubild')
+                            ->set_width(50)
+                            ->set_help_text('Optional. Erscheint beim Hover. Leer = bei Social Media das Logo aus «Globales» (Socials), sonst wird das Bild beim Speichern automatisch von der Website geholt.'),
+                    ])
+                    ->set_header_template('<% if (title) { %><%- title %><% } %>')
+                    ->set_layout('tabbed-vertical'),
+            ])
+            // Neues Projekt startet mit dem Standardaufbau (gleiche Reihenfolge wie bisher)
+            ->set_default_value(get_project_default_modules())
             ->set_layout('tabbed-vertical'),
     ]);
+
+// -> Standardaufbau einer Projektseite (eine Quelle für neue Projekte und den Umzug)
+function get_project_default_modules(): array
+{
+    return [
+        ['_type' => 'description'],
+        ['_type' => 'role'],
+        ['_type' => 'video'],
+        ['_type' => 'gallery'],
+        ['_type' => 'links'],
+    ];
+}

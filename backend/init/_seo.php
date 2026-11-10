@@ -5,7 +5,7 @@
  * Yoast liest nur den normalen WordPress-Editor und das Beitragsbild. Projekte haben beides nicht,
  * ihre Inhalte stecken in Carbon Fields. Diese Datei hilft Yoast an zwei Stellen:
  * 1. Vorschaubild beim Teilen (og:image) = Titelbild «cover»
- * 2. Meta-Beschreibung = Anfang des Projektbeschriebs, falls keine eigene gesetzt ist
+ * 2. Meta-Beschreibung = Anfang des ersten Moduls «Projektbeschrieb», falls keine eigene gesetzt ist
  *
  * Was in der Yoast-Box eines Projekts von Hand eingetragen ist, hat immer Vorrang.
  * Ist Yoast nicht aktiv, laufen die Filter nie (kein Fehler).
@@ -16,9 +16,16 @@
 const SEO_DESCRIPTION_LENGTH = 155;
 
 // -> Kurzbeschreibung aus dem Projektbeschrieb erzeugen (ohne HTML, an einer Wortgrenze gekürzt)
+// Quelle: das erste Modul «Projektbeschrieb» mit Text (Module: backend/carbonfields/_project.php)
 function get_project_seo_description(int $id): string
 {
-    $text = (string) carbon_get_post_meta($id, 'description');
+    $text = '';
+    foreach (carbon_get_post_meta($id, 'project_modules') ?: [] as $module) {
+        if (($module['_type'] ?? '') === 'description' && has_rich_text((string) ($module['text'] ?? ''))) {
+            $text = (string) $module['text'];
+            break;
+        }
+    }
     $text = wp_strip_all_tags(strip_shortcodes($text));
     // &amp; usw. zurück in Zeichen, mehrere Leerzeichen/Umbrüche zu einem Leerzeichen
     $text = html_entity_decode($text, ENT_QUOTES, 'UTF-8');
