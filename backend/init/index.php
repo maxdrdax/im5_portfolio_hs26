@@ -13,6 +13,9 @@ require_once __DIR__ . '/_private.php';
 // -> Vorschaubilder für «Weiterführende Informationen» automatisch holen (beim Speichern eines Projekts)
 require_once __DIR__ . '/_link-previews.php';
 
+// -> Yoast SEO: Vorschaubild und Beschreibung für Projekte aus Carbon Fields (zum Testen auskommentierbar)
+require_once __DIR__ . '/_seo.php';
+
 // -> add image sizes
 add_image_size('preload', 20, 20);
 add_image_size('xxs', 100, 100);

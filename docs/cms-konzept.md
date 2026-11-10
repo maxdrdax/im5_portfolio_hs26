@@ -213,7 +213,6 @@ Impressum und Datenschutz.
 |---|---|---|
 | Logo | logo | text |
 | Signet (Handy) | logo_signet | image |
-| Favicon | favicon | image |
 | Copyright | copyright | text |
 | E-Mail | email | text |
 | Socials | socials | complex |
@@ -231,7 +230,7 @@ Impressum und Datenschutz.
 
 - Logo = Schriftzug «Max Hutmacher» im Header (Link auf Startseite). Copyright im Footer.
 - `site_private`: Aktiv = Besucher ohne Login werden zur Anmeldung umgeleitet, auch die REST-API ist gesperrt (Phase vor dem Livegang; Testzugänge mit der Rolle «Abonnent»). Beim Livegang ausschalten (Go-live-Checkliste).
-- `favicon`: Symbol im Browser-Tab (Signet in Grün, PNG 512 × 512 px; PNG zusätzlich als Homescreen-Symbol auf dem iPhone). Leer = Standard des Browsers.
+- Favicon: kein eigenes Feld, sondern WordPress-Standard unter Einstellungen > Allgemein > «Website-Icon» (Signet in Grün, PNG mindestens 512 × 512 px). WordPress erzeugt daraus alle Grössen, auch das Homescreen-Symbol auf dem iPhone.
 - `logo_signet`: Auf Tablet und Handy (bis 1024 px) zeigt der Header das Signet statt des Schriftzugs (weisses SVG). Leer = Schriftzug. Für Screenreader bleibt der Logo-Text der Name des Links.
 - Footer zeigt nur Socials mit Icon (LinkedIn). Kontaktseite listet alle (LinkedIn, Instagram).
 

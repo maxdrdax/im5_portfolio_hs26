@@ -1,4 +1,6 @@
 <?php
+
+
 /**
  * Website nur für angemeldete Benutzer (Phase vor dem Livegang)
  * Schalter: Globales > «Website nur für angemeldete Benutzer» (Feld site_private).
@@ -19,6 +21,19 @@ function is_private_mode_blocked(): bool
 // auth_redirect() leitet zu wp-login.php und nach dem Login zurück auf die gewünschte Seite.
 add_action('template_redirect', function (): void {
     if (is_private_mode_blocked()) {
+        auth_redirect();
+    }
+});
+
+// -> Sitemaps sperren (Yoast: /sitemap_index.xml, /project-sitemap.xml usw.)
+// Yoast gibt die Sitemap aus, bevor template_redirect läuft. Darum greift der Schutz oben dort nicht,
+// und die Sitemap würde alle Seiten- und Projekt-URLs verraten. parse_request läuft früher.
+add_action('parse_request', function (): void {
+    if (!is_private_mode_blocked()) {
+        return;
+    }
+    $path = (string) wp_parse_url($_SERVER['REQUEST_URI'] ?? '', PHP_URL_PATH);
+    if (preg_match('#sitemap[^/]*\.xml$#i', $path)) {
         auth_redirect();
     }
 });

@@ -16,9 +16,6 @@ Container::make('theme_options', 'Globales')
         Field::make('image', 'logo_signet', 'Signet (Handy)')
             ->set_width(50)
             ->set_help_text('Optional. Ersetzt auf dem Handy den Schriftzug. Weiss, am besten als SVG oder PNG mit transparentem Hintergrund.'),
-        Field::make('image', 'favicon', 'Favicon (Symbol im Browser-Tab)')
-            ->set_type(['image'])
-            ->set_help_text('Signet in Grün, quadratisch. Am besten PNG mit 512 × 512 px und transparentem Hintergrund (funktioniert überall, auch als Symbol auf dem iPhone-Homescreen). SVG geht auch, aber nicht in allen Browsern.'),
         Field::make('text', 'copyright', 'Copyright (Footer)')
             ->set_default_value('© Max Hutmacher'),
         Field::make('text', 'email', 'E-Mail')
