@@ -127,12 +127,12 @@ if (canHover && !reducedMotion) {
 }
 
 // -> Directory: Vorschau (Bild/Video) folgt dem Mauszeiger
-// Projektliste und «Weiterführende Informationen» (beide Listen, Bereich = [data-preview-area]).
-// Über einer aufgeklappten Zeile der Projektliste (.is-open) ist sie ausgeblendet, sonst wäre das Bild doppelt.
+// Projektliste (Tabelle, Bereich = tbody) und «Weiterführende Informationen» (Liste, Bereich = [data-preview-area])
 if (canHover) {
     document.querySelectorAll('[data-directory]').forEach((directory) => {
         const preview = directory.querySelector('[data-directory-preview]');
-        const body = directory.querySelector('[data-preview-area]');
+        const rows = directory.querySelectorAll('[data-preview-target]');
+        const body = directory.querySelector('[data-preview-area], tbody');
         if (!preview || !body) {
             return;
         }
@@ -169,19 +169,6 @@ if (canHover) {
             });
         };
 
-        // Vorschau zur Zeile unter der Maus zeigen. Nur bei einem Wechsel etwas tun (mousemove feuert oft).
-        let shownId = null;
-        const showRow = (row) => {
-            const id = row && !row.classList.contains('is-open') ? row.dataset.previewTarget || null : null;
-            if (id === shownId) {
-                return;
-            }
-            shownId = id;
-            showItem(id);
-            // Nur sichtbar, wenn es zu dieser Zeile ein Vorschaubild gibt (sonst bliebe das vorherige stehen)
-            preview.classList.toggle('is-visible', [...items].some((item) => item.dataset.previewId === id));
-        };
-
         body.addEventListener('mousemove', (event) => {
             targetX = event.clientX;
             targetY = event.clientY;
@@ -191,16 +178,20 @@ if (canHover) {
                 currentY = targetY;
                 frame = requestAnimationFrame(animate);
             }
-            showRow(event.target.closest('[data-preview-target]'));
         });
 
-        // Nach dem Auf-/Zuklappen neu prüfen (die Maus steht dann still, mousemove kommt nicht)
-        body.addEventListener('click', (event) => {
-            showRow(event.target.closest('[data-preview-target]'));
+        rows.forEach((row) => {
+            row.addEventListener('mouseenter', () => {
+                const id = row.dataset.previewTarget;
+                showItem(id);
+                // Nur sichtbar, wenn es zu dieser Zeile ein Vorschaubild gibt (sonst bliebe das vorherige stehen)
+                preview.classList.toggle('is-visible', [...items].some((item) => item.dataset.previewId === id));
+            });
         });
 
         body.addEventListener('mouseleave', () => {
-            showRow(null);
+            preview.classList.remove('is-visible');
+            showItem(null);
             // Animation stoppen, wenn die Maus die Liste verlässt (spart Leistung)
             cancelAnimationFrame(frame);
             frame = null;
@@ -260,64 +251,14 @@ function initScrollHighlight(container, items) {
 }
 
 // Projektliste (Seite Projekte)
-document.querySelectorAll('[data-directory-list]').forEach((list) => {
-    const requestUpdate = initScrollHighlight(list, [...list.querySelectorAll('.directory-item')]);
+document.querySelectorAll('[data-directory] .directory').forEach((table) => {
+    const requestUpdate = initScrollHighlight(table, [...table.querySelectorAll('tbody tr')]);
     // Nach dem Filtern ändern sich die sichtbaren Zeilen. Der Filter tauscht sie in einem
     // Seitenübergang (View Transition) aus, der etwas später läuft → kurz warten, dann neu rechnen.
-    list.closest('[data-directory]').addEventListener('click', (event) => {
+    table.closest('[data-directory]').addEventListener('click', (event) => {
         if (event.target.closest('[data-filter]')) {
             setTimeout(requestUpdate, 100);
         }
-    });
-    // Nach dem Auf-/Zuklappen einer Vorschau verschieben sich die Zeilen darunter → neu rechnen
-    list.addEventListener('transitionend', requestUpdate);
-});
-
-// =====================================================================
-// -> Projektliste: Klick auf eine Zeile klappt die Vorschau darunter auf (Markup: modules/projects.php)
-// 1. Jede Zeile ist ein <button> mit aria-expanded (offen ja/nein) und aria-controls (ID der Vorschau).
-// 2. Es ist immer nur eine Zeile offen; ein zweiter Klick auf dieselbe Zeile schliesst sie.
-// 3. Geschlossene Vorschau ist inert: nicht per Tab und nicht für Screenreader erreichbar.
-// 4. Das Titelvideo lädt und spielt nur, solange die Zeile offen ist.
-// Die Animation macht das CSS (grid-template-rows 0fr → 1fr, .is-open am <li>).
-// Ohne JavaScript bleiben alle Vorschauen offen (CSS: @media (scripting: none)).
-// =====================================================================
-document.querySelectorAll('[data-directory-list]').forEach((list) => {
-    const items = [...list.querySelectorAll('.directory-item')];
-
-    const setOpen = (item, open) => {
-        const button = item.querySelector('.row-toggle');
-        const panel = document.getElementById(button.getAttribute('aria-controls'));
-        if (!panel) {
-            return;
-        }
-        button.setAttribute('aria-expanded', String(open));
-        item.classList.toggle('is-open', open);
-        panel.inert = !open;
-
-        const video = panel.querySelector('video');
-        if (!video) {
-            return;
-        }
-        if (open && !reducedMotion) {
-            playVideo(video); // play() lädt das Video erst jetzt (preload="none")
-        } else {
-            video.pause();
-        }
-    };
-
-    items.forEach((item) => {
-        setOpen(item, false); // Startzustand: alles zu (und inert)
-        item.querySelector('.row-toggle').addEventListener('click', () => {
-            const open = !item.classList.contains('is-open');
-            // Andere offene Zeile zuerst schliessen
-            items.forEach((other) => {
-                if (other !== item && other.classList.contains('is-open')) {
-                    setOpen(other, false);
-                }
-            });
-            setOpen(item, open);
-        });
     });
 });
 
@@ -1482,7 +1423,7 @@ const REVEAL_SELECTOR = [
     '.module-title',
     '[data-module="projects"] .card',
     '[data-module="projects"] .filter',
-    '[data-module="projects"] .directory-item',
+    '[data-module="projects"] tbody tr',
     '[data-module="gallery-photos"] .filter',
     '[data-module="gallery-photos"] .photo',
     '[data-module="logos"] .logo-marquee',

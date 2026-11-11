@@ -952,187 +952,89 @@ mark {
         }
     }
 
-    /* Projektliste (Directory): pro Projekt ein <li> mit Zeile (Button) und aufklappbarer Vorschau */
     .directory {
-        /* Spalten 4 : 2 : 3 wie Figma (434.67 / 217.33 / 302 von 954 px), dazu schmale Spalte für das Plus */
-        --row-columns: minmax(0, 4fr) minmax(0, 2fr) minmax(0, 3fr) auto;
         width: 100%;
-        list-style: none;
+        border-collapse: collapse;
+        table-layout: fixed;
         font: var(--font-body);
-    }
 
-    .directory-item {
-        /* durchgehende Trennlinie unter jedem Projekt (auch unter der offenen Vorschau) */
-        border-bottom: 1px solid var(--color-border);
-
-        /* letzte Zeile ohne Linie */
-        &:last-child {
-            border-bottom: 0;
+        /* Spalten 4 : 2 : 3 inkl. 24 px Abstand (Figma: 434.67 / 217.33 / 302 von 954 px) */
+        .col-title {
+            width: 45.56%;
         }
-    }
 
-    /* Zeile = Button über die ganze Breite (Raster wie die frühere Tabelle) */
-    .row-toggle {
-        display: grid;
-        grid-template-columns: var(--row-columns);
-        column-gap: var(--space-24);
-        align-items: center;
-        width: 100%;
-        min-height: 56px;
-        /* Einzug links und rechts 12 px (Figma) */
-        padding: 0 var(--space-12);
-        border: 0;
-        background: none;
-        color: var(--color-white);
-        font: inherit;
-        letter-spacing: var(--tracking-caps);
-        text-align: left;
-        text-transform: uppercase;
-        cursor: pointer;
-        /* Farbe langsam und weich ein- und ausblenden */
-        transition: background-color 600ms cubic-bezier(.22, 1, .36, 1), color 600ms cubic-bezier(.22, 1, .36, 1);
-    }
+        .col-category {
+            width: 22.78%;
+        }
 
-    /* Jahr rechtsbündig, Plus ganz rechts */
-    .row-year {
-        text-align: right;
-    }
+        td {
+            height: 56px;
+            /* Einzug links und rechts 12 px (Figma), Text vertikal in der Mitte der Zeile */
+            padding: 0 var(--space-12);
+            vertical-align: middle;
+            letter-spacing: var(--tracking-caps);
+            text-transform: uppercase;
+            /* durchgehende Trennlinie über alle Spalten */
+            border-bottom: 1px solid var(--color-border);
+            /* Farbe langsam und weich ein- und ausblenden */
+            transition: background-color 600ms cubic-bezier(.22, 1, .36, 1), color 600ms cubic-bezier(.22, 1, .36, 1);
 
-    .row-icon {
-        display: flex;
-    }
+            /* Jahr rechtsbündig, mit gleichem Einzug wie links */
+            &:last-child {
+                text-align: right;
+            }
+        }
 
-    /* Plus dreht sich beim Öffnen um 45° zum X */
-    .row-icon .icon {
-        transition: rotate var(--accordion-duration) var(--accordion-ease);
-    }
-
-    .is-open .row-icon .icon {
-        rotate: 45deg;
-    }
-
-    /* Tastatur-Fokus: ganze Zeile grün, Text schwarz (nur Tastatur, nicht nach dem Tippen) */
-    .row-toggle:focus-visible {
-        outline: 0;
-        background-color: var(--color-accent);
-        color: var(--color-black);
-    }
-
-    /* Hover nur mit Maus (auf Touch bliebe die Zeile nach dem Tippen grün).
-       Nicht im schmalen Fenster (bis 1024 px, .is-scroll-highlight setzt main.js): Dort gilt wie auf
-       dem Handy nur das Hervorheben beim Scrollen, sonst wären zwei Zeilen gleichzeitig markiert. */
-    @media (hover: hover) {
-        .directory:not(.is-scroll-highlight) .row-toggle:hover {
+        /* Hover (nur Maus) und Tastatur-Fokus: ganze Zeile grün, Text schwarz.
+           Nicht auf Touch: iOS behält :hover nach dem Tippen, die Zeile bliebe grün.
+           :has(:focus-visible) statt :focus-within: nur Tastatur, nicht nach dem Tippen. */
+        tr:has(:focus-visible) td {
             background-color: var(--color-accent);
             color: var(--color-black);
         }
-    }
 
-    /* Handy/Tablet: Projekt in der Bildschirmmitte hervorheben, die anderen treten zurück.
-       Eine offene Zeile bleibt immer hell. .is-scroll-highlight und .is-current setzt main.js. */
-    .directory.is-scroll-highlight {
-        .directory-item {
-            transition: opacity 400ms ease;
+        /* Nicht im schmalen Fenster (bis 1024 px, .is-scroll-highlight setzt main.js): Dort gilt wie auf
+           dem Handy nur das Hervorheben beim Scrollen, sonst wären zwei Zeilen gleichzeitig markiert. */
+        @media (hover: hover) {
+            &:not(.is-scroll-highlight) tr:hover td {
+                background-color: var(--color-accent);
+                color: var(--color-black);
+            }
         }
 
-        &:has(.is-current) .directory-item:not(.is-current, .is-open) {
-            opacity: .4;
-        }
-    }
+        /* Handy/Tablet: Projekt in der Bildschirmmitte hervorheben, die anderen treten zurück.
+           .is-scroll-highlight und .is-current setzt main.js (nur ohne Maus bzw. bis 1024 px). */
+        &.is-scroll-highlight {
+            tbody tr {
+                transition: opacity 400ms ease;
+            }
 
-    /* Kategorie unter dem Titel und Vorschaubild 1:1: nur auf dem Handy (siehe Breakpoint md) */
-    .row-category,
-    .row-thumb {
-        display: none;
-    }
-
-    /* Aufklappbare Vorschau: Höhe animieren ohne feste Höhe.
-       grid-template-rows 0fr → 1fr: Die Zeile wächst von 0 auf die Höhe des Inhalts. */
-    .row-panel {
-        display: grid;
-        grid-template-rows: 0fr;
-        transition: grid-template-rows var(--accordion-duration) var(--accordion-ease);
-    }
-
-    .is-open .row-panel {
-        grid-template-rows: 1fr;
-    }
-
-    /* Ohne JavaScript: alle Vorschauen offen, damit jedes Projekt erreichbar bleibt */
-    @media (scripting: none) {
-        .row-panel {
-            grid-template-rows: 1fr;
+            tbody:has(.is-current) tr:not(.is-current) {
+                opacity: .4;
+            }
         }
 
-        .row-icon {
-            visibility: hidden;
+        /* Kategorie unter dem Titel und Vorschaubild: nur auf dem Handy (siehe Breakpoint md) */
+        .row-category,
+        .cell-thumb {
+            display: none;
         }
-    }
 
-    /* min-height: 0 + overflow: hidden, damit der Inhalt bei 0fr wirklich verschwindet.
-       Gleiches Raster wie die Zeile: Bild über Titel und Kategorie, Link unter dem Jahr. */
-    .row-panel-inner {
-        display: grid;
-        grid-template-columns: var(--row-columns);
-        column-gap: var(--space-24);
-        align-items: end;
-        min-height: 0;
-        overflow: hidden;
-        padding-inline: var(--space-12);
-    }
+        a {
+            color: inherit;
+            text-decoration: none;
+        }
 
-    .row-media {
-        position: relative;
-        grid-column: 1 / 3;
-        margin-block: var(--space-12) var(--space-24);
-        aspect-ratio: 16 / 9;
-        overflow: hidden;
-        border-radius: var(--radius);
-        background-color: color-mix(in srgb, var(--color-white) 6%, transparent);
+        /* Ganze Zeile anklickbar: der Link legt eine unsichtbare Fläche über die Zeile.
+           Es bleibt ein einziger, echter Link (Tastatur, Rechtsklick und «In neuem Tab öffnen» funktionieren). */
+        tr {
+            position: relative;
+        }
 
-        img,
-        video {
+        .row-link::after {
             position: absolute;
             inset: 0;
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
-    }
-
-    .row-link {
-        display: inline-flex;
-        grid-column: 3 / -1;
-        justify-self: end;
-        align-items: center;
-        gap: var(--space-8);
-        min-height: 44px;
-        margin-bottom: var(--space-24);
-        color: var(--color-accent);
-        font-weight: 500;
-        letter-spacing: var(--tracking-caps);
-        text-decoration: none;
-        text-transform: uppercase;
-        transition: color 200ms ease;
-
-        .icon {
-            transition: translate 200ms ease;
-        }
-
-        &:focus-visible {
-            color: var(--color-white);
-            text-decoration: underline;
-            text-underline-offset: 4px;
-        }
-
-        @media (hover: hover) {
-            &:hover {
-                color: var(--color-white);
-
-                .icon {
-                    translate: .15em -.15em;
-                }
-            }
+            content: "";
         }
     }
 }
@@ -1176,6 +1078,11 @@ mark {
         opacity: 1;
     }
 
+    /* Projektliste: Vorschau 1.5× so gross (410 → 615 px); «Weiterführende Informationen» bleibt kleiner */
+    [data-module="projects"] & {
+        width: 615px;
+    }
+
     img,
     video {
         position: absolute;
@@ -1210,8 +1117,7 @@ mark {
 /* Videos über einem Bild erst einblenden, wenn sie laufen (kein schwarzes Aufblitzen) */
 .video,
 .card-video,
-.preview-video,
-.row-video {
+.preview-video {
     opacity: 0;
     transition: opacity 300ms ease;
 
@@ -2194,33 +2100,38 @@ mark {
         padding-block: var(--space-12);
     }
 
-    /* Projektliste: Jede Zeile wird zu einer Karte: Vorschaubild 1:1 oben, darunter Titel (links),
-       Jahr und Plus (rechts), Kategorie klein unter dem Titel. Abgrenzung über Abstand statt Linien. */
-    [data-module="projects"] {
-        .directory {
-            --row-columns: minmax(0, 1fr) auto auto;
+    /* Projektliste: Titel und Jahr nebeneinander, Kategorie klein unter dem Titel.
+       Die Tabelle wird zu einem Raster pro Zeile (2 Spalten), die Kategorie-Spalte fällt weg. */
+    [data-module="projects"] .directory {
+        &,
+        tbody {
+            display: block;
         }
 
-        .directory-item {
-            /* Abgrenzung der Karten über Abstand (Blockabstand) */
-            margin-bottom: var(--space-stack-m);
-            border-bottom: 0;
-        }
-
-        .row-toggle {
-            row-gap: var(--space-12);
-            column-gap: var(--space-stack-s);
-            align-items: start;
-            min-height: 0;
-            padding: 0;
-        }
-
-        /* Kategorie-Spalte fällt weg, dafür steht die Kategorie unter dem Titel */
-        .row-categories {
+        colgroup,
+        .cell-category {
             display: none;
         }
 
-        .row-thumb {
+        /* Jede Zeile wird zu einer Karte: Vorschaubild 1:1 oben, darunter Titel (links) und Jahr (rechts).
+           Abgrenzung über Abstand statt Linien. */
+        tr {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) auto;
+            row-gap: var(--space-12);
+            column-gap: var(--space-stack-s);
+            /* Abgrenzung der Karten über Abstand (Blockabstand) */
+            margin-bottom: var(--space-stack-m);
+        }
+
+        td {
+            height: auto;
+            min-height: 0;
+            padding: 0;
+            border-bottom: 0;
+        }
+
+        .cell-thumb {
             display: block;
             grid-column: 1 / -1;
 
@@ -2240,26 +2151,9 @@ mark {
             font: var(--font-caption);
         }
 
-        /* Fokus: Kategorie auf Grün gut lesbar */
-        .row-toggle:focus-visible .row-category {
+        /* Hover/Fokus: Kategorie auf Grün gut lesbar */
+        tr:has(:focus-visible) .row-category {
             color: inherit;
-        }
-
-        /* Vorschau untereinander: Bild volle Breite, Link darunter links */
-        .row-panel-inner {
-            grid-template-columns: 1fr;
-            padding-inline: 0;
-        }
-
-        .row-media {
-            grid-column: 1;
-            margin-block: var(--space-stack-s) var(--space-12);
-        }
-
-        .row-link {
-            grid-column: 1;
-            justify-self: start;
-            margin-bottom: 0;
         }
     }
 
@@ -2477,9 +2371,6 @@ mark {
     [data-module="projects"] .card,
     [data-page="project"] .strip-item,
     .carousel-progress-fill,
-    [data-module="projects"] .row-panel,
-    [data-module="projects"] .row-icon .icon,
-    [data-module="projects"] .row-link .icon,
     [data-module="intro"] .intro-link .icon,
     [data-module="experience"] .station::before,
     .filter button {
