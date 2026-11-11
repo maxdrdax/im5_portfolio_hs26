@@ -1497,18 +1497,42 @@ if (!reducedMotion) {
 
         const update = () => {
             ticking = false;
+            if (!stations.length) {
+                return;
+            }
+            const clamp = (value) => Math.min(Math.max(value, 0), 1);
             const mark = window.innerHeight * TIMELINE_MARK;
-            // Linie beginnt auf Höhe des ersten Punkts (--timeline-top im CSS) und endet unten an der Liste
+            // Linie: vom ersten Punkt (--timeline-top unter dem Anfang der Liste) bis zur Unterkante der Liste.
+            // offsetTop (Abstand zur Liste) statt getBoundingClientRect: ignoriert das Hochgleiten beim Einblenden.
             const lineOffset = parseFloat(getComputedStyle(timeline).getPropertyValue('--timeline-top')) || 0;
-            const rect = timeline.getBoundingClientRect();
-            const lineTop = rect.top + lineOffset;
-            const lineHeight = rect.height - lineOffset;
-            const progress = Math.min(Math.max((mark - lineTop) / lineHeight, 0), 1);
-            timeline.style.setProperty('--progress', progress.toFixed(4));
+            const lineTop = timeline.getBoundingClientRect().top + lineOffset;
+            const lineHeight = Math.max(timeline.offsetHeight - lineOffset, 1);
+            const lineBottom = lineTop + lineHeight;
+            // Punkt einer Station im Fenster (offsetTop = Abstand zur Liste, die Liste ist position: relative)
+            const dotY = (station) => lineTop + station.offsetTop;
+            const lastDot = dotY(stations[stations.length - 1]);
+
+            let progress;
+            if (lastDot > mark) {
+                // Bis zum letzten Punkt: Füllung endet genau auf der Messlinie
+                progress = clamp((mark - lineTop) / lineHeight);
+            } else {
+                // Nach dem letzten Punkt: Das Reststück füllt sich bis zum Seitenende (oder bis die Unterkante
+                // die Messlinie erreicht, falls das früher ist). So ist die Linie unten immer ganz grün.
+                const lastFraction = (lastDot - lineTop) / lineHeight;
+                const maxScroll = document.documentElement.scrollHeight - window.innerHeight;
+                const startScroll = window.scrollY + (lastDot - mark); // hier erreichte der letzte Punkt die Messlinie
+                const endScroll = Math.min(maxScroll, window.scrollY + (lineBottom - mark));
+                const t = endScroll > startScroll ? clamp((window.scrollY - startScroll) / (endScroll - startScroll)) : 1;
+                progress = lastFraction + (1 - lastFraction) * t;
+            }
+
+            // Ganz unten auf der Seite: alles gefüllt (auch falls der letzte Punkt die Messlinie nie erreicht)
+            const atPageEnd = window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 2;
+            timeline.style.setProperty('--progress', (atPageEnd ? 1 : progress).toFixed(4));
 
             stations.forEach((station) => {
-                const dotY = station.getBoundingClientRect().top + lineOffset;
-                station.classList.toggle('is-reached', dotY <= mark);
+                station.classList.toggle('is-reached', atPageEnd || dotY(station) <= mark);
             });
         };
 

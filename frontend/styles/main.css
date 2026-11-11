@@ -1417,6 +1417,7 @@ mark {
         &::after {
             position: absolute;
             top: var(--timeline-top);
+            /* vom ersten Punkt bis zur Unterkante der letzten Station */
             bottom: 0;
             /* Linie mittig unter den Punkten */
             left: calc(var(--dot-size) / 2 - .5px);
@@ -1504,7 +1505,21 @@ mark {
 
 /* Erfahrung direkt nach dem Profil: 64 px Abstand statt 96 px (gleiche Fläche wie in Figma) */
 [data-module="profile"] + [data-module="experience"] {
-    padding-top: var(--space-section);
+    padding-top: var(--space-64);
+}
+
+/* Profil vor «Erfahrung»: Die linke Spalte (Name, Skills, Steckbrief) zählt nicht zur Höhe des Profils.
+   Sonst bestimmt sie als längere Spalte die Höhe, und unter dem kurzen Text rechts entsteht eine Lücke.
+   So rückt «Erfahrung» in der rechten Spalte direkt nach; die linke Spalte läuft daneben weiter
+   (dort ist bei «Erfahrung» frei). height: 0 + overflow: visible = sichtbar, aber ohne Höhe im Raster. */
+[data-module="profile"]:has(+ [data-module="experience"]) .profile-aside {
+    height: 0;
+    overflow: visible;
+
+    /* Inhalte nicht zusammendrücken (Flexbox würde sie sonst auf die Höhe 0 schrumpfen) */
+    > * {
+        flex-shrink: 0;
+    }
 }
 
 [data-module="contact"] {
@@ -2247,6 +2262,11 @@ mark {
 
     [data-module="profile"] {
         row-gap: var(--space-stack-m);
+    }
+
+    /* Handy: Spalten untereinander, die linke Spalte braucht wieder ihre Höhe */
+    [data-module="profile"]:has(+ [data-module="experience"]) .profile-aside {
+        height: auto;
     }
 
     [data-module="experience"] {
