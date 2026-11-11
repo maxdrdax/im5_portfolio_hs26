@@ -220,11 +220,11 @@ main[data-page="project"] {
     /* Kontakt-Link und Menü-Button: siehe _navigation.css */
 }
 
-/* Unterstreichung: Navigation (Header, Footer) und Filter verhalten sich überall gleich.
-   Hover/Fokus: Linie läuft von links ein. Aktiv (aktuelle Seite / gewählter Filter): Linie bleibt stehen. */
+/* Unterstreichung: Navigation (Header, Footer) verhält sich überall gleich.
+   Hover/Fokus: Linie läuft von links ein. Aktiv (aktuelle Seite): Linie bleibt stehen.
+   Filter haben eine eigene Gestaltung (Chips, siehe .filter). */
 [data-layout] .nav a,
-[data-layout] .header-link,
-.filter button {
+[data-layout] .header-link {
     position: relative;
     color: var(--color-white);
     text-decoration: none;
@@ -243,8 +243,7 @@ main[data-page="project"] {
     }
 
     &:focus-visible::after,
-    &[aria-current="page"]::after,
-    &[aria-pressed="true"]::after {
+    &[aria-current="page"]::after {
         transform: scaleX(1);
     }
 
@@ -945,16 +944,11 @@ mark {
             grid-column: 1 / -1;
         }
 
-        /* Filter untereinander */
+        /* Filter untereinander in der linken Spalte, Chips linksbündig und nur so breit wie ihr Text */
         .filter {
             flex-direction: column;
             align-items: flex-start;
-            gap: var(--space-12);
             margin-bottom: 0;
-
-            button {
-                font: var(--font-body);
-            }
         }
     }
 
@@ -1226,21 +1220,52 @@ mark {
     }
 }
 
+/* Filter (Projektliste, Fotogalerie) als umrandete Pillen («Chips»).
+   Ruhe: feiner, halbtransparenter Rahmen. Hover (nur Maus): Rahmen weiss.
+   Aktiv (aria-pressed="true"): grün ausgefüllt, Text schwarz (Kontrast 5.3 : 1, siehe .pill--accent). */
 .filter {
     display: flex;
     flex-wrap: wrap;
-    gap: var(--space-stack-s);
+    gap: var(--space-8);
     margin-bottom: var(--space-stack-m);
 
-    /* Farbe bleibt immer weiss; aktiver Filter = Linie (siehe Unterstreichung oben) */
     button {
-        padding: 0;
-        border: 0;
-        background: none;
-        font: var(--font-nav);
-        letter-spacing: var(--tracking-caps);
-        text-align: left;
+        display: inline-flex;
+        align-items: center;
+        min-height: 40px;
+        padding: 6px var(--space-16);
+        border: 1px solid color-mix(in srgb, var(--color-white) 22%, transparent);
+        border-radius: 999px;
+        background-color: transparent;
+        color: var(--color-white);
+        font: var(--font-body);
+        font-size: 15px;
         cursor: pointer;
+        transition: background-color 300ms ease, border-color 300ms ease, color 300ms ease;
+
+        /* Tastatur-Fokus: grüner Ring mit Abstand zur Pille */
+        &:focus-visible {
+            outline: 2px solid var(--color-accent);
+            outline-offset: 3px;
+        }
+
+        &[aria-pressed="true"] {
+            border-color: var(--color-accent);
+            background-color: var(--color-accent);
+            color: var(--color-black);
+
+            /* Auf dem grünen Chip wäre ein grüner Ring unsichtbar → weiss */
+            &:focus-visible {
+                outline-color: var(--color-white);
+            }
+        }
+
+        /* Hover nur mit Maus (auf Touch bliebe der Zustand nach dem Tippen stehen); aktiver Chip bleibt gleich */
+        @media (hover: hover) {
+            &:not([aria-pressed="true"]):hover {
+                border-color: var(--color-white);
+            }
+        }
     }
 }
 
@@ -1252,18 +1277,6 @@ mark {
     /* Abstand zum Seitentitel: Regel «Hero Text + Modul» (Blockabstand) */
     /* Container: cqw = Prozent der Inhaltsbreite dieses Moduls (für die Zeilenhöhe) */
     container-type: inline-size;
-
-    /* Filter nebeneinander, Grossbuchstaben (Figma) */
-    .filter {
-        gap: var(--space-stack-s);
-        margin-bottom: var(--space-stack-m);
-
-        button {
-            font: var(--font-body);
-            letter-spacing: var(--tracking-caps);
-            text-transform: uppercase;
-        }
-    }
 
     .photo-grid {
         display: grid;
@@ -2367,10 +2380,8 @@ mark {
     [data-module="projects"][data-layout-type="list"] {
         grid-template-columns: 1fr;
 
-        /* Filter untereinander */
+        /* Filter stehen über der Liste statt links daneben → Abstand nach unten */
         .filter {
-            flex-direction: column;
-            align-items: flex-start;
             margin-bottom: var(--space-stack-m);
         }
     }
@@ -2407,11 +2418,16 @@ mark {
 /* BREAKPOINT: xxs */
 @media (max-width: 400px) {}
 
-/* Touch-Geräte: grössere Tippfläche (mind. 44 px) für Filter und Footer-Links, ohne dass sich das
-   Layout ändert: Padding vergrössert die Fläche, gleich grosser negativer Margin hebt es im Layout auf.
-   Die Unterstreichung rückt um das Padding nach oben, damit sie am gleichen Ort bleibt. */
+/* Touch-Geräte: grössere Tippfläche (mind. 44 px) */
 @media (pointer: coarse) {
-    .filter button,
+    /* Filter-Chips: Die Pille selbst ist die Tippfläche, sie wird einfach etwas höher */
+    .filter button {
+        min-height: 44px;
+    }
+
+    /* Footer-Links: Fläche grösser, ohne dass sich das Layout ändert: Padding vergrössert die Fläche,
+       gleich grosser negativer Margin hebt es im Layout auf. Die Unterstreichung rückt um das Padding
+       nach oben, damit sie am gleichen Ort bleibt. */
     [data-layout="footer"] .nav a {
         display: inline-block;
         padding-block: 10px;
@@ -2465,7 +2481,8 @@ mark {
     [data-module="projects"] .row-icon .icon,
     [data-module="projects"] .row-link .icon,
     [data-module="intro"] .intro-link .icon,
-    [data-module="experience"] .station::before {
+    [data-module="experience"] .station::before,
+    .filter button {
         transition: none;
     }
 
