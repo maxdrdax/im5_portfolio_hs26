@@ -7,6 +7,8 @@ use Carbon_Fields\Field;
 // Darunter der Inhalt der Projektseite als Module (verschieben, weglassen, ergänzen).
 Container::make('post_meta', 'Projekt')
     ->where('post_type', '=', 'project')
+    // Reihenfolge im Editor: «high» = zuoberst, vor den Modulen (default) und Yoast (low, siehe _seo.php)
+    ->set_priority('high')
     ->add_fields([
         Field::make('checkbox', 'featured', 'Ausgewähltes Projekt')
             ->set_option_value('yes')
@@ -31,6 +33,7 @@ Container::make('post_meta', 'Projekt')
 // Zwischentitel (title): leer = Standard aus «Globales» (siehe get_global_project_titles).
 Container::make('post_meta', 'Module der Projektseite')
     ->where('post_type', '=', 'project')
+    ->set_priority('default')
     ->add_fields([
         Field::make('complex', 'project_modules', 'Module')
             ->set_help_text('Reihenfolge per Drag-and-Drop. Leere Module werden nicht angezeigt.')

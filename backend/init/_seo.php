@@ -58,6 +58,11 @@ function seo_project_description_fallback($description): string
 add_filter('wpseo_metadesc', 'seo_project_description_fallback');
 add_filter('wpseo_opengraph_desc', 'seo_project_description_fallback');
 
+// -> Yoast-Box im Editor ans Ende (unter die Inhaltsfelder von Carbon Fields)
+add_filter('wpseo_metabox_prio', function (): string {
+    return 'low';
+});
+
 // -> Vorschaubild beim Teilen (og:image, wird auch für X/Twitter verwendet)
 // Yoast ruft diese Aktion auf, wenn es Bilder für eine Seite sammelt. Ist schon ein Bild da
 // (z. B. von Hand in der Yoast-Box gesetzt), bleibt es dabei.
