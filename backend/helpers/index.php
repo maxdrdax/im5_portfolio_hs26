@@ -196,6 +196,16 @@ function format_rich_text(?string $html): string
     return wp_kses_post(wpautop($html));
 }
 
+// -> Anzahl im Filter-Button, z. B. «Video 2»
+// Sichtbar ist nur die Zahl (aria-hidden), Screenreader hören stattdessen «, 2 Projekte».
+// $singular / $plural: Bezeichnung für den Screenreader (z. B. 'Projekt' / 'Projekte').
+function get_filter_count(int $count, string $singular, string $plural): string
+{
+    $label = $count === 1 ? $singular : $plural;
+    return '<span class="filter-count" aria-hidden="true">' . esc_html((string) $count) . '</span>'
+        . '<span class="screen-reader-text">, ' . esc_html($count . ' ' . $label) . '</span>';
+}
+
 // -> Begriffe einer Taxonomie für einen Beitrag laden (Name + Slug)
 // get_the_terms() liefert false oder WP_Error, wenn nichts zugewiesen ist. Darum zuerst prüfen.
 function get_term_list(int $post_id, string $taxonomy): array

@@ -1,7 +1,7 @@
 <?php
 // -> Modul «Erfahrung»: Stationen mit Tags und Download Lebenslauf
 // Steht in der rechten Spalte (wie Figma), jede Station mit Kopf links (Titel, Institution, Zeitraum)
-// und Inhalt rechts (Text, Tags).
+// und Inhalt rechts (Text, Tags). Links der Stationen läuft eine Zeitlinie, die sich beim Scrollen füllt.
 $data = $args['data'];
 $cv = $data['cv'] ?? false;
 ?>
@@ -20,7 +20,9 @@ $cv = $data['cv'] ?? false;
         <?php endif; ?>
 
         <?php if (!empty($data['stations'])) : ?>
-            <ol class="stations">
+            <?php // Zeitlinie links: Linie (::before/::after) und Punkt pro Station (.station::before) im CSS,
+                  // Füllung beim Scrollen über --progress und .is-reached (main.js, Abschnitt «Zeitlinie») ?>
+            <ol class="stations" data-timeline>
                 <?php foreach ($data['stations'] as $station) : ?>
                     <li class="station">
                         <div class="station-head">

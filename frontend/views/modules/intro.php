@@ -12,9 +12,10 @@ $link_text = trim($data['link_text'] ?? '');
         <p class="intro-text" data-scroll-text><?= nl2br(format_accent($data['text'])) ?></p>
     <?php endif; ?>
 
+    <?php // Link optional: nur mit Seite und Link-Text. Text und Pfeil in einer Zeile (inline-flex im CSS). ?>
     <?php if ($data['link'] && $link_text !== '') : ?>
         <a class="intro-link" href="<?= esc_url($data['link']) ?>">
-            <?= esc_html($link_text) ?> <?= get_icon('arrow', 'up-right') ?>
+            <span><?= esc_html($link_text) ?></span><?= get_icon('arrow', 'up-right') ?>
         </a>
     <?php endif; ?>
 </section>

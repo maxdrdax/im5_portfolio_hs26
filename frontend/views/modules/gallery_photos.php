@@ -16,16 +16,24 @@ $sizes_attr = [
     'large' => '(max-width: 768px) 100vw, 845px',
     'panorama' => '(max-width: 1440px) 100vw, 1280px',
 ];
+
+// Anzahl pro Filter aus den schon geladenen Fotos zählen (keine zusätzliche Datenbankabfrage)
+$category_counts = [];
+foreach ($photos as $photo) {
+    foreach ($photo['categories'] as $category) {
+        $category_counts[$category['slug']] = ($category_counts[$category['slug']] ?? 0) + 1;
+    }
+}
 ?>
 
 <section data-module="gallery-photos" data-filter-group>
     <?php if (!empty($data['categories'])) : ?>
         <div class="filter" role="group" aria-label="Fotos filtern">
-            <button type="button" data-filter="all" aria-pressed="true">Alle</button>
+            <button type="button" data-filter="all" aria-pressed="true">Alle<?= get_filter_count(count($photos), 'Foto', 'Fotos') ?></button>
             <?php foreach ($data['categories'] as $category) : ?>
-                <button type="button" data-filter="<?= esc_attr($category['slug']) ?>" aria-pressed="false">
-                    <?= esc_html($category['name']) ?>
-                </button>
+                <?php $count = $category_counts[$category['slug']] ?? 0; ?>
+                <?php if ($count === 0) { continue; } // Filter ohne Treffer weglassen ?>
+                <button type="button" data-filter="<?= esc_attr($category['slug']) ?>" aria-pressed="false"><?= esc_html($category['name']) ?><?= get_filter_count($count, 'Foto', 'Fotos') ?></button>
             <?php endforeach; ?>
         </div>
     <?php endif; ?>

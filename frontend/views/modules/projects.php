@@ -10,6 +10,15 @@ if (empty($projects)) {
 
 // Gibt es mindestens ein ausgewähltes Projekt? Sonst ist «Alle» der Standardfilter.
 $has_featured = in_array(true, array_column($projects, 'featured'), true);
+
+// Anzahl pro Filter aus den schon geladenen Projekten zählen (keine zusätzliche Datenbankabfrage)
+$featured_count = count(array_filter(array_column($projects, 'featured')));
+$category_counts = [];
+foreach ($projects as $project) {
+    foreach ($project['categories'] as $category) {
+        $category_counts[$category['slug']] = ($category_counts[$category['slug']] ?? 0) + 1;
+    }
+}
 ?>
 
 <section data-module="projects" data-layout-type="<?= esc_attr($layout) ?>"<?php if ($layout === 'list') : ?> data-filter-group data-directory<?php endif; ?>>
@@ -81,54 +90,76 @@ $has_featured = in_array(true, array_column($projects, 'featured'), true);
         <div class="filter" role="group" aria-label="Projekte filtern">
             <?php // Standardfilter (statisch im Theme), der aktive Button hat aria-pressed="true" ?>
             <?php if ($has_featured) : ?>
-                <button type="button" data-filter="featured" aria-pressed="true">Ausgewählte Projekte</button>
+                <button type="button" data-filter="featured" aria-pressed="true">Ausgewählte Projekte<?= get_filter_count($featured_count, 'Projekt', 'Projekte') ?></button>
             <?php endif; ?>
-            <button type="button" data-filter="all" aria-pressed="<?= $has_featured ? 'false' : 'true' ?>">Alle</button>
+            <button type="button" data-filter="all" aria-pressed="<?= $has_featured ? 'false' : 'true' ?>">Alle<?= get_filter_count(count($projects), 'Projekt', 'Projekte') ?></button>
             <?php foreach ($data['categories'] ?? [] as $category) : ?>
-                <button type="button" data-filter="<?= esc_attr($category['slug']) ?>" aria-pressed="false">
-                    <?= esc_html($category['name']) ?>
-                </button>
+                <?php $count = $category_counts[$category['slug']] ?? 0; ?>
+                <?php if ($count === 0) { continue; } // Kategorie ohne Projekt in dieser Liste: kein Filter ?>
+                <button type="button" data-filter="<?= esc_attr($category['slug']) ?>" aria-pressed="false"><?= esc_html($category['name']) ?><?= get_filter_count($count, 'Projekt', 'Projekte') ?></button>
             <?php endforeach; ?>
         </div>
 
-        <table class="directory">
-            <?php // Spaltenbreiten wie Figma (4 : 2 : 3 Rasterspalten); die Kopfzeile ist nur für Screenreader ?>
-            <colgroup>
-                <col class="col-title">
-                <col class="col-category">
-                <col class="col-year">
-            </colgroup>
-            <thead class="screen-reader-text">
-                <tr>
-                    <th scope="col">Projekt</th>
-                    <th scope="col">Kategorie</th>
-                    <th scope="col">Jahr</th>
-                </tr>
-            </thead>
-            <tbody>
-                <?php foreach ($projects as $project) : ?>
-                    <tr data-categories="<?= esc_attr(implode(' ', array_column($project['categories'], 'slug'))) ?>"
-                        data-featured="<?= $project['featured'] ? 'true' : 'false' ?>"
-                        data-preview-target="<?= esc_attr($project['id']) ?>">
-                        <?php // Der Link deckt per CSS die ganze Zeile ab (.row-link::after) ?>
-                        <?php $category_list = implode(', ', array_column($project['categories'], 'name')); ?>
-                        <?php // Nur Handy: Vorschaubild 1:1 über dem Titel (auf dem Desktop übernimmt das die Hover-Vorschau) ?>
-                        <td class="cell-thumb">
-                            <?php if (!empty($project['cover_small']['src'])) : ?>
+        <?php // Liste statt Tabelle: Pro Projekt ein <li> mit Button (Zeile) und Vorschau darunter.
+              // Spalten 4 : 2 : 3 wie Figma per CSS Grid. Auf-/Zuklappen: main.js, Abschnitt «Projektliste». ?>
+        <ul class="directory" data-preview-area data-directory-list>
+            <?php foreach ($projects as $project) : ?>
+                <?php
+                $category_list = implode(', ', array_column($project['categories'], 'name'));
+                $panel_id = 'project-preview-' . $project['id'];
+                ?>
+                <li class="directory-item"
+                    data-categories="<?= esc_attr(implode(' ', array_column($project['categories'], 'slug'))) ?>"
+                    data-featured="<?= $project['featured'] ? 'true' : 'false' ?>"
+                    data-preview-target="<?= esc_attr($project['id']) ?>">
+                    <?php // Echter Button: Tab, Enter und Leertaste funktionieren ohne eigenes Script ?>
+                    <button type="button" class="row-toggle" aria-expanded="false" aria-controls="<?= esc_attr($panel_id) ?>">
+                        <?php // Nur Handy: Vorschaubild 1:1 über dem Titel ?>
+                        <?php if (!empty($project['cover_small']['src'])) : ?>
+                            <span class="row-thumb">
                                 <img src="<?= esc_url($project['cover_small']['src']) ?>" alt="" loading="lazy" decoding="async">
-                            <?php endif; ?>
-                        </td>
-                        <td>
-                            <a class="row-link" href="<?= esc_url($project['url']) ?>"><?= esc_html($project['title']) ?></a>
+                            </span>
+                        <?php endif; ?>
+                        <span class="row-title">
+                            <?= esc_html($project['title']) ?>
                             <?php // Nur Handy: Kategorie klein unter dem Titel (die Kategorie-Spalte ist dort ausgeblendet) ?>
-                            <span class="row-category"><?= esc_html($category_list) ?></span>
-                        </td>
-                        <td class="cell-category"><?= esc_html($category_list) ?></td>
-                        <td><?= esc_html($project['year'] ?: '— / —') ?></td>
-                    </tr>
-                <?php endforeach; ?>
-            </tbody>
-        </table>
+                            <?php if ($category_list !== '') : ?>
+                                <span class="row-category"><span class="screen-reader-text">, </span><?= esc_html($category_list) ?></span>
+                            <?php endif; ?>
+                        </span>
+                        <?php // Kategorie-Spalte (Tablet/Desktop). Pro Breite ist nur eine der beiden Kategorien sichtbar. ?>
+                        <span class="row-categories"><span class="screen-reader-text">, </span><?= esc_html($category_list) ?></span>
+                        <span class="row-year"><span class="screen-reader-text">, </span><?= esc_html($project['year'] ?: '— / —') ?></span>
+                        <span class="row-icon"><?= get_icon('plus') ?></span>
+                    </button>
+
+                    <?php // Vorschau: zu = inert (main.js), dann nicht per Tab und Screenreader erreichbar ?>
+                    <div class="row-panel" id="<?= esc_attr($panel_id) ?>">
+                        <div class="row-panel-inner">
+                            <?php if ($project['cover'] || $project['cover_video']) : ?>
+                                <div class="row-media">
+                                    <?php if ($project['cover']) : ?>
+                                        <img src="<?= esc_url($project['cover']['src']) ?>" alt="<?= esc_attr($project['cover']['alt']) ?>"
+                                             width="<?= esc_attr($project['cover']['width'] ?? '') ?>" height="<?= esc_attr($project['cover']['height'] ?? '') ?>"
+                                             loading="lazy" decoding="async">
+                                    <?php endif; ?>
+                                    <?php // 'manual': Video lädt und spielt erst, wenn die Zeile offen ist (main.js) ?>
+                                    <?php get_template_part('frontend/views/teaser/video', null, [
+                                        'video' => $project['cover_video'],
+                                        'mode' => 'manual',
+                                        'class' => 'row-video',
+                                    ]); ?>
+                                </div>
+                            <?php endif; ?>
+                            <a class="row-link" href="<?= esc_url($project['url']) ?>">
+                                Projekt ansehen <?= get_icon('arrow', 'up-right') ?>
+                                <span class="screen-reader-text">: <?= esc_html($project['title']) ?></span>
+                            </a>
+                        </div>
+                    </div>
+                </li>
+            <?php endforeach; ?>
+        </ul>
 
         <?php // Hover-Vorschau: ein Container, der dem Mauszeiger folgt; pro Projekt ein Eintrag (Bild + optional Video) ?>
         <div class="directory-preview" data-directory-preview aria-hidden="true">
