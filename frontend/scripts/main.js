@@ -199,74 +199,6 @@ if (canHover) {
     });
 }
 
-// -> Handy/Tablet: Projekt in der Bildschirmmitte hervorheben (Ersatz für Hover)
-// Gilt für die Projektliste (Directory) und die Highlights auf der Startseite.
-// Beim Scrollen wird das Element gesucht, dessen Mitte am nächsten an der Bildschirmmitte liegt.
-// Gerechnet statt IntersectionObserver: So ist auch das letzte Element erreichbar, obwohl es
-// am Seitenende nie ganz in die Mitte kommt. requestAnimationFrame: höchstens einmal pro Bild rechnen.
-// Klassen für das CSS: .is-scroll-highlight am Container, .is-current am hervorgehobenen Element.
-function initScrollHighlight(container, items) {
-    let ticking = false;
-
-    const update = () => {
-        ticking = false;
-        const active = !canHover || compactLayout.matches;
-        container.classList.toggle('is-scroll-highlight', active);
-        if (!active) {
-            items.forEach((item) => item.classList.remove('is-current'));
-            return;
-        }
-        const center = window.innerHeight / 2;
-        let closest = null;
-        let closestDistance = Infinity;
-        items.forEach((item) => {
-            if (item.hidden) {
-                return; // vom Filter ausgeblendet
-            }
-            const rect = item.getBoundingClientRect();
-            // nur Elemente, die gerade im Fenster sind
-            if (rect.bottom < 0 || rect.top > window.innerHeight) {
-                return;
-            }
-            const distance = Math.abs(rect.top + rect.height / 2 - center);
-            if (distance < closestDistance) {
-                closest = item;
-                closestDistance = distance;
-            }
-        });
-        items.forEach((item) => item.classList.toggle('is-current', item === closest));
-    };
-
-    const requestUpdate = () => {
-        if (!ticking) {
-            ticking = true;
-            requestAnimationFrame(update);
-        }
-    };
-
-    window.addEventListener('scroll', requestUpdate, { passive: true });
-    window.addEventListener('resize', requestUpdate);
-    requestUpdate();
-    return requestUpdate;
-}
-
-// Projektliste (Seite Projekte)
-document.querySelectorAll('[data-directory] .directory').forEach((table) => {
-    const requestUpdate = initScrollHighlight(table, [...table.querySelectorAll('tbody tr')]);
-    // Nach dem Filtern ändern sich die sichtbaren Zeilen. Der Filter tauscht sie in einem
-    // Seitenübergang (View Transition) aus, der etwas später läuft → kurz warten, dann neu rechnen.
-    table.closest('[data-directory]').addEventListener('click', (event) => {
-        if (event.target.closest('[data-filter]')) {
-            setTimeout(requestUpdate, 100);
-        }
-    });
-});
-
-// Highlights (Startseite): auf Handy/Tablet sind alle Projekte offen
-document.querySelectorAll('[data-accordion]').forEach((accordion) => {
-    initScrollHighlight(accordion, [...accordion.querySelectorAll('[data-accordion-item]')]);
-});
-
 // =====================================================================
 // -> Highlights-Akkordeon (Startseite)
 // Mausrad/Trackpad: Ist die Maus über den Highlights, wird der Scrollweg gezählt; nach einer
@@ -1454,7 +1386,7 @@ if (!reducedMotion) {
             entry.target.style.animationDelay = `${index * REVEAL_STAGGER}ms`;
             entry.target.classList.add('is-revealed');
             // Nach dem Einblenden aufräumen: Die Animation hält sonst opacity: 1 fest (fill-mode both)
-            // und überstimmt andere Regeln, z. B. das Dimmen der Projektliste beim Scrollen auf dem Handy
+            // und überstimmt andere Regeln, z. B. eigene Übergänge der Elemente
             entry.target.addEventListener('animationend', (event) => {
                 if (event.animationName !== 'reveal') {
                     return; // Animation eines Kindelements (z. B. Pfeil) ignorieren

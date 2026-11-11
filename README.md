@@ -194,6 +194,7 @@ Entwicklung der Startseite: erste Umsetzung der Module, danach angepasst an das 
 | 11.11.2026 | Filter als umrandete Pillen («Chips»): aktiv grün ausgefüllt mit schwarzem Text, Hover weisser Rahmen, Fokusring; aus der gemeinsamen Unterstreichungs-Regel der Navigation herausgelöst, alte Overrides (Grossbuchstaben, Sperrung) entfernt |
 | 11.11.2026 | Aufklappbare Vorschau in der Projektliste wieder entfernt (zwei Klicks bis zum Projekt, Bild doppelt zur Hover-Vorschau): zurück zur Tabelle mit ganzer Zeile als Link; Zähler und Chips im Filter bleiben |
 | 11.11.2026 | Über mich: Zeitlinie läuft bis zur Unterkante der letzten Station und ist unten immer ganz grün (nach dem letzten Punkt füllt sich das Reststück bis zum Seitenende); Lücke zwischen Profil und Erfahrung behoben (linke Spalte ohne Höhe im Raster, `height: 0` + `overflow: visible`), Abstand 64 px |
+| 11.11.2026 | Hervorheben beim Scrollen auf Handy/Tablet entfernt (Projektliste und Highlights): Abdunkeln der anderen Projekte erschwerte das Überfliegen, und nach dem Einblenden fielen Einträge sichtbar auf 40 % zurück; grüne Zeile beim Hover gilt jetzt mit Maus in jeder Fensterbreite |
 
 ## Learnings
 <!-- In eigenen Worten ergänzen -->

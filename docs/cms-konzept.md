@@ -118,7 +118,7 @@ Startseite, direkt nach dem Hero: kurze Vorstellung in zwei, drei Sätzen (auf d
 | Darstellung | layout | select (Karussell / Liste) |
 | Projekte | projects | association (Post Type project) |
 
-Startseite: «Highlights» als Karussell mit ausgewählten Projekten. Seite Projekte: Liste als Tabelle mit Hover-Vorschau und Filterliste (aus `project_category`, mit Anzahl pro Filter, als Chips); ganze Zeile ist ein Link (kein Aufklappen, verworfen); auf dem Handy pro Projekt ein Vorschaubild 1:1 über Titel und Jahr, Kategorie unter dem Titel, Filter untereinander. Auf Handy und Tablet wird beim Scrollen das Projekt in der Bildschirmmitte hervorgehoben, die anderen treten zurück (Liste und Highlights). Leeres Feld «Projekte» = alle Projekte automatisch. Daten kommen immer aus dem Post Type Projekt.
+Startseite: «Highlights» als Karussell mit ausgewählten Projekten. Seite Projekte: Liste als Tabelle mit Hover-Vorschau und Filterliste (aus `project_category`, mit Anzahl pro Filter, als Chips); ganze Zeile ist ein Link (kein Aufklappen, verworfen); auf dem Handy pro Projekt ein Vorschaubild 1:1 über Titel und Jahr, Kategorie unter dem Titel, Filter untereinander. Kein Hervorheben beim Scrollen auf Handy und Tablet (verworfen: Abdunkeln der anderen Projekte erschwert das Überfliegen und wirkt unruhig). Leeres Feld «Projekte» = alle Projekte automatisch. Daten kommen immer aus dem Post Type Projekt.
 
 ### Fotogalerie `gallery_photos`
 Keine Felder. Listet alle Fotos, Filter aus `photo_category`.

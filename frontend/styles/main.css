@@ -828,12 +828,6 @@ mark {
         /* Elemente einer Liste: kleiner Abstand */
         gap: var(--space-stack-s);
         list-style: none;
-
-        /* Handy/Tablet: Projekt in der Bildschirmmitte hervorheben, die anderen treten zurück
-           (wie in der Projektliste; Klassen setzt main.js) */
-        &.is-scroll-highlight:has(.is-current) .card:not(.is-current) {
-            opacity: .4;
-        }
     }
 
     .card {
@@ -844,8 +838,7 @@ mark {
         /* Inhalt der Karte (Bild, Video, Texte) beeinflusst nichts ausserhalb:
            Der Browser berechnet beim Animieren der Höhe weniger neu → flüssiger */
         contain: layout paint;
-        /* opacity: Hervorheben beim Scrollen auf Handy/Tablet (siehe .carousel.is-scroll-highlight) */
-        transition: height var(--accordion-duration) var(--accordion-ease), opacity 400ms ease;
+        transition: height var(--accordion-duration) var(--accordion-ease);
 
         &.is-active {
             height: clamp(320px, 75vw, 648px);
@@ -993,24 +986,10 @@ mark {
             color: var(--color-black);
         }
 
-        /* Nicht im schmalen Fenster (bis 1024 px, .is-scroll-highlight setzt main.js): Dort gilt wie auf
-           dem Handy nur das Hervorheben beim Scrollen, sonst wären zwei Zeilen gleichzeitig markiert. */
         @media (hover: hover) {
-            &:not(.is-scroll-highlight) tr:hover td {
+            tr:hover td {
                 background-color: var(--color-accent);
                 color: var(--color-black);
-            }
-        }
-
-        /* Handy/Tablet: Projekt in der Bildschirmmitte hervorheben, die anderen treten zurück.
-           .is-scroll-highlight und .is-current setzt main.js (nur ohne Maus bzw. bis 1024 px). */
-        &.is-scroll-highlight {
-            tbody tr {
-                transition: opacity 400ms ease;
-            }
-
-            tbody:has(.is-current) tr:not(.is-current) {
-                opacity: .4;
             }
         }
 
