@@ -462,6 +462,173 @@ main[data-page="project"] {
         }
     }
 
+    /* 4b. Figma-Prototyp (project-modules/prototype.php): Vorschau mit Link zu Figma, mobile-first.
+       Ein oder zwei Prototypen (.prototype-item), Fläche im Format 16:10 (Querformat) bzw. 9:16 (Hochformat).
+       Bild und Button sind ein Link (öffnet Figma im neuen Tab).
+       Handy: Button unter dem Bild über die ganze Breite. Ab Tablet: Button unten im Bild, über einem Verlauf. */
+    .project-prototype {
+        /* Liste der Prototypen (1 oder 2): Handy untereinander */
+        .prototype-list {
+            display: flex;
+            flex-direction: column;
+            gap: var(--space-stack-m);
+            list-style: none;
+        }
+
+        /* Beschriftung über der Vorschau (z. B. «Mobile», «Web»): linksbündig,
+           Stil wie die Beschriftungen der Eckdaten (.facts dt) */
+        .prototype-label {
+            margin-bottom: var(--space-stack-xs);
+            color: var(--color-border);
+            font: var(--font-caption);
+            letter-spacing: .06em;
+            text-transform: uppercase;
+        }
+
+        /* Link um Bild und Button: Handy untereinander.
+           border-radius: Die Fokus-Markierung (outline) folgt der Rundung statt eckig zu sein. */
+        .prototype-card {
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            gap: var(--space-stack-s);
+            border-radius: var(--radius);
+            text-decoration: none;
+
+            &:focus-visible {
+                outline: 1px solid var(--color-white);
+                outline-offset: 4px;
+            }
+        }
+
+        /* Bildfläche: Poster oder dunkle, neutrale Fläche (etwas heller als der Seitenhintergrund) */
+        .prototype-media {
+            position: relative;
+            display: block;
+            width: 100%;
+            aspect-ratio: 16 / 10;
+            overflow: hidden;
+            border-radius: var(--radius);
+            background-color: color-mix(in srgb, var(--color-white) 6%, var(--color-black));
+        }
+
+        .prototype-poster {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: scale 600ms cubic-bezier(.22, 1, .36, 1);
+        }
+
+        /* Button (Stil von .button): Handy über die ganze Breite (grosse Tippfläche) */
+        .prototype-button {
+            width: 100%;
+
+            /* translate statt transform: Die Drehung des Pfeils (.icon--up-right) bleibt erhalten */
+            .icon {
+                transition: translate 200ms ease;
+            }
+        }
+
+        /* Tastatur-Fokus: Button weiss wie beim Lebenslauf, Pfeil rückt nach rechts oben */
+        .prototype-card:focus-visible {
+            .prototype-button {
+                background-color: var(--color-white);
+            }
+
+            .icon {
+                translate: .15em -.15em;
+            }
+        }
+
+        /* Hover nur mit Maus (auf dem Handy gibt es keinen Hover-Zustand): zusätzlich zoomt das Poster leicht */
+        @media (hover: hover) {
+            .prototype-card:hover {
+                .prototype-button {
+                    background-color: var(--color-white);
+                }
+
+                .icon {
+                    translate: .15em -.15em;
+                }
+
+                .prototype-poster {
+                    scale: 1.03;
+                }
+            }
+        }
+
+        /* Hochformat (Handy-Prototyp): schmal und zentriert; Bild nie höher als 80 % des Fensters */
+        .prototype-item--portrait {
+            /* Beschriftung gleich breit wie das Bild, damit sie linksbündig über dem Bild steht */
+            .prototype-label,
+            .prototype-card {
+                width: min(100%, 400px, calc(80svh * 9 / 16));
+                margin-inline: auto;
+            }
+
+            .prototype-media {
+                aspect-ratio: 9 / 16;
+            }
+        }
+
+        /* Ab Tablet: Button unten im Bild statt darunter, mittig über einem Verlauf
+           (Verlauf nur unten: Button bleibt auch auf hellen Postern gut sichtbar, der Rest bleibt unverändert) */
+        @media (min-width: 769px) {
+            .prototype-card {
+                display: block;
+            }
+
+            .prototype-media::after {
+                content: "";
+                position: absolute;
+                inset: 0;
+                background: linear-gradient(to top, color-mix(in srgb, var(--color-black) 60%, transparent), transparent 40%);
+            }
+
+            .prototype-button {
+                position: absolute;
+                bottom: var(--space-24);
+                left: 50%;
+                width: auto;
+                white-space: nowrap;
+                transform: translateX(-50%);
+            }
+        }
+
+        /* Zwei Prototypen ab Tablet nebeneinander und gleich hoch.
+           Trick: flex-grow = Seitenverhältnis (Breite / Höhe), Basis 0. Die Breite wird im Verhältnis
+           16/10 zu 9/16 verteilt; geteilt durch das eigene Verhältnis ergibt das bei beiden dieselbe Höhe. */
+        @media (min-width: 769px) {
+            .prototype-list--pair {
+                flex-direction: row;
+                align-items: flex-start;
+                justify-content: center;
+                gap: var(--space-32);
+
+                .prototype-item {
+                    min-width: 0;
+                }
+
+                .prototype-item--landscape {
+                    flex: 1.6 1 0; /* 16 / 10 */
+                }
+
+                .prototype-item--portrait {
+                    flex: .5625 1 0; /* 9 / 16 */
+                    /* zwei Hochformate nebeneinander nicht riesig werden lassen */
+                    max-width: 400px;
+
+                    .prototype-label,
+                    .prototype-card {
+                        width: 100%;
+                    }
+                }
+            }
+        }
+    }
+
     /* 5. Galerie: horizontales Akkordeon. Alle Streifen gleich breit, beim Hover öffnet sich ein Bild im Format 3:2 */
     .project-gallery {
         /* Container: cqw = Prozent der Inhaltsbreite (für Höhe und Breite der Galerie) */
@@ -514,6 +681,17 @@ main[data-page="project"] {
            statt dass die Galerie überläuft. Die Streifen behalten ihre Mindestbreite. */
         &.is-active {
             flex: 0 1 calc(var(--strip-height) * 1.5);
+        }
+
+        /* Einpassen (Feld «Darstellung in der Galerie» am Bild): ganzes Bild sichtbar statt zugeschnitten.
+           Freie Fläche dunkel und neutral (wie die Vorschau beim Figma-Prototyp). Gilt auch auf dem Handy. */
+        &.strip-item--contain {
+            background-color: color-mix(in srgb, var(--color-white) 6%, var(--color-black));
+
+            img,
+            video {
+                object-fit: contain;
+            }
         }
     }
 
@@ -1745,14 +1923,18 @@ mark {
     }
 }
 
-/* Button: grün gefüllt, schwarzer Text, abgerundet (Figma) */
+/* Button: grün gefüllt, schwarzer Text, abgerundet (Figma)
+   Gilt für <a class="button"> (Lebenslauf) und <button class="button"> (Prototyp starten);
+   border: 0 entfernt den Standardrahmen, den der Browser jedem <button> gibt. */
 .button {
     display: inline-flex;
     align-items: center;
     justify-content: center;
     gap: var(--space-8);
     padding: var(--space-16) var(--space-48);
+    border: 0;
     border-radius: var(--radius);
+    cursor: pointer;
     background-color: var(--color-accent);
     color: var(--color-black);
     font: var(--font-button);
@@ -2330,6 +2512,14 @@ mark {
             bottom: 6px;
         }
     }
+}
+
+/* Normalen Mauszeiger ausblenden, solange der Cursor-Punkt aktiv ist (main.js setzt .has-cursor-dot nur
+   mit Maus und ohne «Bewegung reduzieren»; sonst bleibt der normale Zeiger).
+   !important: Einzelne Elemente setzen cursor: pointer; das soll hier überall weichen. */
+.has-cursor-dot,
+.has-cursor-dot * {
+    cursor: none !important;
 }
 
 /* Cursor-Punkt (main.js): folgt dem Mauszeiger, invertiert den Hintergrund */

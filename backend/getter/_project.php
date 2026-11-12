@@ -64,6 +64,11 @@ function get_project_modules(int $id): array
                 $module['links'] = get_project_links($id, $raw['links'] ?? []);
                 $show = !empty($module['links']);
                 break;
+            case 'prototype':
+                // Ungültige Links fallen weg; ohne gültigen Prototyp = nicht ausgeben
+                $module['items'] = get_prototype_items($raw['prototypes'] ?? []);
+                $show = !empty($module['items']);
+                break;
             default:
                 $show = false;
         }
@@ -87,11 +92,38 @@ function has_rich_text(string $html): bool
 function get_gallery_items(array $ids): array
 {
     $items = array_map(function ($media_id) {
-        return get_video_by_id($media_id) ?: get_media_by_id($media_id, 'l');
+        $media = get_video_by_id($media_id) ?: get_media_by_id($media_id, 'l');
+        if ($media) {
+            // Darstellung aus der Mediathek (backend/init/_gallery-fit.php): nur «contain» oder Standard «cover»
+            $media['fit'] = get_post_meta((int) $media_id, 'gallery_fit', true) === 'contain' ? 'contain' : 'cover';
+        }
+        return $media;
     }, $ids);
     return array_values(array_filter($items, function ($media) {
         return $media && in_array($media['type'] ?? '', ['image', 'video'], true);
     }));
+}
+
+// Figma-Prototypen eines Moduls (höchstens 2, z. B. Handy und Web)
+// Jeder Link wird geprüft (Whitelist in get_figma_url); ungültige Einträge werden übersprungen.
+function get_prototype_items(array $rows): array
+{
+    $items = [];
+    foreach ($rows as $row) {
+        $url = get_figma_url((string) ($row['url'] ?? ''));
+        if (!$url) {
+            continue;
+        }
+        $items[] = [
+            'label' => trim($row['label'] ?? ''),
+            'url' => $url,
+            'poster' => get_media_by_id($row['poster'] ?? 0, 'l'),
+            // Format nur aus der Whitelist, sonst Querformat
+            'format' => ($row['format'] ?? '') === 'portrait' ? 'portrait' : 'landscape',
+        ];
+    }
+    // set_max(2) im Backend begrenzt schon; hier zur Sicherheit auch (Layout ist für 2 gebaut)
+    return array_slice($items, 0, 2);
 }
 
 // Alle Links aus allen Modulen «Weiterführende Informationen» eines Projekts (Rohdaten)
@@ -112,7 +144,6 @@ function get_project_link_rows(int $id): array
 // (dann öffnet er in einem neuen Tab); Links auf die eigene Website bleiben im selben Tab.
 function get_project_links(int $id, array $rows): array
 {
-    $home_host = wp_parse_url(home_url(), PHP_URL_HOST);
     // Automatisch geholte Vorschaubilder (backend/init/_link-previews.php): Link (md5) → Bild-ID
     $auto_previews = get_post_meta($id, '_link_previews', true) ?: [];
     $links = [];
@@ -131,7 +162,7 @@ function get_project_links(int $id, array $rows): array
             'title' => $title,
             'source' => trim($link['source'] ?? ''),
             'url' => $url,
-            'external' => wp_parse_url($url, PHP_URL_HOST) !== $home_host,
+            'external' => is_external_url($url),
             'preview' => $own ?: $logo ?: get_media_by_id($auto_previews[md5($url)] ?? 0, 'm'),
             // Logo wird auf grüner Fläche gezeigt statt bildfüllend
             'preview_logo' => (bool) $logo,

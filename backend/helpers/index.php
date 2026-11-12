@@ -129,7 +129,8 @@ function get_menu_by_slug(string $slug): array
             'ID' => (int) $item->ID,
             'title' => $item->title,
             'url' => $item->url,
-            'target' => $item->target,
+            // Externe Menüeinträge immer im neuen Tab, auch wenn in Design > Menüs nicht angehakt
+            'target' => is_external_url($item->url) ? '_blank' : $item->target,
             'current' => is_current_menu_item($item),
             // Slug der verlinkten Seite (z. B. «kontakt» für den Kontakt-Link im Header); sonst leer
             'slug' => $item->object === 'page' ? get_post_field('post_name', (int) $item->object_id) : '',
@@ -188,12 +189,24 @@ function format_accent(?string $text): string
 }
 
 // -> Rich-Text-Feld (Carbon Fields) sicher ausgeben: Absätze ergänzen, nur erlaubtes HTML
+// Externe Links im Text öffnen in einem neuen Tab (auch wenn im Editor nicht angehakt).
+// WP_HTML_Tag_Processor (WordPress 6.2+): ändert Attribute sicher, ohne HTML mit Regex zu zerlegen.
 function format_rich_text(?string $html): string
 {
     if (empty($html)) {
         return '';
     }
-    return wp_kses_post(wpautop($html));
+    $html = wp_kses_post(wpautop($html));
+
+    $tags = new WP_HTML_Tag_Processor($html);
+    while ($tags->next_tag('a')) {
+        if (is_external_url((string) $tags->get_attribute('href'))) {
+            $tags->set_attribute('target', '_blank');
+            // noopener: Die fremde Seite bekommt keinen Zugriff auf dieses Fenster (window.opener)
+            $tags->set_attribute('rel', 'noopener');
+        }
+    }
+    return $tags->get_updated_html();
 }
 
 // -> Anzahl im Filter-Button, z. B. «Video 2»
@@ -290,4 +303,69 @@ function get_video_embed(?string $url): string|false
             'loading' => true,
         ],
     ]);
+}
+
+// -> Figma-Link (Share-Link) prüfen und bereinigen (Projektmodul «Figma-Prototyp»)
+// Whitelist: nur https, nur Figma-Hosts, nur Pfade /proto/… oder /design/…; alles andere = false.
+// So führt der Button «Figma-Prototyp öffnen» sicher nur zu Figma (kein Tippfehler-Link, kein javascript:).
+// Rückgabe: bereinigte Adresse auf www.figma.com oder false. Kein Request an Figma (nur Text umbauen).
+function get_figma_url(?string $url): string|false
+{
+    $url = trim($url ?? '');
+    if ($url === '') {
+        return false;
+    }
+
+    $parts = wp_parse_url($url);
+    if (!is_array($parts)) {
+        return false;
+    }
+
+    // 1. Nur https (kein http, javascript:, data: usw.)
+    if (strtolower($parts['scheme'] ?? '') !== 'https') {
+        return false;
+    }
+    // 2. Kein Benutzername/Passwort/Port in der Adresse (Trick: https://figma.com@boese.ch/ hat den Host boese.ch)
+    if (isset($parts['user']) || isset($parts['pass']) || isset($parts['port'])) {
+        return false;
+    }
+    // 3. Host exakt vergleichen (nicht mit str_contains: «figma.com.boese.ch» würde sonst durchrutschen)
+    $host = strtolower($parts['host'] ?? '');
+    if (!in_array($host, ['figma.com', 'www.figma.com', 'embed.figma.com'], true)) {
+        return false;
+    }
+    // 4. Pfad: /proto/<Dateischlüssel>… oder /design/<Dateischlüssel>…, ohne «..»
+    $path = $parts['path'] ?? '';
+    if (!preg_match('#^/(proto|design)/[A-Za-z0-9]+(/|$)#', $path) || str_contains($path, '..')) {
+        return false;
+    }
+
+    // Parameter: nur die nötigen übernehmen (Whitelist). Weg fallen z. B. «t» (Tracking-Kennung von Figma),
+    // «viewport» (Ausschnitt der Arbeitsfläche) und «show-proto-sidebar» (Flow-Liste verwirrt Besucher).
+    parse_str($parts['query'] ?? '', $query);
+    $query = array_intersect_key($query, array_flip([
+        'node-id',                // Bildschirm, der beim Öffnen erscheint
+        'starting-point-node-id', // Start des Flows (Neustart springt hierhin)
+        'page-id',                // Seite in der Figma-Datei
+        'version-id',             // bestimmte Version (leer = neueste)
+        'scaling',                // Darstellung (z. B. min-zoom, scale-down)
+        'content-scaling',        // fixed / responsive
+    ]));
+    $query_string = http_build_query($query, '', '&', PHP_QUERY_RFC3986);
+
+    // Immer die normale Figma-Adresse, auch wenn ein Embed-Link (embed.figma.com) eingefügt wurde
+    return 'https://www.figma.com' . $path . ($query_string !== '' ? '?' . $query_string : '');
+}
+
+// -> Führt ein Link auf eine andere Website? (dann im neuen Tab öffnen)
+// Relative Links (/kontakt/), Anker (#…) und mailto:/tel: gelten nicht als extern.
+function is_external_url(?string $url): bool
+{
+    $host = strtolower((string) wp_parse_url($url ?? '', PHP_URL_HOST));
+    if ($host === '') {
+        return false;
+    }
+    $home_host = strtolower((string) wp_parse_url(home_url(), PHP_URL_HOST));
+    // www. ignorieren: www.maxhutmacher.ch und maxhutmacher.ch sind dieselbe Website
+    return preg_replace('/^www\./', '', $host) !== preg_replace('/^www\./', '', $home_host);
 }

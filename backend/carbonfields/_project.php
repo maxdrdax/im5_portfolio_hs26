@@ -70,8 +70,7 @@ Container::make('post_meta', 'Module der Projektseite')
                     ->set_help_text('Optional. Akzent mit *Sternchen*.'),
                 Field::make('media_gallery', 'gallery', 'Bilder und Videos')
                     ->set_type(['image', 'video'])
-                    ->set_help_text('Videos laufen ohne Ton in Schleife. Volle Videos besser über das Modul «Video».'),
-            ])
+                    ->set_help_text('Videos laufen ohne Ton in Schleife. Volle Videos besser über das Modul «Video». Ganzes Bild zeigen statt zuschneiden: Bild anklicken → «Darstellung in der Galerie: Einpassen».'),            ])
             // -> Weiterführende Informationen: Linkliste mit Hover-Vorschau
             ->add_fields('links', 'Weiterführende Informationen', [
                 Field::make('text', 'title', 'Titel')
@@ -97,6 +96,39 @@ Container::make('post_meta', 'Module der Projektseite')
                     ])
                     ->set_header_template('<% if (title) { %><%- title %><% } %>')
                     ->set_layout('tabbed-vertical'),
+            ])
+            // -> Figma-Prototyp: Embed mit Click-to-load (lädt erst beim Klick etwas von Figma)
+            // Ein oder zwei Prototypen (z. B. Handy und Web), zwei stehen ab Tablet nebeneinander.
+            // Nicht im Standardaufbau: nur bei Projekten mit Prototyp über «Hinzufügen» ergänzen.
+            ->add_fields('prototype', 'Figma-Prototyp', [
+                Field::make('text', 'title', 'Titel')
+                    ->set_attribute('placeholder', 'Standard aus «Globales»')
+                    ->set_help_text('Optional. Akzent mit *Sternchen*.'),
+                Field::make('complex', 'prototypes', 'Prototypen')
+                    ->set_help_text('Ein oder zwei Prototypen. Zwei stehen nebeneinander (z. B. Handy und Web).')
+                    ->set_max(2)
+                    ->add_fields([
+                        Field::make('text', 'label', 'Beschriftung')
+                            ->set_attribute('placeholder', 'z. B. Mobile oder Web')
+                            ->set_help_text('Optional. Steht über der Vorschau. Leer = keine Beschriftung.'),
+                        Field::make('text', 'url', 'Figma-Link')
+                            ->set_attribute('type', 'url')
+                            ->set_attribute('placeholder', 'https://www.figma.com/proto/…')
+                            ->set_required()
+                            ->set_help_text('Share-Link aus Figma (figma.com/proto/… oder figma.com/design/…). Andere Links werden nicht angezeigt.'),
+                        Field::make('image', 'poster', 'Vorschaubild')
+                            ->set_width(50)
+                            ->set_help_text('Optional. Erscheint vor dem Start. Leer = dunkle Fläche.'),
+                        Field::make('select', 'format', 'Format')
+                            ->set_width(50)
+                            ->set_options([
+                                'landscape' => 'Querformat 16:10 (Desktop)',
+                                'portrait' => 'Hochformat 9:16 (Handy-Prototyp)',
+                            ])
+                            ->set_default_value('landscape'),
+                    ])
+                    // Kopfzeile im Backend: Beschriftung, sonst Format (damit man die Einträge unterscheiden kann)
+                    ->set_header_template('<%- label ? label : (format === "portrait" ? "Hochformat (Handy)" : "Querformat (Web)") %>'),
             ])
             // Neues Projekt startet mit dem Standardaufbau (gleiche Reihenfolge wie bisher)
             ->set_default_value(get_project_default_modules())

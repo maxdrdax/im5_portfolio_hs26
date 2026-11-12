@@ -136,6 +136,7 @@ if ($menu_bg) {
                             <li>
                                 <a href="<?= esc_url($social['url']) ?>" target="_blank" rel="noopener">
                                     <?= esc_html($social['title']) ?> <?= get_icon('arrow', 'up-right') ?>
+                                    <span class="screen-reader-text">(öffnet in neuem Tab)</span>
                                 </a>
                             </li>
                         <?php endforeach; ?>

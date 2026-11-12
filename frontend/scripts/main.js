@@ -46,7 +46,7 @@ document.querySelectorAll('[data-filter-group]').forEach((group) => {
         });
     });
 
-    // Beim Laden den Standardfilter anwenden (Button, der im HTML aktiv ist)
+    // Beim Laden den Standardfilter anwenden (Button, der im HTML aktiv ist)$
     const defaultButton = group.querySelector('[data-filter][aria-pressed="true"]');
     if (defaultButton) {
         applyFilter(defaultButton);
@@ -658,13 +658,24 @@ if (!reducedMotion) {
 
 // =====================================================================
 // -> Cursor-Punkt: folgt dem Mauszeiger weich verzögert
-// Nur mit Maus/Trackpad und ohne «Bewegung reduzieren». Der normale Mauszeiger bleibt sichtbar.
+// Nur mit Maus/Trackpad und ohne «Bewegung reduzieren». Der normale Mauszeiger ist dann ausgeblendet
+// (Klasse .has-cursor-dot, CSS). Ohne Punkt (Touch, «Bewegung reduzieren», ohne JS) bleibt er sichtbar.
+// iframes (YouTube/Vimeo im Modul «Video») sind eigene Dokumente: Dort kommen keine Mausbewegungen an, der Punkt
+// würde am Rand stehen bleiben. Darum blendet er über iframes aus; drinnen zeigt der Anbieter seinen Zeiger.
 // =====================================================================
 if (canHover && !reducedMotion) {
     const dot = document.createElement('div');
     dot.className = 'cursor-dot';
     dot.setAttribute('aria-hidden', 'true');
     document.body.append(dot);
+    document.documentElement.classList.add('has-cursor-dot');
+
+    // Maus fährt in ein iframe: Punkt ausblenden. Zurück auf der Seite blendet ihn mousemove wieder ein.
+    document.addEventListener('mouseover', (event) => {
+        if (event.target.tagName === 'IFRAME') {
+            dot.classList.remove('is-visible');
+        }
+    });
 
     // Elemente, über denen der Punkt grösser wird
     // inkl. Elemente, die per Tab erreichbar sind (tabindex="0"), z. B. die Bilder der Galerie:
@@ -1370,6 +1381,9 @@ const REVEAL_SELECTOR = [
     '[data-page="project"] .project-role',
     '[data-page="project"] .project-video',
     '[data-page="project"] .project-gallery',
+    // Prototyp: Titel und jeder Prototyp einzeln (nacheinander einblenden)
+    '[data-page="project"] .project-prototype .project-subtitle',
+    '[data-page="project"] .prototype-item',
     '[data-page="project"] .project-links .project-subtitle',
     '[data-page="project"] .link-list > li',
 ].join(', ');

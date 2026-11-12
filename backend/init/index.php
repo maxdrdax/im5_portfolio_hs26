@@ -13,6 +13,9 @@ require_once __DIR__ . '/_private.php';
 // -> Vorschaubilder für «Weiterführende Informationen» automatisch holen (beim Speichern eines Projekts)
 require_once __DIR__ . '/_link-previews.php';
 
+// -> Galerie: Feld «Darstellung in der Galerie» (Füllen/Einpassen) an Bildern und Videos in der Mediathek
+require_once __DIR__ . '/_gallery-fit.php';
+
 // -> Yoast SEO: Vorschaubild und Beschreibung für Projekte aus Carbon Fields (zum Testen auskommentierbar)
 require_once __DIR__ . '/_seo.php';
 

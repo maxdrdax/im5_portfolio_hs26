@@ -49,8 +49,13 @@ Container::make('theme_options', 'Globales')
             ->set_default_value('Einblicke')
             ->set_help_text('Standard für alle Projekte. Akzent mit *Sternchen*.'),
         Field::make('text', 'links_title', 'Projektseite: Titel «Weiterführende Informationen»')
+            ->set_width(50)
             ->set_default_value('Weiterführende Informationen')
             ->set_help_text('Standard für alle Projekte. Akzent mit *Sternchen*.'),
+        Field::make('text', 'prototype_title', 'Projektseite: Titel «Prototyp»')
+            ->set_width(50)
+            ->set_default_value('Prototyp')
+            ->set_help_text('Standard für alle Projekte (Modul «Figma-Prototyp»). Akzent mit *Sternchen*.'),
         // Gemeinsamer Hintergrund fürs Overlay-Menü: hat Vorrang vor den Bildern der einzelnen Menüpunkte
         Field::make('image', 'menu_bg_image', 'Menü-Hintergrundbild')
             ->set_width(50)

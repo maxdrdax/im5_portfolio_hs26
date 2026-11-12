@@ -9,8 +9,9 @@ $gallery = $data['items'];
     <h2 class="project-subtitle project-subtitle--ruled"><?= format_accent($data['title']) ?></h2>
     <ul class="gallery-strip" data-strip>
         <?php foreach ($gallery as $media) : ?>
-            <?php // tabindex: auch mit der Tastatur (Tab) aufklappbar ?>
-            <li class="strip-item" data-strip-item tabindex="0">
+            <?php // tabindex: auch mit der Tastatur (Tab) aufklappbar.
+                  // strip-item--contain: ganzes Bild zeigen statt füllen (Einstellung am Bild in der Mediathek) ?>
+            <li class="strip-item<?= $media['fit'] === 'contain' ? ' strip-item--contain' : '' ?>" data-strip-item tabindex="0">
                 <?php if ($media['type'] === 'video') : ?>
                     <?php get_template_part('frontend/views/teaser/video', null, [
                         'video' => $media,
