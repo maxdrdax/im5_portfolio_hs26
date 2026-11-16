@@ -3,7 +3,35 @@
 // Die Einträge sind im Getter gefiltert (nur Bilder und Videos), darum stimmt der Zähler.
 $data = $args['data'];
 $gallery = $data['items'];
-?>
+$contain_all = !empty($data['contain_all']);
+$is_grid = ($data['layout'] ?? 'strip') === 'grid';
+
+// Raster: alle Bilder als Kacheln, kein Akkordeon (für viele Bilder)
+if ($is_grid) : ?>
+<section class="project-gallery project-gallery--grid">
+    <h2 class="project-subtitle project-subtitle--ruled"><?= format_accent($data['title']) ?></h2>
+    <ul class="gallery-grid">
+        <?php foreach ($gallery as $media) : ?>
+            <?php // data-size: Kachelgrösse (CSS); gallery-tile--contain: ganzes Bild zeigen statt füllen ?>
+            <li class="gallery-tile<?= ($contain_all || $media['fit'] === 'contain') ? ' gallery-tile--contain' : '' ?>"
+                data-size="<?= esc_attr($media['size']) ?>">
+                <?php if ($media['type'] === 'video') : ?>
+                    <?php get_template_part('frontend/views/teaser/video', null, [
+                        'video' => $media,
+                        'mode' => 'inview',
+                        'preload' => 'metadata',
+                    ]); ?>
+                <?php else : ?>
+                    <img src="<?= esc_url($media['src']) ?>" alt="<?= esc_attr($media['alt']) ?>"
+                         width="<?= esc_attr($media['width'] ?? '') ?>" height="<?= esc_attr($media['height'] ?? '') ?>"
+                         loading="lazy" decoding="async">
+                <?php endif; ?>
+            </li>
+        <?php endforeach; ?>
+    </ul>
+</section>
+<?php return; endif; ?>
+
 <section class="project-gallery">
     <?php // Titel trennt die Galerie sichtbar vom Bereich davor (sonst wirkt sie wie ein Teil davon) ?>
     <h2 class="project-subtitle project-subtitle--ruled"><?= format_accent($data['title']) ?></h2>
@@ -11,7 +39,7 @@ $gallery = $data['items'];
         <?php foreach ($gallery as $media) : ?>
             <?php // tabindex: auch mit der Tastatur (Tab) aufklappbar.
                   // strip-item--contain: ganzes Bild zeigen statt füllen (Einstellung am Bild in der Mediathek) ?>
-            <li class="strip-item<?= $media['fit'] === 'contain' ? ' strip-item--contain' : '' ?>" data-strip-item tabindex="0">
+            <li class="strip-item<?= ($contain_all || $media['fit'] === 'contain') ? ' strip-item--contain' : '' ?>" data-strip-item tabindex="0">
                 <?php if ($media['type'] === 'video') : ?>
                     <?php get_template_part('frontend/views/teaser/video', null, [
                         'video' => $media,

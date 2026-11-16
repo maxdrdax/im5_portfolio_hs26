@@ -647,6 +647,58 @@ main[data-page="project"] {
         list-style: none;
     }
 
+    /* Galerie als Raster (Darstellung «Raster», für viele Bilder): gleiches Prinzip wie das Foto-Raster,
+       3 Spalten (Handy 2), feste Zeilenhöhe, Kachelgrösse aus dem Bildformat (Getter) */
+    .project-gallery--grid {
+        --grid-cols: 3;
+        container-type: inline-size;
+
+        @media (max-width: 768px) {
+            --grid-cols: 2;
+        }
+    }
+
+    .gallery-grid {
+        display: grid;
+        grid-template-columns: repeat(var(--grid-cols), minmax(0, 1fr));
+        /* Zeilenhöhe = Spaltenbreite (Inhaltsbreite abzüglich Abstände, geteilt durch die Spalten) */
+        grid-auto-rows: calc((100cqw - (var(--grid-cols) - 1) * var(--space-stack-s)) / var(--grid-cols));
+        grid-auto-flow: dense;
+        gap: var(--space-stack-s);
+        list-style: none;
+    }
+
+    .gallery-tile {
+        overflow: hidden;
+        border-radius: var(--radius);
+
+        img,
+        video {
+            display: block;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        &[data-size="wide"] {
+            grid-column: span 2;
+        }
+
+        &[data-size="tall"] {
+            grid-row: span 2;
+        }
+
+        /* Einpassen: ganzes Bild, freie Fläche dunkel und neutral (wie bei den Streifen) */
+        &.gallery-tile--contain {
+            background-color: color-mix(in srgb, var(--color-white) 6%, var(--color-black));
+
+            img,
+            video {
+                object-fit: contain;
+            }
+        }
+    }
+
     .strip-item {
         position: relative;
         flex: 1 1 0;
@@ -1238,6 +1290,17 @@ mark {
     /* Projektliste: Vorschau 1.5× so gross (410 → 615 px); «Weiterführende Informationen» bleibt kleiner */
     [data-module="projects"] & {
         width: 615px;
+    }
+
+    /* Format der Vorschau pro Link (Feld «Format der Vorschau»): Standard ist Querformat 16:9 */
+    &[data-format="square"] {
+        width: 300px;
+        aspect-ratio: 1;
+    }
+
+    &[data-format="portrait"] {
+        width: 240px;
+        aspect-ratio: 9 / 16;
     }
 
     img,

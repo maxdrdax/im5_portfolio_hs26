@@ -657,7 +657,7 @@ if (!reducedMotion) {
 }
 
 // =====================================================================
-// -> Cursor-Punkt: folgt dem Mauszeiger weich verzögert
+// -> Cursor-Punkt: folgt dem Mauszeiger ohne Verzögerung
 // Nur mit Maus/Trackpad und ohne «Bewegung reduzieren». Der normale Mauszeiger ist dann ausgeblendet
 // (Klasse .has-cursor-dot, CSS). Ohne Punkt (Touch, «Bewegung reduzieren», ohne JS) bleibt er sichtbar.
 // iframes (YouTube/Vimeo im Modul «Video») sind eigene Dokumente: Dort kommen keine Mausbewegungen an, der Punkt
@@ -681,44 +681,15 @@ if (canHover && !reducedMotion) {
     // inkl. Elemente, die per Tab erreichbar sind (tabindex="0"), z. B. die Bilder der Galerie:
     // keine Links, aber interaktiv (Hover/Fokus klappt auf)
     const INTERACTIVE = 'a, button, [role="button"], input, textarea, select, label, [tabindex="0"]';
-    const EASING = 0.18; // Anteil der Distanz pro Frame: kleiner = mehr Verzögerung
 
-    let targetX = 0;
-    let targetY = 0;
-    let currentX = 0;
-    let currentY = 0;
-    let frame = null;
-
-    const animate = () => {
-        currentX += (targetX - currentX) * EASING;
-        currentY += (targetY - currentY) * EASING;
-        dot.style.transform = `translate3d(${currentX}px, ${currentY}px, 0)`;
-
-        // Animation anhalten, wenn der Punkt angekommen ist (spart Leistung)
-        if (Math.abs(targetX - currentX) < 0.1 && Math.abs(targetY - currentY) < 0.1) {
-            frame = null;
-            return;
-        }
-        frame = requestAnimationFrame(animate);
-    };
-
+    // Position direkt setzen (ohne Verzögerung): Der echte Mauszeiger ist ausgeblendet,
+    // jedes Nachziehen würde sich wie Lag anfühlen. Nur Deckkraft und Grösse werden per CSS animiert.
     document.addEventListener('mousemove', (event) => {
-        targetX = event.clientX;
-        targetY = event.clientY;
-
-        // Erste Bewegung: Punkt direkt an die Maus setzen und einblenden
-        if (!dot.classList.contains('is-visible')) {
-            currentX = targetX;
-            currentY = targetY;
-            dot.classList.add('is-visible');
-        }
+        dot.style.transform = `translate3d(${event.clientX}px, ${event.clientY}px, 0)`;
+        dot.classList.add('is-visible');
 
         // Grösser über Links und Buttons
         dot.classList.toggle('is-hover', Boolean(event.target.closest?.(INTERACTIVE)));
-
-        if (!frame) {
-            frame = requestAnimationFrame(animate);
-        }
     });
 
     // Maus verlässt das Fenster: Punkt ausblenden
@@ -729,7 +700,7 @@ if (canHover && !reducedMotion) {
 
 // =====================================================================
 // -> Cursor-Label über den Highlights (modules/projects.php) und der Galerie (pages/project.php)
-// Ersetzt dort den Cursor-Punkt: Pille sitzt mittig auf dem Mauszeiger und folgt ihm weich.
+// Ersetzt dort den Cursor-Punkt: Pille sitzt mittig auf dem Mauszeiger und folgt ihm ohne Verzögerung.
 // Nur mit Maus und auf dem Desktop (Tablet/Handy: Akkordeon ist offen bzw. Galerie zum Wischen).
 // =====================================================================
 document.querySelectorAll('[data-cursor-label]').forEach((label) => {
@@ -767,7 +738,7 @@ document.querySelectorAll('[data-cursor-label]').forEach((label) => {
     };
     area.addEventListener('accordion:step', learn);
 
-    const EASING = reducedMotion ? 1 : 0.25; // Anteil der Distanz pro Frame (1 = ohne Verzögerung)
+    const EASING = 1; // Anteil der Distanz pro Frame (1 = ohne Verzögerung)
     let targetX = 0;
     let targetY = 0;
     let currentX = 0;
@@ -1380,7 +1351,10 @@ const REVEAL_SELECTOR = [
     '[data-page="project"] .project-description',
     '[data-page="project"] .project-role',
     '[data-page="project"] .project-video',
-    '[data-page="project"] .project-gallery',
+    // Streifen-Galerie als Ganzes; Raster-Galerie: Titel und jede Kachel einzeln (nacheinander einblenden)
+    '[data-page="project"] .project-gallery:not(.project-gallery--grid)',
+    '[data-page="project"] .project-gallery--grid .project-subtitle',
+    '[data-page="project"] .gallery-tile',
     // Prototyp: Titel und jeder Prototyp einzeln (nacheinander einblenden)
     '[data-page="project"] .project-prototype .project-subtitle',
     '[data-page="project"] .prototype-item',

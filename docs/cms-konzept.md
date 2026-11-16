@@ -1,4 +1,10 @@
-# CMS-Konzept: Portfolio maxhutmacher.ch (v06)
+# CMS-Konzept: Portfolio maxhutmacher.ch (v09)
+
+> **Ergänzung v09:** Modul `links`: Feld `preview_format` pro Link (select: Querformat / Quadrat / Hochformat).
+
+> **Ergänzung v08:** Modul `gallery` mit Feld `gallery_layout` (select: Streifen / Raster, Standard Streifen). Raster für viele Bilder.
+
+> **Ergänzung v07:** Modul `gallery` mit Checkbox `gallery_contain` («Alle Bilder einpassen»): zeigt die ganze Galerie ohne Zuschnitt, ohne jedes Bild einzeln einzustellen.
 
 > **Ergänzung v06:** Neues Projektmodul `prototype` (Figma-Prototyp: Vorschaubild mit Link zu Figma, ein oder zwei Prototypen). Neues Global `prototype_title`. Nicht im Standardaufbau neuer Projekte (nur bei Bedarf hinzufügen). Externe Links öffnen auf der ganzen Website in einem neuen Tab.
 
@@ -37,8 +43,8 @@ Inhalt unter dem Kopf (Titel, Eckdaten) als Module: verschieben, weglassen, erg�
 | Projektbeschrieb | description | title (text), text (rich_text) |
 | Meine Rolle | role | title (text), text (rich_text), image (image) |
 | Video | video | title (text), url (text, type url) |
-| Galerie | gallery | title (text), gallery (media_gallery: image, video) |
-| Weiterführende Informationen | links | title (text), links (complex: title, source, url, image) |
+| Galerie | gallery | title (text), gallery_layout (select), gallery_contain (checkbox), gallery (media_gallery: image, video) |
+| Weiterführende Informationen | links | title (text), links (complex: title, source, url, image, preview_format) |
 | Figma-Prototyp | prototype | title (text), prototypes (complex, max. 2: label (text), url (text, type url), poster (image), format (select: landscape / portrait)) |
 
 - `title` ist in jedem Modul optional: leer = Standard aus den Globals.
@@ -50,11 +56,13 @@ Inhalt unter dem Kopf (Titel, Eckdaten) als Module: verschieben, weglassen, erg�
 - Rollen-Sektion ist optional: Text und Bild leer = nicht ausgeben.
 - Projektbeschrieb und Meine Rolle im gleichen Raster: Zwischentitel links (1/3), Text rechts (2/3) in einer Spalte (begrenzte Zeilenlänge statt zwei Spalten), Trennlinie darüber, dunkler Seitenhintergrund (kein grüner Block). Bild im Modul `role` optional unter dem Rollentext, Format 3:2. Handy: Titel über dem Text.
 - Zwischentitel (`title` in jedem Modul) sind optional: leer = Standard aus den Globals (dort leer = «Projektbeschrieb», «Meine Rolle», «Video», «Einblicke», «Weiterführende Informationen» bzw. «Prototyp»). Video, Galerie, Links und Prototyp haben einen Zwischentitel mit Linie darüber (Handy ohne Linie), damit sie nicht wie ein Teil von «Meine Rolle» wirken.
+- Format der Hover-Vorschau pro Link: `preview_format` (select: `landscape` 16:9 = Standard / `square` 1:1 / `portrait` 9:16, z. B. für Reels). Gilt für alle Vorschauarten (eigenes Bild, Logo, automatisch geholtes Bild; das Bild füllt die Fläche).
 - Modul `links` (Weiterführende Informationen): Linkliste, standardmässig am Ende der Projektseite, z. B. Festival, Artikel, Making-of. Gestaltung wie die Projektliste (Zeilen mit Trennlinie, Grossbuchstaben, Quelle grau, Pfeil ↗, Hover grün). Externe Links öffnen in einem neuen Tab. Leer = nicht ausgeben.
 - Hover-Vorschau pro Link (wie in der Projektliste, folgt dem Mauszeiger, nur Desktop): eigenes `image`; sonst bei Social-Media-Links (Domain passt zu einem Eintrag in den Globals `socials`) das Icon der Plattform weiss auf grüner Fläche; sonst holt der Server beim Speichern des Projekts das Vorschaubild der Website (Open Graph `og:image`) und legt es in der Mediathek ab (Besucher laden nichts von fremden Servern). Kein Bild = keine Vorschau.
 - `cover_video` ist optional: läuft ohne Ton in Schleife im Hero; im Highlights-Karussell und im Directory startet es beim Hover. `cover` bleibt Vorschaubild und Fallback (Touch-Geräte, «Bewegung reduzieren»).
 - Videos in der Galerie laufen ohne Ton in Schleife, sobald sie sichtbar sind.
 - Darstellung in der Galerie pro Bild/Video: Feld `gallery_fit` direkt an der Datei in der Mediathek (select: `cover` = Füllen, Standard / `contain` = Einpassen). Füllen = Fläche ganz gefüllt, Ränder werden abgeschnitten. Einpassen = ganzes Bild sichtbar (z. B. Moodboard), freie Fläche dunkel und neutral. Gilt überall, wo die Datei in einer Projektgalerie steht; soll dasselbe Bild einmal gefüllt und einmal eingepasst erscheinen, wird es ein zweites Mal hochgeladen. Umsetzung mit WordPress-Hooks (`attachment_fields_to_edit` / `attachment_fields_to_save`), weil `media_gallery` nur IDs speichert und keine Zusatzfelder pro Bild kennt. Verworfen: zweites Feld «Einpassen» im Modul (Bild musste doppelt ausgewählt werden, verwirrend) und Galerie als complex mit einer Zeile pro Bild (kein Mehrfach-Auswählen, Umzug nötig).
+- Galerie-Darstellung `gallery_layout`: «Streifen» (Standard, Akkordeon, ideal für 3 bis 8 Bilder) oder «Raster» (für viele Bilder, z. B. Stills): 3 Spalten (Handy 2), feste Zeilenhöhe wie das Foto-Raster, ohne Filter. Kachelgrösse automatisch aus dem Bildformat (quer = breit 2×1, hoch = hoch 1×2, sonst klein 1×1; Videos klein). Kein Zähler, keine Cursor-Pille. `gallery_contain` und `gallery_fit` gelten auch im Raster. Videos laufen ohne Ton in Schleife, sobald sichtbar.
 - Modul `video` (volle Videos, YouTube/Vimeo): wird per oEmbed eingebettet, standardmässig vor der Galerie; leerer Link = nicht ausgeben.
 - Modul `prototype` (Figma-Prototyp): ein oder zwei Prototypen (`prototypes`, z. B. Handy und Web). Zwei Prototypen stehen ab Tablet nebeneinander und gleich hoch, auf dem Handy untereinander. Ungültige Einträge entfallen, ohne gültigen Eintrag wird das Modul nicht ausgegeben. Umbau (v06): Die ersten Felder `url`, `poster`, `format` direkt im Modul wurden durch `prototypes` ersetzt (einmalig neu eintragen; alte Werte bleiben ungelesen in der Datenbank).
   - Keine Einbettung (entschieden): Pro Prototyp eine Fläche mit `poster` (ohne Bild: dunkle, neutrale Fläche) und unten dem Button «Figma-Prototyp öffnen ↗» (Stil wie der Lebenslauf-Button). Die ganze Fläche ist ein Link und öffnet den Prototyp in Figma in einem neuen Tab. Verworfen: Einbettung als iframe mit Click-to-load und Vollbild (fixe Navigation im Embed abgeschnitten, Buttons im Prototyp auf dem Handy nicht bedienbar, mehr Fehlerquellen).

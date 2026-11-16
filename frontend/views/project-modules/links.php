@@ -30,7 +30,7 @@ $prefix = 'link-' . $data['index'] . '-';
     <div class="directory-preview" data-directory-preview aria-hidden="true">
         <?php foreach ($data['links'] as $index => $link) : ?>
             <?php if (!$link['preview']) { continue; } ?>
-            <div class="preview-item<?= $link['preview_logo'] ? ' preview-item--logo' : '' ?>" data-preview-id="<?= esc_attr($prefix . $index) ?>">
+            <div class="preview-item<?= $link['preview_logo'] ? ' preview-item--logo' : '' ?>" data-format="<?= esc_attr($link['preview_format']) ?>" data-preview-id="<?= esc_attr($prefix . $index) ?>">
                 <img src="<?= esc_url($link['preview']['src']) ?>" alt="" loading="lazy">
             </div>
         <?php endforeach; ?>

@@ -58,6 +58,10 @@ function get_project_modules(int $id): array
                 break;
             case 'gallery':
                 $module['items'] = get_gallery_items($raw['gallery'] ?? []);
+                // Ganze Galerie einpassen (Checkbox im Modul): gilt für alle Bilder, sonst die Einstellung pro Bild
+                $module['contain_all'] = !empty($raw['gallery_contain']);
+                // Darstellung nur aus der Whitelist, sonst Streifen (auch für bestehende Projekte ohne Wert)
+                $module['layout'] = ($raw['gallery_layout'] ?? '') === 'grid' ? 'grid' : 'strip';
                 $show = !empty($module['items']);
                 break;
             case 'links':
@@ -96,6 +100,17 @@ function get_gallery_items(array $ids): array
         if ($media) {
             // Darstellung aus der Mediathek (backend/init/_gallery-fit.php): nur «contain» oder Standard «cover»
             $media['fit'] = get_post_meta((int) $media_id, 'gallery_fit', true) === 'contain' ? 'contain' : 'cover';
+            // Kachelgrösse im Raster aus dem Bildformat: quer = breit, hoch = hoch, sonst (auch Video) klein
+            $w = (int) ($media['width'] ?? 0);
+            $h = (int) ($media['height'] ?? 0);
+            $media['size'] = 'small';
+            if ($w > 0 && $h > 0) {
+                if ($w / $h > 1.15) {
+                    $media['size'] = 'wide';
+                } elseif ($h / $w > 1.15) {
+                    $media['size'] = 'tall';
+                }
+            }
         }
         return $media;
     }, $ids);
@@ -166,6 +181,8 @@ function get_project_links(int $id, array $rows): array
             'preview' => $own ?: $logo ?: get_media_by_id($auto_previews[md5($url)] ?? 0, 'm'),
             // Logo wird auf grüner Fläche gezeigt statt bildfüllend
             'preview_logo' => (bool) $logo,
+            // Format der Hover-Vorschau nur aus der Whitelist, sonst Querformat (auch für bestehende Links)
+            'preview_format' => in_array($link['preview_format'] ?? '', ['square', 'portrait'], true) ? $link['preview_format'] : 'landscape',
         ];
     }
     return $links;
