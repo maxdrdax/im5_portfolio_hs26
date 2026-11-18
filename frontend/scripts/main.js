@@ -1212,12 +1212,164 @@ if (siteHeader && menuToggle && menu) {
         });
     };
 
+    // Farbverlauf-Hintergrund als WebGL-Shader (nur wenn das Menü ohne Bild/Video ist, siehe header.php).
+    // Idee «Domain Warping»: Rauschen wird mehrfach mit sich selbst verzerrt, das ergibt fliessende,
+    // seidige Bänder. Läuft nur, solange das Menü offen ist; Fallback bei fehlendem WebGL: CSS-Bänder.
+    const glow = menu.querySelector('.menu-glow');
+    const GLOW_SCALE = 0.5; // halbe Auflösung genügt (weiche Formen) und schont Handy-Akkus
+    let glowGl = null;
+    let glowTime = null;
+    let glowFrame = null;
+    let glowElapsed = 0;
+    let glowLast = 0;
+
+    const GLOW_VERTEX = 'attribute vec2 p; void main() { gl_Position = vec4(p, 0.0, 1.0); }';
+    const GLOW_FRAGMENT = `
+        precision mediump float;
+        uniform vec2 u_res;
+        uniform float u_time;
+
+        float hash(vec2 p) { return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }
+
+        float noise(vec2 p) {
+            vec2 i = floor(p);
+            vec2 f = fract(p);
+            f = f * f * (3.0 - 2.0 * f);
+            return mix(mix(hash(i), hash(i + vec2(1.0, 0.0)), f.x),
+                       mix(hash(i + vec2(0.0, 1.0)), hash(i + vec2(1.0, 1.0)), f.x), f.y);
+        }
+
+        // Fraktales Rauschen: mehrere Lagen, jede feiner und schwächer
+        float fbm(vec2 p) {
+            float v = 0.0;
+            float a = 0.5;
+            for (int i = 0; i < 4; i++) {
+                v += a * noise(p);
+                p = p * 2.03 + vec2(1.7, 9.2);
+                a *= 0.5;
+            }
+            return v;
+        }
+
+        void main() {
+            vec2 uv = gl_FragCoord.xy / u_res.y * 1.1;
+            float t = u_time * 0.045;
+
+            // zweimal verzerren → fliessende Bänder
+            vec2 q = vec2(fbm(uv + vec2(0.0, t)), fbm(uv + vec2(5.2, 1.3) - t));
+            vec2 r = vec2(fbm(uv + 3.0 * q + vec2(1.7, 9.2) + t * 1.4),
+                          fbm(uv + 3.0 * q + vec2(8.3, 2.8) - t));
+            float f = fbm(uv + 3.0 * r);
+
+            // Farben: dunkler Grund (#1D1C1C) → Grün → helle, glasige Kante
+            vec3 base = vec3(0.114, 0.110, 0.110);
+            vec3 deep = vec3(0.118, 0.255, 0.165);
+            vec3 accent = vec3(0.392, 0.616, 0.427);
+            vec3 light = vec3(0.78, 0.92, 0.82);
+
+            vec3 col = mix(base, deep, smoothstep(0.30, 0.55, f));
+            col = mix(col, accent, smoothstep(0.48, 0.75, f) * 0.85);
+            // helle Bereiche: dort, wo die Bänder am dichtesten sind, geht das Grün ins Helle über
+            col = mix(col, light, smoothstep(0.60, 0.85, f) * 0.60);
+            // schmale helle Kante entlang der Bänder (wirkt wie Glas)
+            float edge = pow(max(0.0, 1.0 - abs(f - 0.62) * 6.0), 3.0);
+            col += light * edge * 0.40;
+            gl_FragColor = vec4(col, 1.0);
+        }
+    `;
+
+    const glowInit = () => {
+        const canvas = document.createElement('canvas');
+        canvas.className = 'menu-glow-canvas';
+        const gl = canvas.getContext('webgl', { antialias: false, alpha: false, powerPreference: 'low-power' });
+        if (!gl) {
+            return false;
+        }
+        const compile = (type, source) => {
+            const shader = gl.createShader(type);
+            gl.shaderSource(shader, source);
+            gl.compileShader(shader);
+            return gl.getShaderParameter(shader, gl.COMPILE_STATUS) ? shader : null;
+        };
+        const vertex = compile(gl.VERTEX_SHADER, GLOW_VERTEX);
+        const fragment = compile(gl.FRAGMENT_SHADER, GLOW_FRAGMENT);
+        if (!vertex || !fragment) {
+            return false;
+        }
+        const program = gl.createProgram();
+        gl.attachShader(program, vertex);
+        gl.attachShader(program, fragment);
+        gl.linkProgram(program);
+        if (!gl.getProgramParameter(program, gl.LINK_STATUS)) {
+            return false;
+        }
+        gl.useProgram(program);
+
+        // ein Rechteck über den ganzen Bildschirm (zwei Dreiecke)
+        gl.bindBuffer(gl.ARRAY_BUFFER, gl.createBuffer());
+        gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, 1, -1, -1, 1, 1, 1]), gl.STATIC_DRAW);
+        const position = gl.getAttribLocation(program, 'p');
+        gl.enableVertexAttribArray(position);
+        gl.vertexAttribPointer(position, 2, gl.FLOAT, false, 0, 0);
+
+        glowGl = { canvas, gl, res: gl.getUniformLocation(program, 'u_res') };
+        glowTime = gl.getUniformLocation(program, 'u_time');
+        glow.append(canvas);
+        // CSS-Bänder werden nicht mehr gebraucht (spart Rechenzeit)
+        glow.classList.add('is-webgl');
+        return true;
+    };
+
+    const glowDraw = () => {
+        const { canvas, gl, res } = glowGl;
+        const width = Math.max(1, Math.round(glow.clientWidth * GLOW_SCALE));
+        const height = Math.max(1, Math.round(glow.clientHeight * GLOW_SCALE));
+        if (canvas.width !== width || canvas.height !== height) {
+            canvas.width = width;
+            canvas.height = height;
+            gl.viewport(0, 0, width, height);
+        }
+        gl.uniform2f(res, width, height);
+        gl.uniform1f(glowTime, glowElapsed);
+        gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+    };
+
+    const glowLoop = (now) => {
+        glowElapsed += (now - glowLast) / 1000;
+        glowLast = now;
+        glowDraw();
+        glowFrame = requestAnimationFrame(glowLoop);
+    };
+
+    const setGlow = (running) => {
+        if (!glow) {
+            return;
+        }
+        if (running) {
+            if (!glowGl && !glowInit()) {
+                return;
+            }
+            if (reducedMotion) {
+                // «Bewegung reduzieren»: ein ruhiges Standbild, keine Animation
+                glowElapsed = 40;
+                glowDraw();
+            } else if (glowFrame === null) {
+                glowLast = performance.now();
+                glowFrame = requestAnimationFrame(glowLoop);
+            }
+        } else if (glowFrame !== null) {
+            cancelAnimationFrame(glowFrame);
+            glowFrame = null;
+        }
+    };
+
     // instant: ohne Animation schliessen (z. B. «Zurück» im Browser)
     const setMenu = (open, { returnFocus = true, instant = false } = {}) => {
         if (open === isOpen) {
             return;
         }
         isOpen = open;
+        setGlow(open);
         if (open) {
             loadImages();
         }

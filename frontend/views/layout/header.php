@@ -41,6 +41,15 @@ if ($menu_bg) {
         ];
     }
 }
+
+// Ist nirgends ein Bild oder Video gesetzt, zeigt das Overlay stattdessen den Farbverlauf (folgt der Maus)
+$has_media = false;
+foreach ($backgrounds as $bg) {
+    if (!empty($bg['image']['src']) || !empty($bg['video'])) {
+        $has_media = true;
+        break;
+    }
+}
 ?>
 
 <header data-layout="header">
@@ -84,9 +93,17 @@ if ($menu_bg) {
 <?php if (!empty($menu)) : ?>
     <?php // inert: Geschlossen ist das Overlay für Tab-Taste und Screenreader nicht erreichbar (main.js entfernt es beim Öffnen) ?>
     <?php // data-menu-fixed: gemeinsamer Hintergrund, der beim Hover nicht wechselt (main.js) ?>
-    <div class="menu-overlay" id="menu-overlay" data-menu<?php if ($menu_bg) : ?> data-menu-fixed<?php endif; ?> inert>
+    <div class="menu-overlay" id="menu-overlay" data-menu<?php if ($menu_bg) : ?> data-menu-fixed<?php endif; ?><?php if (!$has_media) : ?> data-menu-glow<?php endif; ?> inert>
         <?php // Hintergründe: gemeinsam oder einer pro Menüpunkt (Crossfade per CSS). Bilder laden erst beim ersten Öffnen (data-src). ?>
         <div class="menu-backgrounds" aria-hidden="true">
+            <?php if (!$has_media) : ?>
+                <?php // Farbverlauf: drei weiche Farbflächen, die der Maus verzögert folgen (main.js, nur mit Maus) ?>
+                <div class="menu-glow">
+                    <span class="menu-glow-blob menu-glow-blob--1"></span>
+                    <span class="menu-glow-blob menu-glow-blob--2"></span>
+                    <span class="menu-glow-blob menu-glow-blob--3"></span>
+                </div>
+            <?php endif; ?>
             <?php foreach ($backgrounds as $bg) : ?>
                 <div class="menu-bg<?php if ($bg['active']) : ?> is-active<?php endif; ?>" data-menu-bg="<?= esc_attr($bg['id']) ?>">
                     <?php if (!empty($bg['image']['src'])) : ?>
