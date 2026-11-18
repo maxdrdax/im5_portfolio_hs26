@@ -52,6 +52,9 @@ foreach ($backgrounds as $bg) {
 }
 ?>
 
+<?php // Punkteraster im Hintergrund jeder Seite (nur Dekoration, reines CSS: .page-dots in main.css) ?>
+<div class="page-dots" aria-hidden="true"></div>
+
 <header data-layout="header">
     <a class="logo-link<?php if ($signet) : ?> has-signet<?php endif; ?>" href="<?= esc_url(home_url('/')) ?>">
         <?php // Schriftzug: Name des Links (auch für Screenreader, wenn auf dem Handy das Signet sichtbar ist) ?>

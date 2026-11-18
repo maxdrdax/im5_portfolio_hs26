@@ -31,6 +31,15 @@
     --content-width: 1280px;
     /* seitlicher Abstand, der den Inhalt auf 1280 px zentriert */
     --page-inline: max(var(--gap-around), calc((100% - var(--content-width)) / 2));
+    /* Layout-Raster (Figma): 12 Spalten à 84.67 px + 11 Gutter à 24 px = 1280 px.
+       Gutter = gleicher fliessender Abstand wie in den Rastern (16 px Handy bis 24 px Desktop). */
+    --grid-columns: 12;
+    --grid-gutter: var(--space-stack-s);
+    /* Punkteraster (.page-dots): 2 Punkte pro Spalte (Spalte + Gutter) → jeder 2. Punkt auf einem Spaltenanfang */
+    --dot-divisions: 2;
+    /* 2 px, neutrales Grau (ca. #3E3D3D): klar erkennbar, aber ruhig (Referenz: Aceternity «Background with Dots») */
+    --dot-size: 2px;
+    --dot-color: color-mix(in srgb, var(--color-white) 24%, var(--color-black));
     --header-height: 100px;
     /* Admin-Leiste von WordPress (nur eingeloggt); WordPress setzt diese Variable selbst, sonst 0 */
     --admin-bar-height: var(--wp-admin--admin-bar--height, 0px);
@@ -63,6 +72,13 @@
     --tracking-caps: .04em;
     /* maximale Zeilenlänge für Fliesstext: ca. 65–75 Zeichen */
     --measure: 68ch;
+}
+
+/* Handy: 4 statt 12 Spalten (die Module sind dort einspaltig, 12 Spalten gäben ein zu dichtes Punkteraster) */
+@media (max-width: 768px) {
+    :root {
+        --grid-columns: 4;
+    }
 }
 
 /* Markierter Text (z. B. beim Kopieren): halbtransparentes Grün wie das Standard-Blau der Browser.
@@ -306,7 +322,7 @@ main[data-page="project"] {
 [data-page] {
     width: 100%;
     min-height: 100%;
-    background-color: var(--color-black);
+    /* kein eigener Hintergrund: Die Farbe kommt vom body, darüber liegt das Punkteraster (.page-dots) */
     color: var(--color-white);
 }
 
@@ -814,6 +830,66 @@ main[data-page="project"] {
     }
 }
 
+/* =====================================================================
+   Punkteraster im Hintergrund jeder Seite (Element .page-dots in header.php).
+   Fix im Bildschirm: Der Inhalt scrollt darüber, Punkte und Fade stehen still.
+   ===================================================================== */
+.page-dots {
+    position: fixed;
+    inset: 0;
+    /* hinter dem ganzen Inhalt, aber über der Hintergrundfarbe des body */
+    z-index: -1;
+    pointer-events: none;
+    /* Container: 100cqi = Breite dieses Elements = Fensterbreite OHNE Scrollbar.
+       100vw zählt die Scrollbar mit, das Raster würde gegenüber dem Inhalt um ein paar Pixel verrutschen.
+       (Nicht auf body: container-type macht das Element zum Bezugsrahmen für position: fixed
+       und würde Header und Menü verschieben.) */
+    container-type: inline-size;
+    /* Inhalt beeinflusst Grösse und Darstellung der Ebene nie: Browser muss sie beim Scrollen nicht neu berechnen */
+    contain: strict;
+
+    /* Kontrastmodus (z. B. Windows) und Drucken: keine Dekoration */
+    @media (forced-colors: active), print {
+        display: none;
+    }
+}
+
+.page-dots::before,
+.page-dots::after {
+    position: absolute;
+    content: "";
+}
+
+/* Punkte: über den ganzen Bildschirm, ausgerichtet am linken Wrapper-Rand (von dort aus in beide Richtungen) */
+.page-dots::before {
+    /* Wrapper-Breite wie im Layout: max. 1280 px, sonst Fensterbreite minus Seitenrand links und rechts */
+    --dot-wrapper: min(var(--content-width), 100cqi - 2 * var(--gap-around));
+    /* Spaltenabstand = Spalte + Gutter. Aus «n Spalten + (n − 1) Gutter = Wrapper» folgt:
+       Spalte + Gutter = (Wrapper + Gutter) / n. Geteilt durch --dot-divisions (2) → an jedem Spaltenanfang
+       liegt ein Punkt, dazwischen einer in der Mitte. Desktop: (1280 + 24) / 12 / 2 = 54.33 px,
+       Handy (4 Spalten, 390 px breit): (350 + 16) / 4 / 2 = 45.75 px */
+    --dot-pitch: calc((var(--dot-wrapper) + var(--grid-gutter)) / var(--grid-columns) / var(--dot-divisions));
+    /* linker Wrapper-Rand wie --page-inline, aber mit cqi statt % gerechnet
+       (in background-position bedeutet % etwas anderes als im Layout) */
+    --dot-left: max(var(--gap-around), (100cqi - var(--content-width)) / 2);
+    inset: 0;
+    /* ein Punkt pro Kachel, oben links in der Kachel. Weicher Rand (+0.5 px), damit Punkte auf halben Pixeln
+       nicht ausfransen (der Abstand ist nicht ganzzahlig, z. B. 54.33 px) */
+    background-image: radial-gradient(circle at calc(var(--dot-size) / 2) calc(var(--dot-size) / 2),
+        var(--dot-color) calc(var(--dot-size) / 2), transparent calc(var(--dot-size) / 2 + .5px));
+    background-size: var(--dot-pitch) var(--dot-pitch);
+    /* Muster beginnt am Wrapper-Rand und wiederholt sich von dort nach links und rechts bis zum Fensterrand.
+       Minus ein halber Punkt: Die Mitte des Punkts liegt genau auf dem Spaltenanfang */
+    background-position: calc(var(--dot-left) - var(--dot-size) / 2) calc(var(--dot-size) / -2);
+}
+
+/* Fade: Nur ein kleiner Kern in der Bildschirmmitte ist frei (bis 20 %), danach werden die Punkte
+   gleichmässig sichtbar bis zu den Ecken (wie die Maske bei Aceternity) */
+.page-dots::after {
+    inset: 0;
+    background-image: radial-gradient(ellipse at center, var(--color-black) 20%, transparent 100%);
+}
+
 /* Styling of all available module components. */
 [data-module] {
     overflow: clip;
@@ -821,7 +897,7 @@ main[data-page="project"] {
     width: 100%;
     /* Abstand zwischen Modulen = Sektionsabstand (56–96 px, fliessend) */
     padding: var(--space-section) var(--page-inline) 0;
-    background-color: var(--color-black);
+    /* kein eigener Hintergrund, damit das Punkteraster (.page-dots) durchscheint */
     color: var(--color-white);
     /* Sticky Header überdeckt sonst den Anfang beim Scrollen */
     scroll-margin-top: var(--header-height);
@@ -1160,7 +1236,7 @@ mark {
     &[data-layout-type="list"] {
         display: grid;
         grid-template-columns: minmax(0, 302fr) minmax(0, 954fr);
-        column-gap: var(--space-stack-s);
+        column-gap: var(--grid-gutter);
         align-items: start;
 
         .module-title {
@@ -1542,7 +1618,7 @@ mark {
 [data-module="experience"] {
     display: grid;
     grid-template-columns: minmax(0, 410.67fr) minmax(0, 845.33fr);
-    column-gap: var(--space-stack-s);
+    column-gap: var(--grid-gutter);
     align-items: start;
 }
 
