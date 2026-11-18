@@ -1216,7 +1216,14 @@ if (siteHeader && menuToggle && menu) {
     // Idee «Domain Warping»: Rauschen wird mehrfach mit sich selbst verzerrt, das ergibt fliessende,
     // seidige Bänder. Läuft nur, solange das Menü offen ist; Fallback bei fehlendem WebGL: CSS-Bänder.
     const glow = menu.querySelector('.menu-glow');
-    const GLOW_SCALE = 0.5; // halbe Auflösung genügt (weiche Formen) und schont Handy-Akkus
+    // Auflösung: halbe Gerätepixel (weiche Formen brauchen nicht mehr), höchstens 1.2 Mio. Pixel,
+    // damit grosse Bildschirme und Handy-Akkus geschont werden
+    const GLOW_MAX_PIXELS = 1200000;
+    const glowScale = () => {
+        const scale = Math.min(window.devicePixelRatio || 1, 2) * 0.5;
+        const area = glow.clientWidth * glow.clientHeight * scale * scale;
+        return area > GLOW_MAX_PIXELS ? scale * Math.sqrt(GLOW_MAX_PIXELS / area) : scale;
+    };
     let glowGl = null;
     let glowTime = null;
     let glowFrame = null;
@@ -1225,11 +1232,22 @@ if (siteHeader && menuToggle && menu) {
 
     const GLOW_VERTEX = 'attribute vec2 p; void main() { gl_Position = vec4(p, 0.0, 1.0); }';
     const GLOW_FRAGMENT = `
+        // highp, wo vorhanden: mediump (16 Bit) gibt auf Handys bei der feinsten Rauschlage sichtbare Blöcke
+        #ifdef GL_FRAGMENT_PRECISION_HIGH
+        precision highp float;
+        #else
         precision mediump float;
+        #endif
         uniform vec2 u_res;
         uniform float u_time;
+        uniform vec3 u_base; // Seitenhintergrund aus CSS (--color-black)
 
-        float hash(vec2 p) { return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }
+        // Zufallswert pro Rasterpunkt, ohne sin() (sin ist auf manchen GPUs ungenau → Flimmern)
+        float hash(vec2 p) {
+            vec3 p3 = fract(vec3(p.xyx) * 0.1031);
+            p3 += dot(p3, p3.yzx + 33.33);
+            return fract((p3.x + p3.y) * p3.z);
+        }
 
         float noise(vec2 p) {
             vec2 i = floor(p);
@@ -1261,19 +1279,22 @@ if (siteHeader && menuToggle && menu) {
                           fbm(uv + 3.0 * q + vec2(8.3, 2.8) - t));
             float f = fbm(uv + 3.0 * r);
 
-            // Farben: dunkler Grund (#1D1C1C) → Grün → helle, glasige Kante
-            vec3 base = vec3(0.114, 0.110, 0.110);
+            // Farben: Seitenhintergrund → dunkles Grün → Grün → helle, glasige Kante
             vec3 deep = vec3(0.118, 0.255, 0.165);
             vec3 accent = vec3(0.392, 0.616, 0.427);
             vec3 light = vec3(0.78, 0.92, 0.82);
 
-            vec3 col = mix(base, deep, smoothstep(0.30, 0.55, f));
-            col = mix(col, accent, smoothstep(0.48, 0.75, f) * 0.85);
-            // helle Bereiche: dort, wo die Bänder am dichtesten sind, geht das Grün ins Helle über
-            col = mix(col, light, smoothstep(0.60, 0.85, f) * 0.60);
+            // f liegt meist um 0.5: bis etwa 0.53 bleibt der reine Hintergrund (ca. 65 % der Fläche dunkel),
+            // darüber wird es grün
+            vec3 col = mix(u_base, deep, smoothstep(0.53, 0.61, f));
+            col = mix(col, accent, smoothstep(0.58, 0.80, f) * 0.75);
+            // helle Bereiche: nur ganz an den dichtesten Stellen geht das Grün ins Helle über
+            col = mix(col, light, smoothstep(0.72, 0.90, f) * 0.40);
             // schmale helle Kante entlang der Bänder (wirkt wie Glas)
-            float edge = pow(max(0.0, 1.0 - abs(f - 0.62) * 6.0), 3.0);
-            col += light * edge * 0.40;
+            float edge = pow(max(0.0, 1.0 - abs(f - 0.68) * 6.0), 3.0);
+            col += light * edge * 0.30;
+            // Dithering: winziges Rauschen pro Pixel verhindert sichtbare Farbstufen in den dunklen Verläufen
+            col += (hash(gl_FragCoord.xy) - 0.5) / 255.0;
             gl_FragColor = vec4(col, 1.0);
         }
     `;
@@ -1314,6 +1335,27 @@ if (siteHeader && menuToggle && menu) {
 
         glowGl = { canvas, gl, res: gl.getUniformLocation(program, 'u_res') };
         glowTime = gl.getUniformLocation(program, 'u_time');
+
+        // Grundfarbe aus der CSS-Variable --color-black lesen (z. B. "#1D1C1C" → 0–1 pro Kanal),
+        // damit der Verlauf immer exakt im Seitenhintergrund ausläuft
+        const hex = getComputedStyle(document.documentElement).getPropertyValue('--color-black').trim();
+        const rgb = /^#[0-9a-f]{6}$/i.test(hex)
+            ? [1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16) / 255)
+            : [0.114, 0.110, 0.110];
+        gl.uniform3f(gl.getUniformLocation(program, 'u_base'), ...rgb);
+
+        // Entzieht der Browser die Grafikkarte (z. B. Handy im Hintergrund), zurück auf die CSS-Bänder
+        canvas.addEventListener('webglcontextlost', (event) => {
+            event.preventDefault();
+            if (glowFrame !== null) {
+                cancelAnimationFrame(glowFrame);
+                glowFrame = null;
+            }
+            glowGl = false;
+            canvas.remove();
+            glow.classList.remove('is-webgl');
+        });
+
         glow.append(canvas);
         // CSS-Bänder werden nicht mehr gebraucht (spart Rechenzeit)
         glow.classList.add('is-webgl');
@@ -1322,8 +1364,9 @@ if (siteHeader && menuToggle && menu) {
 
     const glowDraw = () => {
         const { canvas, gl, res } = glowGl;
-        const width = Math.max(1, Math.round(glow.clientWidth * GLOW_SCALE));
-        const height = Math.max(1, Math.round(glow.clientHeight * GLOW_SCALE));
+        const scale = glowScale();
+        const width = Math.max(1, Math.round(glow.clientWidth * scale));
+        const height = Math.max(1, Math.round(glow.clientHeight * scale));
         if (canvas.width !== width || canvas.height !== height) {
             canvas.width = width;
             canvas.height = height;
@@ -1346,7 +1389,12 @@ if (siteHeader && menuToggle && menu) {
             return;
         }
         if (running) {
+            // glowGl === false: WebGL fehlt oder ist verloren → CSS-Bänder bleiben, kein neuer Versuch
+            if (glowGl === false) {
+                return;
+            }
             if (!glowGl && !glowInit()) {
+                glowGl = false;
                 return;
             }
             if (reducedMotion) {
@@ -1354,6 +1402,8 @@ if (siteHeader && menuToggle && menu) {
                 glowElapsed = 40;
                 glowDraw();
             } else if (glowFrame === null) {
+                // sofort ein Bild zeichnen, sonst ist der erste Frame schwarz
+                glowDraw();
                 glowLast = performance.now();
                 glowFrame = requestAnimationFrame(glowLoop);
             }
@@ -1369,9 +1419,9 @@ if (siteHeader && menuToggle && menu) {
             return;
         }
         isOpen = open;
-        setGlow(open);
         if (open) {
             loadImages();
+            setGlow(true);
         }
 
         // aria-expanded steuert auch die Beschriftung «Menü»/«Schliessen» und das X (CSS)
@@ -1391,6 +1441,7 @@ if (siteHeader && menuToggle && menu) {
         } else if (instant) {
             menu.classList.remove('is-open', 'is-closing');
             document.body.classList.remove('menu-open');
+            setGlow(false);
         } else {
             // Schliessen in zwei Phasen: 1. Menüpunkte fahren hinaus, 2. Vorhang schliesst
             menu.classList.add('is-closing');
@@ -1400,6 +1451,8 @@ if (siteHeader && menuToggle && menu) {
                 //    (sonst blitzt die Header-Linie über dem noch sichtbaren Overlay auf)
                 closeTimer = setTimeout(() => {
                     document.body.classList.remove('menu-open');
+                    // Verlauf erst jetzt anhalten: bis hier war er hinter dem Vorhang noch sichtbar
+                    setGlow(false);
                 }, reducedMotion ? 0 : menuDuration());
             }, MENU_CLOSE_DELAY);
         }
