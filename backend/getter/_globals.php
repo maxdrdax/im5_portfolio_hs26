@@ -29,6 +29,7 @@ function get_global_project_titles(): array
         'video' => carbon_get_theme_option('video_title') ?: 'Video',
         'gallery' => carbon_get_theme_option('gallery_title') ?: 'Einblicke',
         'links' => carbon_get_theme_option('links_title') ?: 'Weiterführende Informationen',
+        'prototype' => carbon_get_theme_option('prototype_title') ?: 'Prototyp',
     ];
 }
 

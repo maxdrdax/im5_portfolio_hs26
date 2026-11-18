@@ -320,6 +320,95 @@ html {
     }
 }
 
+/* Farbverlauf statt Bild/Video: drei breite, weiche Wellenbänder auf dunklem Grund.
+   Sie driften von selbst (nur transform → läuft flüssig, auch auf dem Handy).
+   Jedes Band hat eine andere Dauer und Richtung, so entsteht ein wellenförmiges, nie gleiches Muster. */
+.menu-glow {
+    position: absolute;
+    inset: 0;
+    overflow: hidden;
+    background-color: var(--color-black);
+}
+
+/* WebGL-Canvas (main.js) füllt die Fläche; ist er da, entfallen die CSS-Bänder */
+.menu-glow-canvas {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+}
+
+.menu-glow.is-webgl .menu-glow-blob {
+    display: none;
+}
+
+/* Fallback ohne WebGL: Jedes Band ist eine breite Ellipse, die um einen versetzten Drehpunkt kreist (rotate, linear, endlos)
+   und dabei sanft «atmet» (scale, ease-in-out). Die Drehung läuft mit gleichbleibendem Tempo,
+   darum gibt es keinen Stillstand; die Ränder der Ellipsen ziehen als Wellen durchs Bild. */
+.menu-glow-blob {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 150vmax;
+    height: 64vmax;
+    margin: -32vmax 0 0 -75vmax;
+    border-radius: 50%;
+    pointer-events: none;
+    will-change: rotate, scale;
+    animation:
+        menu-spin 50s linear infinite,
+        menu-breathe 14s ease-in-out infinite alternate;
+}
+
+.menu-glow-blob--1 {
+    opacity: 0.6;
+    background: radial-gradient(ellipse at center, var(--color-accent) 0%, transparent 68%);
+    transform-origin: 70% 40%;
+}
+
+.menu-glow-blob--2 {
+    opacity: 0.4;
+    background: radial-gradient(ellipse at center, color-mix(in srgb, var(--color-accent) 55%, var(--color-white)) 0%, transparent 68%);
+    transform-origin: 30% 60%;
+    animation-duration: 68s, 19s;
+    animation-direction: reverse, alternate;
+}
+
+.menu-glow-blob--3 {
+    opacity: 0.5;
+    background: radial-gradient(ellipse at center, color-mix(in srgb, var(--color-accent) 40%, var(--color-black)) 0%, transparent 68%);
+    transform-origin: 50% 25%;
+    animation-duration: 85s, 23s;
+    animation-delay: -20s, -6s;
+}
+
+@keyframes menu-spin {
+    to {
+        rotate: 360deg;
+    }
+}
+
+@keyframes menu-breathe {
+    from {
+        scale: 1 0.8;
+    }
+
+    to {
+        scale: 1.1 1.25;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .menu-glow-blob {
+        animation: none;
+    }
+}
+
+/* leere Menü-Hintergründe: im Glow-Modus keine dunkle Schicht darüber */
+[data-menu-glow] .menu-bg {
+    display: none;
+}
+
 .menu-nav {
     position: relative;
     align-self: center;

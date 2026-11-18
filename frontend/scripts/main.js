@@ -46,7 +46,7 @@ document.querySelectorAll('[data-filter-group]').forEach((group) => {
         });
     });
 
-    // Beim Laden den Standardfilter anwenden (Button, der im HTML aktiv ist)
+    // Beim Laden den Standardfilter anwenden (Button, der im HTML aktiv ist)$
     const defaultButton = group.querySelector('[data-filter][aria-pressed="true"]');
     if (defaultButton) {
         applyFilter(defaultButton);
@@ -657,57 +657,39 @@ if (!reducedMotion) {
 }
 
 // =====================================================================
-// -> Cursor-Punkt: folgt dem Mauszeiger weich verzögert
-// Nur mit Maus/Trackpad und ohne «Bewegung reduzieren». Der normale Mauszeiger bleibt sichtbar.
+// -> Cursor-Punkt: folgt dem Mauszeiger ohne Verzögerung
+// Nur mit Maus/Trackpad und ohne «Bewegung reduzieren». Der normale Mauszeiger ist dann ausgeblendet
+// (Klasse .has-cursor-dot, CSS). Ohne Punkt (Touch, «Bewegung reduzieren», ohne JS) bleibt er sichtbar.
+// iframes (YouTube/Vimeo im Modul «Video») sind eigene Dokumente: Dort kommen keine Mausbewegungen an, der Punkt
+// würde am Rand stehen bleiben. Darum blendet er über iframes aus; drinnen zeigt der Anbieter seinen Zeiger.
 // =====================================================================
 if (canHover && !reducedMotion) {
     const dot = document.createElement('div');
     dot.className = 'cursor-dot';
     dot.setAttribute('aria-hidden', 'true');
     document.body.append(dot);
+    document.documentElement.classList.add('has-cursor-dot');
+
+    // Maus fährt in ein iframe: Punkt ausblenden. Zurück auf der Seite blendet ihn mousemove wieder ein.
+    document.addEventListener('mouseover', (event) => {
+        if (event.target.tagName === 'IFRAME') {
+            dot.classList.remove('is-visible');
+        }
+    });
 
     // Elemente, über denen der Punkt grösser wird
     // inkl. Elemente, die per Tab erreichbar sind (tabindex="0"), z. B. die Bilder der Galerie:
     // keine Links, aber interaktiv (Hover/Fokus klappt auf)
     const INTERACTIVE = 'a, button, [role="button"], input, textarea, select, label, [tabindex="0"]';
-    const EASING = 0.18; // Anteil der Distanz pro Frame: kleiner = mehr Verzögerung
 
-    let targetX = 0;
-    let targetY = 0;
-    let currentX = 0;
-    let currentY = 0;
-    let frame = null;
-
-    const animate = () => {
-        currentX += (targetX - currentX) * EASING;
-        currentY += (targetY - currentY) * EASING;
-        dot.style.transform = `translate3d(${currentX}px, ${currentY}px, 0)`;
-
-        // Animation anhalten, wenn der Punkt angekommen ist (spart Leistung)
-        if (Math.abs(targetX - currentX) < 0.1 && Math.abs(targetY - currentY) < 0.1) {
-            frame = null;
-            return;
-        }
-        frame = requestAnimationFrame(animate);
-    };
-
+    // Position direkt setzen (ohne Verzögerung): Der echte Mauszeiger ist ausgeblendet,
+    // jedes Nachziehen würde sich wie Lag anfühlen. Nur Deckkraft und Grösse werden per CSS animiert.
     document.addEventListener('mousemove', (event) => {
-        targetX = event.clientX;
-        targetY = event.clientY;
-
-        // Erste Bewegung: Punkt direkt an die Maus setzen und einblenden
-        if (!dot.classList.contains('is-visible')) {
-            currentX = targetX;
-            currentY = targetY;
-            dot.classList.add('is-visible');
-        }
+        dot.style.transform = `translate3d(${event.clientX}px, ${event.clientY}px, 0)`;
+        dot.classList.add('is-visible');
 
         // Grösser über Links und Buttons
         dot.classList.toggle('is-hover', Boolean(event.target.closest?.(INTERACTIVE)));
-
-        if (!frame) {
-            frame = requestAnimationFrame(animate);
-        }
     });
 
     // Maus verlässt das Fenster: Punkt ausblenden
@@ -718,7 +700,7 @@ if (canHover && !reducedMotion) {
 
 // =====================================================================
 // -> Cursor-Label über den Highlights (modules/projects.php) und der Galerie (pages/project.php)
-// Ersetzt dort den Cursor-Punkt: Pille sitzt mittig auf dem Mauszeiger und folgt ihm weich.
+// Ersetzt dort den Cursor-Punkt: Pille sitzt mittig auf dem Mauszeiger und folgt ihm ohne Verzögerung.
 // Nur mit Maus und auf dem Desktop (Tablet/Handy: Akkordeon ist offen bzw. Galerie zum Wischen).
 // =====================================================================
 document.querySelectorAll('[data-cursor-label]').forEach((label) => {
@@ -756,7 +738,7 @@ document.querySelectorAll('[data-cursor-label]').forEach((label) => {
     };
     area.addEventListener('accordion:step', learn);
 
-    const EASING = reducedMotion ? 1 : 0.25; // Anteil der Distanz pro Frame (1 = ohne Verzögerung)
+    const EASING = 1; // Anteil der Distanz pro Frame (1 = ohne Verzögerung)
     let targetX = 0;
     let targetY = 0;
     let currentX = 0;
@@ -1230,12 +1212,164 @@ if (siteHeader && menuToggle && menu) {
         });
     };
 
+    // Farbverlauf-Hintergrund als WebGL-Shader (nur wenn das Menü ohne Bild/Video ist, siehe header.php).
+    // Idee «Domain Warping»: Rauschen wird mehrfach mit sich selbst verzerrt, das ergibt fliessende,
+    // seidige Bänder. Läuft nur, solange das Menü offen ist; Fallback bei fehlendem WebGL: CSS-Bänder.
+    const glow = menu.querySelector('.menu-glow');
+    const GLOW_SCALE = 0.5; // halbe Auflösung genügt (weiche Formen) und schont Handy-Akkus
+    let glowGl = null;
+    let glowTime = null;
+    let glowFrame = null;
+    let glowElapsed = 0;
+    let glowLast = 0;
+
+    const GLOW_VERTEX = 'attribute vec2 p; void main() { gl_Position = vec4(p, 0.0, 1.0); }';
+    const GLOW_FRAGMENT = `
+        precision mediump float;
+        uniform vec2 u_res;
+        uniform float u_time;
+
+        float hash(vec2 p) { return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }
+
+        float noise(vec2 p) {
+            vec2 i = floor(p);
+            vec2 f = fract(p);
+            f = f * f * (3.0 - 2.0 * f);
+            return mix(mix(hash(i), hash(i + vec2(1.0, 0.0)), f.x),
+                       mix(hash(i + vec2(0.0, 1.0)), hash(i + vec2(1.0, 1.0)), f.x), f.y);
+        }
+
+        // Fraktales Rauschen: mehrere Lagen, jede feiner und schwächer
+        float fbm(vec2 p) {
+            float v = 0.0;
+            float a = 0.5;
+            for (int i = 0; i < 4; i++) {
+                v += a * noise(p);
+                p = p * 2.03 + vec2(1.7, 9.2);
+                a *= 0.5;
+            }
+            return v;
+        }
+
+        void main() {
+            vec2 uv = gl_FragCoord.xy / u_res.y * 1.1;
+            float t = u_time * 0.045;
+
+            // zweimal verzerren → fliessende Bänder
+            vec2 q = vec2(fbm(uv + vec2(0.0, t)), fbm(uv + vec2(5.2, 1.3) - t));
+            vec2 r = vec2(fbm(uv + 3.0 * q + vec2(1.7, 9.2) + t * 1.4),
+                          fbm(uv + 3.0 * q + vec2(8.3, 2.8) - t));
+            float f = fbm(uv + 3.0 * r);
+
+            // Farben: dunkler Grund (#1D1C1C) → Grün → helle, glasige Kante
+            vec3 base = vec3(0.114, 0.110, 0.110);
+            vec3 deep = vec3(0.118, 0.255, 0.165);
+            vec3 accent = vec3(0.392, 0.616, 0.427);
+            vec3 light = vec3(0.78, 0.92, 0.82);
+
+            vec3 col = mix(base, deep, smoothstep(0.30, 0.55, f));
+            col = mix(col, accent, smoothstep(0.48, 0.75, f) * 0.85);
+            // helle Bereiche: dort, wo die Bänder am dichtesten sind, geht das Grün ins Helle über
+            col = mix(col, light, smoothstep(0.60, 0.85, f) * 0.60);
+            // schmale helle Kante entlang der Bänder (wirkt wie Glas)
+            float edge = pow(max(0.0, 1.0 - abs(f - 0.62) * 6.0), 3.0);
+            col += light * edge * 0.40;
+            gl_FragColor = vec4(col, 1.0);
+        }
+    `;
+
+    const glowInit = () => {
+        const canvas = document.createElement('canvas');
+        canvas.className = 'menu-glow-canvas';
+        const gl = canvas.getContext('webgl', { antialias: false, alpha: false, powerPreference: 'low-power' });
+        if (!gl) {
+            return false;
+        }
+        const compile = (type, source) => {
+            const shader = gl.createShader(type);
+            gl.shaderSource(shader, source);
+            gl.compileShader(shader);
+            return gl.getShaderParameter(shader, gl.COMPILE_STATUS) ? shader : null;
+        };
+        const vertex = compile(gl.VERTEX_SHADER, GLOW_VERTEX);
+        const fragment = compile(gl.FRAGMENT_SHADER, GLOW_FRAGMENT);
+        if (!vertex || !fragment) {
+            return false;
+        }
+        const program = gl.createProgram();
+        gl.attachShader(program, vertex);
+        gl.attachShader(program, fragment);
+        gl.linkProgram(program);
+        if (!gl.getProgramParameter(program, gl.LINK_STATUS)) {
+            return false;
+        }
+        gl.useProgram(program);
+
+        // ein Rechteck über den ganzen Bildschirm (zwei Dreiecke)
+        gl.bindBuffer(gl.ARRAY_BUFFER, gl.createBuffer());
+        gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, 1, -1, -1, 1, 1, 1]), gl.STATIC_DRAW);
+        const position = gl.getAttribLocation(program, 'p');
+        gl.enableVertexAttribArray(position);
+        gl.vertexAttribPointer(position, 2, gl.FLOAT, false, 0, 0);
+
+        glowGl = { canvas, gl, res: gl.getUniformLocation(program, 'u_res') };
+        glowTime = gl.getUniformLocation(program, 'u_time');
+        glow.append(canvas);
+        // CSS-Bänder werden nicht mehr gebraucht (spart Rechenzeit)
+        glow.classList.add('is-webgl');
+        return true;
+    };
+
+    const glowDraw = () => {
+        const { canvas, gl, res } = glowGl;
+        const width = Math.max(1, Math.round(glow.clientWidth * GLOW_SCALE));
+        const height = Math.max(1, Math.round(glow.clientHeight * GLOW_SCALE));
+        if (canvas.width !== width || canvas.height !== height) {
+            canvas.width = width;
+            canvas.height = height;
+            gl.viewport(0, 0, width, height);
+        }
+        gl.uniform2f(res, width, height);
+        gl.uniform1f(glowTime, glowElapsed);
+        gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+    };
+
+    const glowLoop = (now) => {
+        glowElapsed += (now - glowLast) / 1000;
+        glowLast = now;
+        glowDraw();
+        glowFrame = requestAnimationFrame(glowLoop);
+    };
+
+    const setGlow = (running) => {
+        if (!glow) {
+            return;
+        }
+        if (running) {
+            if (!glowGl && !glowInit()) {
+                return;
+            }
+            if (reducedMotion) {
+                // «Bewegung reduzieren»: ein ruhiges Standbild, keine Animation
+                glowElapsed = 40;
+                glowDraw();
+            } else if (glowFrame === null) {
+                glowLast = performance.now();
+                glowFrame = requestAnimationFrame(glowLoop);
+            }
+        } else if (glowFrame !== null) {
+            cancelAnimationFrame(glowFrame);
+            glowFrame = null;
+        }
+    };
+
     // instant: ohne Animation schliessen (z. B. «Zurück» im Browser)
     const setMenu = (open, { returnFocus = true, instant = false } = {}) => {
         if (open === isOpen) {
             return;
         }
         isOpen = open;
+        setGlow(open);
         if (open) {
             loadImages();
         }
@@ -1369,7 +1503,13 @@ const REVEAL_SELECTOR = [
     '[data-page="project"] .project-description',
     '[data-page="project"] .project-role',
     '[data-page="project"] .project-video',
-    '[data-page="project"] .project-gallery',
+    // Streifen-Galerie als Ganzes; Raster-Galerie: Titel und jede Kachel einzeln (nacheinander einblenden)
+    '[data-page="project"] .project-gallery:not(.project-gallery--grid)',
+    '[data-page="project"] .project-gallery--grid .project-subtitle',
+    '[data-page="project"] .gallery-tile',
+    // Prototyp: Titel und jeder Prototyp einzeln (nacheinander einblenden)
+    '[data-page="project"] .project-prototype .project-subtitle',
+    '[data-page="project"] .prototype-item',
     '[data-page="project"] .project-links .project-subtitle',
     '[data-page="project"] .link-list > li',
 ].join(', ');

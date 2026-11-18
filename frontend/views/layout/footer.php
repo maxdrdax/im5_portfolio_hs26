@@ -28,7 +28,7 @@ $socials = get_global_socials(true);
     <?php if (!empty($socials)) : ?>
         <div class="socials">
             <?php foreach ($socials as $social) : ?>
-                <a href="<?= esc_url($social['url']) ?>" target="_blank" rel="noopener" aria-label="<?= esc_attr($social['title']) ?>">
+                <a href="<?= esc_url($social['url']) ?>" target="_blank" rel="noopener" aria-label="<?= esc_attr($social['title'] . ' (öffnet in neuem Tab)') ?>">
                     <img src="<?= esc_url($social['icon']['src']) ?>" alt="" width="48" height="48" loading="lazy">
                 </a>
             <?php endforeach; ?>

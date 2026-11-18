@@ -426,3 +426,7 @@ FodyWeavers.xsd
 
 # Official VS Code C# Dev Kit Extension exclusion
 #*.lscache
+
+# macOS-Systemdateien und lokale Claude-Code-Einstellungen
+.DS_Store
+.claude/settings.local.json

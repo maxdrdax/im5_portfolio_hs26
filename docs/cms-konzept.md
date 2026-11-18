@@ -1,4 +1,14 @@
-# CMS-Konzept: Portfolio maxhutmacher.ch (v05)
+# CMS-Konzept: Portfolio maxhutmacher.ch (v10)
+
+> **Änderung v10:** Overlay-Menü ohne Hintergrundbild/-video zeigt einen animierten Farbverlauf (WebGL) statt eines einfarbigen Hintergrunds. Keine neuen Felder (siehe D | Menus).
+
+> **Ergänzung v09:** Modul `links`: Feld `preview_format` pro Link (select: Querformat / Quadrat / Hochformat).
+
+> **Ergänzung v08:** Modul `gallery` mit Feld `gallery_layout` (select: Streifen / Raster, Standard Streifen). Raster für viele Bilder.
+
+> **Ergänzung v07:** Modul `gallery` mit Checkbox `gallery_contain` («Alle Bilder einpassen»): zeigt die ganze Galerie ohne Zuschnitt, ohne jedes Bild einzeln einzustellen.
+
+> **Ergänzung v06:** Neues Projektmodul `prototype` (Figma-Prototyp: Vorschaubild mit Link zu Figma, ein oder zwei Prototypen). Neues Global `prototype_title`. Nicht im Standardaufbau neuer Projekte (nur bei Bedarf hinzufügen). Externe Links öffnen auf der ganzen Website in einem neuen Tab.
 
 > **Änderung v05:** Projektseite mit Modulen (`project_modules`): Projektbeschrieb, Meine Rolle, Video, Galerie und Weiterführende Informationen lassen sich pro Projekt verschieben, weglassen und ergänzen. Favicon über das WordPress-Website-Icon statt eigenes Feld.
 
@@ -35,8 +45,9 @@ Inhalt unter dem Kopf (Titel, Eckdaten) als Module: verschieben, weglassen, erg�
 | Projektbeschrieb | description | title (text), text (rich_text) |
 | Meine Rolle | role | title (text), text (rich_text), image (image) |
 | Video | video | title (text), url (text, type url) |
-| Galerie | gallery | title (text), gallery (media_gallery: image, video) |
-| Weiterführende Informationen | links | title (text), links (complex: title, source, url, image) |
+| Galerie | gallery | title (text), gallery_layout (select), gallery_contain (checkbox), gallery (media_gallery: image, video) |
+| Weiterführende Informationen | links | title (text), links (complex: title, source, url, image, preview_format) |
+| Figma-Prototyp | prototype | title (text), prototypes (complex, max. 2: label (text), url (text, type url), poster (image), format (select: landscape / portrait)) |
 
 - `title` ist in jedem Modul optional: leer = Standard aus den Globals.
 - Umzug (v05): Die früheren festen Felder (`description`, `description_title`, `role_text`, `role_title`, `role_image`, `video_url`, `video_title`, `gallery`, `gallery_title`, `links`, `links_title`) wurden einmalig in die Module übertragen (Script danach entfernt). Die alten Werte bleiben in der Datenbank, werden aber nicht mehr gelesen.
@@ -46,12 +57,22 @@ Inhalt unter dem Kopf (Titel, Eckdaten) als Module: verschieben, weglassen, erg�
 - Kategorie kommt aus der Taxonomie `project_category`.
 - Rollen-Sektion ist optional: Text und Bild leer = nicht ausgeben.
 - Projektbeschrieb und Meine Rolle im gleichen Raster: Zwischentitel links (1/3), Text rechts (2/3) in einer Spalte (begrenzte Zeilenlänge statt zwei Spalten), Trennlinie darüber, dunkler Seitenhintergrund (kein grüner Block). Bild im Modul `role` optional unter dem Rollentext, Format 3:2. Handy: Titel über dem Text.
-- Zwischentitel (`title` in jedem Modul) sind optional: leer = Standard aus den Globals (dort leer = «Projektbeschrieb», «Meine Rolle», «Video», «Einblicke» bzw. «Weiterführende Informationen»). Video, Galerie und Links haben einen Zwischentitel mit Linie darüber (Handy ohne Linie), damit sie nicht wie ein Teil von «Meine Rolle» wirken.
+- Zwischentitel (`title` in jedem Modul) sind optional: leer = Standard aus den Globals (dort leer = «Projektbeschrieb», «Meine Rolle», «Video», «Einblicke», «Weiterführende Informationen» bzw. «Prototyp»). Video, Galerie, Links und Prototyp haben einen Zwischentitel mit Linie darüber (Handy ohne Linie), damit sie nicht wie ein Teil von «Meine Rolle» wirken.
+- Format der Hover-Vorschau pro Link: `preview_format` (select: `landscape` 16:9 = Standard / `square` 1:1 / `portrait` 9:16, z. B. für Reels). Gilt für alle Vorschauarten (eigenes Bild, Logo, automatisch geholtes Bild; das Bild füllt die Fläche).
 - Modul `links` (Weiterführende Informationen): Linkliste, standardmässig am Ende der Projektseite, z. B. Festival, Artikel, Making-of. Gestaltung wie die Projektliste (Zeilen mit Trennlinie, Grossbuchstaben, Quelle grau, Pfeil ↗, Hover grün). Externe Links öffnen in einem neuen Tab. Leer = nicht ausgeben.
 - Hover-Vorschau pro Link (wie in der Projektliste, folgt dem Mauszeiger, nur Desktop): eigenes `image`; sonst bei Social-Media-Links (Domain passt zu einem Eintrag in den Globals `socials`) das Icon der Plattform weiss auf grüner Fläche; sonst holt der Server beim Speichern des Projekts das Vorschaubild der Website (Open Graph `og:image`) und legt es in der Mediathek ab (Besucher laden nichts von fremden Servern). Kein Bild = keine Vorschau.
 - `cover_video` ist optional: läuft ohne Ton in Schleife im Hero; im Highlights-Karussell und im Directory startet es beim Hover. `cover` bleibt Vorschaubild und Fallback (Touch-Geräte, «Bewegung reduzieren»).
 - Videos in der Galerie laufen ohne Ton in Schleife, sobald sie sichtbar sind.
+- Darstellung in der Galerie pro Bild/Video: Feld `gallery_fit` direkt an der Datei in der Mediathek (select: `cover` = Füllen, Standard / `contain` = Einpassen). Füllen = Fläche ganz gefüllt, Ränder werden abgeschnitten. Einpassen = ganzes Bild sichtbar (z. B. Moodboard), freie Fläche dunkel und neutral. Gilt überall, wo die Datei in einer Projektgalerie steht; soll dasselbe Bild einmal gefüllt und einmal eingepasst erscheinen, wird es ein zweites Mal hochgeladen. Umsetzung mit WordPress-Hooks (`attachment_fields_to_edit` / `attachment_fields_to_save`), weil `media_gallery` nur IDs speichert und keine Zusatzfelder pro Bild kennt. Verworfen: zweites Feld «Einpassen» im Modul (Bild musste doppelt ausgewählt werden, verwirrend) und Galerie als complex mit einer Zeile pro Bild (kein Mehrfach-Auswählen, Umzug nötig).
+- Galerie-Darstellung `gallery_layout`: «Streifen» (Standard, Akkordeon, ideal für 3 bis 8 Bilder) oder «Raster» (für viele Bilder, z. B. Stills): 3 Spalten (Handy 2), feste Zeilenhöhe wie das Foto-Raster, ohne Filter. Kachelgrösse automatisch aus dem Bildformat (quer = breit 2×1, hoch = hoch 1×2, sonst klein 1×1; Videos klein). Kein Zähler, keine Cursor-Pille. `gallery_contain` und `gallery_fit` gelten auch im Raster. Videos laufen ohne Ton in Schleife, sobald sichtbar.
 - Modul `video` (volle Videos, YouTube/Vimeo): wird per oEmbed eingebettet, standardmässig vor der Galerie; leerer Link = nicht ausgeben.
+- Modul `prototype` (Figma-Prototyp): ein oder zwei Prototypen (`prototypes`, z. B. Handy und Web). Zwei Prototypen stehen ab Tablet nebeneinander und gleich hoch, auf dem Handy untereinander. Ungültige Einträge entfallen, ohne gültigen Eintrag wird das Modul nicht ausgegeben. Umbau (v06): Die ersten Felder `url`, `poster`, `format` direkt im Modul wurden durch `prototypes` ersetzt (einmalig neu eintragen; alte Werte bleiben ungelesen in der Datenbank).
+  - Keine Einbettung (entschieden): Pro Prototyp eine Fläche mit `poster` (ohne Bild: dunkle, neutrale Fläche) und unten dem Button «Figma-Prototyp öffnen ↗» (Stil wie der Lebenslauf-Button). Die ganze Fläche ist ein Link und öffnet den Prototyp in Figma in einem neuen Tab. Verworfen: Einbettung als iframe mit Click-to-load und Vollbild (fixe Navigation im Embed abgeschnitten, Buttons im Prototyp auf dem Handy nicht bedienbar, mehr Fehlerquellen).
+  - Im Feld `url` steht der normale Share-Link aus Figma (`figma.com/proto/…` oder `figma.com/design/…`). Whitelist: nur `https`, Host `figma.com`, `www.figma.com` oder `embed.figma.com`, Pfad beginnt mit `/proto/` oder `/design/`; leerer oder ungültiger Link = nicht ausgeben. Der Link führt immer auf `www.figma.com`.
+  - Parameter aus dem Share-Link: nur `node-id`, `starting-point-node-id` (Start des Flows), `page-id`, `version-id`, `scaling`, `content-scaling` werden übernommen (Tracking `t`, `viewport` und die Flow-Liste `show-proto-sidebar` fallen weg).
+  - `format`: `landscape` (16:10, Standard) oder `portrait` (9:16, schmal und zentriert, für Mobile-Prototypen); bestimmt das Format der Vorschaufläche.
+  - `label` (optional, z. B. «Mobile», «Web»): Beschriftung linksbündig über der Vorschau, Stil wie die Beschriftungen der Eckdaten (klein, grau, Grossbuchstaben). Leer = keine Beschriftung. Für Screenreader Teil des Linktexts (leer = «Handy» bzw. «Web» aus dem Format, nur bei zwei Prototypen).
+  - Nicht im Standardaufbau neuer Projekte (`get_project_default_modules()` bleibt unverändert), nur bei Bedarf hinzufügen.
 - `featured` markiert das Projekt für den Filter «Ausgewählte Projekte».
 - Unter dem Hero stehen Kategorie und Titel sichtbar (Figma). `hide_title` blendet sie aus, z. B. wenn der Schriftzug schon im Titelbild steht; für Screenreader bleibt der Titel erhalten.
 - Bildergalerie als horizontales Akkordeon (Figma): Streifen gleich breit, beim Hover öffnet sich ein Bild; mit Mausrad/Trackpad blättert man durch die Bilder (gleiches Prinzip wie die Highlights). Auf Tablet und Handy Bilder zum Wischen (88 % breit, das nächste Bild schaut rechts herein), mit Punkten darunter und der Anleitung «← Wischen →», die nach dem ersten Wischen ausblendet.
@@ -204,7 +225,8 @@ Impressum und Datenschutz.
 - «Kontakt» im Header = Eintrag aus `main`, der auf die Seite `kontakt` verweist (kein eigenes Feld).
 - Overlay-Menü: Vollbild, Menüpunkte gross mit fortlaufender Nummer (01, 02 …). «Start» (Startseite) ist der erste Punkt. Weitere Seiten lassen sich in Design > Menüs ergänzen; bei vielen Punkten oder niedrigem Fenster wird die Schrift kleiner, damit alle auf den Bildschirm passen. Aktive Seite bleibt weiss (nur für Screenreader markiert, `aria-current`). Unten E-Mail und Socials aus den Globals.
 - Klick auf einen Menüpunkt: Das Menü bleibt offen, die neue Seite blendet weich darüber ein (Seitenübergang für die ganze Website).
-- `menu_image` ist der Hintergrund des Overlays beim Hover/Fokus auf den Menüpunkt (Crossfade). `menu_video` optional: läuft ohne Ton in Schleife, Bild ist Vorschau und Fallback. Ohne Bild: einfarbiger Hintergrund.
+- `menu_image` ist der Hintergrund des Overlays beim Hover/Fokus auf den Menüpunkt (Crossfade). `menu_video` optional: läuft ohne Ton in Schleife, Bild ist Vorschau und Fallback. Ohne Bild: einfarbiger Hintergrund. (Seit v10 siehe nächster Punkt.)
+- Farbverlauf (v10): Ist weder bei den Menüeinträgen (`menu_image`, `menu_video`) noch in den Globals (`menu_bg_image`, `menu_bg_video`) ein Bild oder Video gesetzt, zeigt das Overlay einen animierten Farbverlauf statt eines einfarbigen Hintergrunds: fliessende, seidige Bänder in Schwarz, Grün und hellem Mintgrün mit schimmernder Kante (Vorlage: ein Pinterest-Clip). Umsetzung als WebGL-Shader (Domain Warping), weil CSS Formen nicht organisch verbiegen kann. Läuft von selbst ohne Mausbewegung, auf Desktop und Handy, nur solange das Menü offen ist, mit halber Auflösung. Bei «Bewegung reduzieren» ein ruhiges Standbild; ohne WebGL weich driftende CSS-Bänder als Fallback. Sobald ein Bild oder Video gesetzt ist, gilt wieder das bisherige Verhalten. Verworfen: Verlauf folgt der Maus (gewünscht war eine eigene, ständige Bewegung) und reine CSS-Bänder (wirken wie Farbwolken, nicht wie Strömung).
 - Handy/Touch: Hintergrund zeigt den Eintrag der aktuellen Seite, sonst den ersten.
 - Carbon Fields zeigt die Felder bei allen Menüeinträgen an (auch `legals`); ausgegeben werden sie nur in `main`.
 - Ist in den Globals `menu_bg_image` (oder `menu_bg_video`) gesetzt, gilt dieser Hintergrund für das ganze Overlay; beim Hover wechselt er nicht. Leer = Hintergrund pro Menüpunkt (`menu_image`, `menu_video`).
@@ -227,6 +249,7 @@ Impressum und Datenschutz.
 | Projektseite: Titel «Video» | video_title | text |
 | Projektseite: Titel «Einblicke» (Galerie) | gallery_title | text |
 | Projektseite: Titel «Weiterführende Informationen» | links_title | text |
+| Projektseite: Titel «Prototyp» | prototype_title | text |
 | Menü-Hintergrundbild | menu_bg_image | image |
 | Menü-Hintergrundvideo (MP4) | menu_bg_video | file (video) |
 
@@ -237,7 +260,7 @@ Impressum und Datenschutz.
 - Footer zeigt nur Socials mit Icon (LinkedIn). Kontaktseite listet alle (LinkedIn, Instagram).
 
 ## Statisch im Theme (nicht im CMS)
-Icons aus der eigenen Icon-Bibliothek (`frontend/assets/icons/`, Ausgabe über `get_icon()`; Pfeil nach unten = Scroll-Pfeil, schräg nach rechts oben = Teaser, Kontakt, Socials), Punkte unter der Galerie (Tablet/Handy), Hover-Vorschau im Directory (folgt dem Mauszeiger), Beschriftungen Jahr / Kontext / Kategorie / Meine Rolle, Standard der Zwischentitel «Projektbeschrieb» und «Meine Rolle» (anpassbar in den Globals und pro Projekt), Button-Text Lebenslauf, Standardfilter, Karussell, Hover-Effekt (Chroma/Verflüssigen, Cursor), Cursor-Label über Highlights und Galerie (grüne Pille, ersetzt dort den Cursor-Punkt; «Scrollen ↓» bis zum ersten Blättern, danach bei den Highlights «Ansehen», bei der Galerie ausgeblendet), Zähler «01 / 05» mit Fortschrittslinie unter Highlights und Galerie (nur Desktop), Streifen-Galerie, Foto-Raster, Verlauf oben im Hero, Menü-Button, Overlay-Animation, Nummerierung der Menüpunkte, Seitenübergänge, Einblenden beim Scrollen (gilt für alle Inhalte, auch neue Module und Sektionen; ausser Hero und Intro), Text-Hervorhebung beim Scrollen (Intro), Zähler im Filter (Anzahl Einträge pro Filter, aus den vorhandenen Daten gezählt; Filter ohne Treffer entfallen), Filter als Chips (umrandete Pillen, aktiv grün), Gestaltung des Intro-Links (grün mit Pfeil ↗), Zeitlinie im Modul «Erfahrung» (füllt sich beim Scrollen grün, Punkt pro Station; bei «Bewegung reduzieren» ganz grün).
+Icons aus der eigenen Icon-Bibliothek (`frontend/assets/icons/`, Ausgabe über `get_icon()`; Pfeil nach unten = Scroll-Pfeil, schräg nach rechts oben = Teaser, Kontakt, Socials), Punkte unter der Galerie (Tablet/Handy), Hover-Vorschau im Directory (folgt dem Mauszeiger), Beschriftungen Jahr / Kontext / Kategorie / Meine Rolle, Standard der Zwischentitel «Projektbeschrieb» und «Meine Rolle» (anpassbar in den Globals und pro Projekt), Button-Text Lebenslauf, Button «Figma-Prototyp öffnen ↗» (Modul `prototype`), externe Links im neuen Tab (überall: Module, Menüs, Rich Text; Hinweis «öffnet in neuem Tab» für Screenreader), Mauszeiger ausgeblendet, solange der Cursor-Punkt aktiv ist (nur Maus, nicht bei «Bewegung reduzieren»; über iframes blendet der Punkt aus), Standardfilter, Karussell, Hover-Effekt (Chroma/Verflüssigen, Cursor), Cursor-Label über Highlights und Galerie (grüne Pille, ersetzt dort den Cursor-Punkt; «Scrollen ↓» bis zum ersten Blättern, danach bei den Highlights «Ansehen», bei der Galerie ausgeblendet), Zähler «01 / 05» mit Fortschrittslinie unter Highlights und Galerie (nur Desktop), Streifen-Galerie, Foto-Raster, Verlauf oben im Hero, Menü-Button, Overlay-Animation, Nummerierung der Menüpunkte, Seitenübergänge, Einblenden beim Scrollen (gilt für alle Inhalte, auch neue Module und Sektionen; ausser Hero und Intro), Text-Hervorhebung beim Scrollen (Intro), Zähler im Filter (Anzahl Einträge pro Filter, aus den vorhandenen Daten gezählt; Filter ohne Treffer entfallen), Filter als Chips (umrandete Pillen, aktiv grün), Gestaltung des Intro-Links (grün mit Pfeil ↗), Zeitlinie im Modul «Erfahrung» (füllt sich beim Scrollen grün, Punkt pro Station; bei «Bewegung reduzieren» ganz grün).
 
 ## Offen
 - Video: entschieden. Kurze Clips als MP4 (`video`, `cover_video`, Galerie), volle Videos über das Projektmodul `video`.

@@ -30,6 +30,7 @@ $logos = array_filter($data['logos'] ?? [], function ($item) {
                         <?php endif; ?>
                         <img src="<?= esc_url($item['logo']['src']) ?>" alt="<?= esc_attr($item['logo']['alt']) ?>" loading="lazy">
                         <?php if (!empty($item['link'])) : ?>
+                                <span class="screen-reader-text">(öffnet in neuem Tab)</span>
                             </a>
                         <?php endif; ?>
                     </li>
