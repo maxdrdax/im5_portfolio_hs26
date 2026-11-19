@@ -1049,49 +1049,59 @@ mark {
         }
     }
 
-    /* Link «Mehr über mich»: grün, Text und Pfeil in einer Zeile.
-       Hover (nur Maus) und Tastatur-Fokus: weiss, Pfeil rückt leicht nach rechts oben. */
-    .intro-link {
-        display: inline-flex;
-        align-items: center;
-        gap: var(--space-8);
-        /* Touch-Ziel mindestens 44 px hoch */
-        min-height: 44px;
+    /* Link «Mehr über mich»: Stil siehe .arrow-link */
+    .arrow-link {
         margin-top: var(--space-stack-m);
-        color: var(--color-accent);
-        font: var(--font-nav);
-        font-weight: 500;
-        letter-spacing: var(--tracking-caps);
-        text-decoration: none;
-        text-transform: uppercase;
-        white-space: nowrap;
-        transition: color 200ms ease;
+    }
+}
 
-        /* translate statt transform: Die Drehung des Pfeils (rotate in .icon--up-right) bleibt erhalten */
+/* Textlink mit Pfeil (Intro «Mehr über mich», Highlights «Alle Projekte»): grün, Text und Pfeil in einer Zeile.
+   Hover (nur Maus) und Tastatur-Fokus: weiss, Pfeil rückt leicht nach rechts oben. */
+.arrow-link {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-8);
+    /* Touch-Ziel mindestens 44 px hoch */
+    min-height: 44px;
+    color: var(--color-accent);
+    font: var(--font-nav);
+    font-weight: 500;
+    letter-spacing: var(--tracking-caps);
+    text-decoration: none;
+    text-transform: uppercase;
+    white-space: nowrap;
+    transition: color 200ms ease;
+
+    /* translate statt transform: Die Drehung des Pfeils (rotate in .icon--up-right) bleibt erhalten */
+    .icon {
+        transition: translate 200ms ease;
+    }
+
+    &:focus-visible {
+        color: var(--color-white);
+        outline: 1px solid currentColor;
+        outline-offset: 4px;
+
         .icon {
-            transition: translate 200ms ease;
+            translate: .15em -.15em;
         }
+    }
 
-        &:focus-visible {
+    @media (hover: hover) {
+        &:hover {
             color: var(--color-white);
-            outline: 1px solid currentColor;
-            outline-offset: 4px;
 
             .icon {
                 translate: .15em -.15em;
             }
         }
-
-        @media (hover: hover) {
-            &:hover {
-                color: var(--color-white);
-
-                .icon {
-                    translate: .15em -.15em;
-                }
-            }
-        }
     }
+}
+
+/* Pfeil schräg nach rechts oben stupst zweimal in seine Richtung: «hier geht es weiter» (Teaser-Karten) */
+@keyframes arrow-nudge {
+    0%, 100% { translate: 0 0; }
+    50% { translate: .18em -.18em; }
 }
 
 /* Seitentitel (Hero Text) und das Modul darunter gehören zusammen (z. B. «Projekte» + Liste):
@@ -1177,6 +1187,8 @@ mark {
             width: 100%;
             height: 100%;
             object-fit: cover;
+            /* Hover/Fokus: Bild zoomt leicht hinein (Signal «klickbar») */
+            transition: scale 600ms var(--accordion-ease);
         }
 
         .card-year {
@@ -1205,6 +1217,7 @@ mark {
             font: var(--font-h3);
         }
 
+        /* Pfeil weiss, ohne Hintergrund; bewegt sich bei Hover/Fokus und stupst beim Aufklappen */
         .card-arrow {
             position: absolute;
             right: var(--space-24);
@@ -1212,6 +1225,40 @@ mark {
             /* Icon-Grösse (das Icon ist 1em gross) */
             font-size: 40px;
             line-height: 0;
+
+            .icon {
+                transition: translate 300ms ease;
+            }
+        }
+
+        /* Hover (nur Maus) und Tastatur-Fokus: Bild zoomt, Pfeil rückt nach rechts oben */
+        .card-link:focus-visible {
+            img,
+            .card-video {
+                scale: 1.04;
+            }
+
+            .card-arrow .icon {
+                translate: .12em -.12em;
+            }
+        }
+
+        @media (hover: hover) {
+            .card-link:hover {
+                img,
+                .card-video {
+                    scale: 1.04;
+                }
+
+                .card-arrow .icon {
+                    translate: .12em -.12em;
+                }
+            }
+        }
+
+        /* Desktop: Sobald ein Projekt aufklappt, stupst der Pfeil zweimal (nach dem Einblenden) */
+        &.is-active .card-arrow .icon {
+            animation: arrow-nudge 800ms ease-in-out 700ms 2;
         }
 
         /* Infos nur im aufgeklappten Zustand */
@@ -1954,10 +2001,13 @@ mark {
         }
     }
 
-    /* Pfeil wippt sanft auf und ab: «nach unten scrollen» */
     .icon {
         width: .85em;
         height: .85em;
+    }
+
+    /* Pfeil nach unten wippt sanft auf und ab: «nach unten scrollen» (Galerie) */
+    .cursor-label-text--scroll .icon {
         animation: cursor-label-nudge 1200ms ease-in-out infinite;
     }
 
@@ -1997,6 +2047,31 @@ mark {
 
     /* Nichts offen (Galerie ohne Hover): ausblenden, Platz bleibt reserviert (kein Springen) */
     &.is-idle {
+        opacity: 0;
+    }
+}
+
+/* Anleitung «Scrollen ↓» vor dem Zähler (Highlights). Nach dem ersten Blättern (.is-learned, main.js)
+   blendet sie aus und klappt zu; der negative Rand schluckt den Abstand (gap), die Pille wird schmaler. */
+.carousel-progress-hint {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-4);
+    max-width: 10em;
+    overflow: hidden;
+    color: var(--color-accent);
+    white-space: nowrap;
+    transition: max-width 400ms ease, margin 400ms ease, opacity 250ms ease;
+
+    .icon {
+        width: .85em;
+        height: .85em;
+        animation: cursor-label-nudge 1200ms ease-in-out infinite;
+    }
+
+    .is-learned & {
+        max-width: 0;
+        margin-right: calc(-1 * var(--space-16));
         opacity: 0;
     }
 }
@@ -2105,11 +2180,13 @@ mark {
 
     color: var(--color-white);
 
-    /* langer Pfeil (24 × 32), ausgefüllt (Touch-Geräte) */
+    /* langer Pfeil (24 × 32), ausgefüllt (Touch-Geräte).
+       Wippt nach dem Laden dreimal nach unten («hier geht es weiter»), dann steht er still. */
     .icon {
         width: 39px;
         height: 52px;
         transition: fill 300ms ease;
+        animation: scroll-arrow-nudge 1400ms ease-in-out 1500ms 3;
     }
 
     /* Mit Maus: nur Kontur, Hover/Fokus füllt ihn */
@@ -2123,6 +2200,17 @@ mark {
             fill: currentColor;
         }
     }
+}
+
+@keyframes scroll-arrow-nudge {
+    0%, 100% { translate: 0 0; }
+    50% { translate: 0 10px; }
+}
+
+/* Link unter den Highlights («Alle Projekte»): zentriert wie der Titel */
+[data-module="projects"] .projects-more {
+    margin-top: var(--space-stack-m);
+    text-align: center;
 }
 
 /* Fliesstext aus dem Editor (Rich Text): Absätze, Zwischentitel, Listen, Links */
@@ -2256,6 +2344,25 @@ mark {
         .card-arrow,
         .card-media::after {
             opacity: 1;
+        }
+
+        /* Alle Karten sind offen: Der Pfeil stupst, sobald die Karte ins Bild kommt (.is-seen, main.js),
+           nicht beim Aufklappen */
+        &.is-active .card-arrow .icon {
+            animation: none;
+        }
+
+        &.is-seen .card-arrow .icon {
+            animation: arrow-nudge 800ms ease-in-out 500ms 2;
+        }
+
+        /* Antippen: Karte gibt kurz nach (Rückmeldung, dass der Tipp angekommen ist) */
+        .card-link {
+            transition: scale 150ms ease;
+        }
+
+        .card-link:active {
+            scale: .98;
         }
     }
 
@@ -2699,15 +2806,29 @@ mark {
     [data-module="projects"] .card,
     [data-page="project"] .strip-item,
     .carousel-progress-fill,
-    [data-module="intro"] .intro-link .icon,
+    .arrow-link .icon,
+    [data-module="projects"] .card img,
+    [data-module="projects"] .card .card-video,
+    [data-module="projects"] .card .card-arrow .icon,
+    [data-module="projects"] .card .card-link,
     [data-module="experience"] .station::before,
     .filter button {
         transition: none;
     }
 
-    /* Pfeile in den Anleitungen wippen nicht */
+    /* Pfeile in den Anleitungen, im Hero und auf den Karten bewegen sich nicht */
     .cursor-label .icon,
-    .strip-hint .icon {
-        animation: none;
+    .strip-hint .icon,
+    .carousel-progress-hint .icon,
+    .scroll-arrow .icon,
+    [data-module="projects"] .card .card-arrow .icon {
+        animation: none !important;
+    }
+
+    /* kein Zoom und kein Nachgeben */
+    [data-module="projects"] .card img,
+    [data-module="projects"] .card .card-video,
+    [data-module="projects"] .card .card-link:active {
+        scale: none;
     }
 }

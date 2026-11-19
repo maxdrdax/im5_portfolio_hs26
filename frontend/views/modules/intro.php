@@ -14,7 +14,7 @@ $link_text = trim($data['link_text'] ?? '');
 
     <?php // Link optional: nur mit Seite und Link-Text. Text und Pfeil in einer Zeile (inline-flex im CSS). ?>
     <?php if ($data['link'] && $link_text !== '') : ?>
-        <a class="intro-link" href="<?= esc_url($data['link']) ?>">
+        <a class="arrow-link" href="<?= esc_url($data['link']) ?>">
             <span><?= esc_html($link_text) ?></span><?= get_icon('arrow', 'up-right') ?>
         </a>
     <?php endif; ?>

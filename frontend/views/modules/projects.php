@@ -70,6 +70,8 @@ foreach ($projects as $project) {
         <?php // Zähler «01 / 05» mit Fortschrittslinie: zeigt, dass es weitergeht und wo man ist (main.js aktualisiert).
               // Bleibt unten im Fenster kleben, solange die Highlights sichtbar sind (CSS sticky). ?>
         <div class="carousel-progress" aria-hidden="true" data-accordion-progress>
+            <?php // Anleitung zum Blättern: blendet nach dem ersten Blättern aus (main.js, Klasse .is-learned) ?>
+            <span class="carousel-progress-hint">Scrollen <?= get_icon('arrow', 'down') ?></span>
             <span class="carousel-progress-count">
                 <span data-progress-current>01</span> / <?= esc_html(sprintf('%02d', count($projects))) ?>
             </span>
@@ -78,12 +80,21 @@ foreach ($projects as $project) {
             </span>
         </div>
 
-        <?php // Label, das der Maus über den Highlights folgt (main.js). Beim ersten Besuch «Scrollen» als Anleitung,
-              // nach dem ersten Blättern «Ansehen». Nur Dekoration: Der Link selbst ist für Screenreader und
-              // Tastatur schon eindeutig, darum aria-hidden. ?>
+        <?php // Link unter den Highlights (z. B. «Alle Projekte»): nur mit Seite und Link-Text ?>
+        <?php $link_text = trim($data['link_text'] ?? ''); ?>
+        <?php if (!empty($data['link']) && $link_text !== '') : ?>
+            <p class="projects-more">
+                <a class="arrow-link" href="<?= esc_url($data['link']) ?>">
+                    <span><?= esc_html($link_text) ?></span><?= get_icon('arrow', 'up-right') ?>
+                </a>
+            </p>
+        <?php endif; ?>
+
+        <?php // Label, das der Maus über den Highlights folgt (main.js): immer «Ansehen ↗», damit klar ist,
+              // dass man klicken kann. Die Anleitung zum Blättern steht im Zähler darunter.
+              // Nur Dekoration: Der Link selbst ist für Screenreader und Tastatur schon eindeutig, darum aria-hidden. ?>
         <span class="cursor-label pill pill--accent" aria-hidden="true" data-cursor-label="highlights">
-            <span class="cursor-label-text cursor-label-text--scroll">Scrollen <?= get_icon('arrow', 'down') ?></span>
-            <span class="cursor-label-text cursor-label-text--view">Ansehen</span>
+            <span class="cursor-label-text cursor-label-text--view">Ansehen <?= get_icon('arrow', 'up-right') ?></span>
         </span>
 
     <?php else : ?>

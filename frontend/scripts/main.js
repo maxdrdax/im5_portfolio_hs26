@@ -339,6 +339,25 @@ document.querySelectorAll('[data-accordion]').forEach((accordion) => {
     // Zähler «01 / 05» und Fortschrittslinie (Markup in modules/projects.php)
     const progress = accordion.parentElement.querySelector('[data-accordion-progress]');
 
+    // Anleitung «Scrollen ↓» im Zähler: ausblenden, sobald einmal geblättert wurde (.is-learned im CSS).
+    // sessionStorage merkt sich das für diesen Besuch; try/catch, weil der Speicher blockiert sein kann.
+    const HINT_KEY = 'highlights-learned';
+    try {
+        if (sessionStorage.getItem(HINT_KEY)) {
+            progress?.classList.add('is-learned');
+        }
+    } catch (error) {
+        // ohne Speicher: Anleitung bleibt bis zum ersten Blättern
+    }
+    accordion.addEventListener('accordion:step', () => {
+        progress?.classList.add('is-learned');
+        try {
+            sessionStorage.setItem(HINT_KEY, '1');
+        } catch (error) {
+            // ohne Speicher: gilt nur bis zum Neuladen
+        }
+    });
+
     const activate = (index) => {
         if (index === activeIndex) {
             return;
@@ -720,6 +739,11 @@ document.querySelectorAll('[data-cursor-label]').forEach((label) => {
     const LEARNED_KEY = `${label.dataset.cursorLabel || 'label'}-learned`;
     const hasViewText = Boolean(label.querySelector('.cursor-label-text--view'));
     let retired = false; // true = Label wird nicht mehr gezeigt
+
+    // Highlights: nur «Ansehen ↗», keine Anleitung im Label (die steht im Zähler) → gleich sichtbar
+    if (!label.querySelector('.cursor-label-text--scroll')) {
+        label.classList.add('is-learned');
+    }
 
     const applyLearned = () => {
         label.classList.add('is-learned');
@@ -1626,6 +1650,7 @@ if (siteHeader && menuToggle && menu) {
 const REVEAL_SELECTOR = [
     '.module-title',
     '[data-module="projects"] .card',
+    '[data-module="projects"] .projects-more',
     '[data-module="projects"] .filter',
     '[data-module="projects"] tbody tr',
     '[data-module="gallery-photos"] .filter',
@@ -1685,6 +1710,25 @@ if (!reducedMotion) {
         element.classList.add('reveal');
         revealObserver.observe(element);
     });
+}
+
+// =====================================================================
+// -> Highlights auf Tablet/Handy: Pfeil stupst, sobald eine Karte gut sichtbar ist
+// Ohne Maus gibt es kein Hover, das «klickbar» zeigt. Darum bewegt sich der Pfeil im grünen Kreis
+// einmal kurz (zweimal hin und her), wenn die Karte zu 60 % im Bild ist. Pro Karte nur einmal.
+// Stil: .card.is-seen in main.css (nur bis 1024 px). Bei «Bewegung reduzieren» nichts.
+// =====================================================================
+if (!reducedMotion) {
+    const cardObserver = new IntersectionObserver((entries) => {
+        entries.forEach((entry) => {
+            if (entry.isIntersecting) {
+                entry.target.classList.add('is-seen');
+                cardObserver.unobserve(entry.target);
+            }
+        });
+    }, { threshold: 0.6 });
+
+    document.querySelectorAll('[data-module="projects"] .card').forEach((card) => cardObserver.observe(card));
 }
 
 // =====================================================================

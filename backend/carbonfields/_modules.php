@@ -62,6 +62,18 @@ Container::make('post_meta', 'Module')
                         ['type' => 'post', 'post_type' => 'project'],
                     ])
                     ->set_help_text('Leer lassen = alle Projekte automatisch.'),
+                // Link unter dem Karussell (z. B. «Alle Projekte» → Seite Projekte); nur bei «Karussell» sichtbar
+                Field::make('text', 'link_text', 'Link-Text')
+                    ->set_width(50)
+                    ->set_help_text('z. B. «Alle Projekte». Leer = kein Link.')
+                    ->set_conditional_logic([['field' => 'layout', 'value' => 'carousel']]),
+                Field::make('association', 'link', 'Link')
+                    ->set_types([
+                        ['type' => 'post', 'post_type' => 'page'],
+                    ])
+                    ->set_max(1)
+                    ->set_width(50)
+                    ->set_conditional_logic([['field' => 'layout', 'value' => 'carousel']]),
             ])
             // -> gallery_photos (keine Felder)
             ->add_fields('gallery_photos', 'Fotogalerie', [
@@ -179,6 +191,9 @@ function render_modules(): void
                 }, $module['projects'] ?? []);
                 $module['projects'] = get_projects($ids);
                 $module['categories'] = get_taxonomy_terms('project_category');
+                // Link unter dem Karussell: wie beim Intro Adresse der Seite oder false
+                $link_id = (int) ($module['link'][0]['id'] ?? 0);
+                $module['link'] = $link_id ? get_permalink($link_id) : false;
                 break;
             case 'gallery_photos':
                 $module['photos'] = get_photos();
