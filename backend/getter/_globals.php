@@ -13,6 +13,15 @@ function get_global_site_private(): bool
     return (bool) carbon_get_theme_option('site_private');
 }
 
+// Effekte im Overlay-Menü: true = an. Die Checkboxen heissen «… ausschalten», darum umgekehrt.
+function get_global_menu_effects(): array
+{
+    return [
+        'flow' => !carbon_get_theme_option('menu_flow_off'),
+        'scramble' => !carbon_get_theme_option('menu_scramble_off'),
+    ];
+}
+
 // Signet (Handy) aus der Mediathek; false, wenn leer
 // SVG hat keine Bildgrössen: get_media_by_id() liefert dann die Datei-URL direkt
 function get_global_logo_signet(): array|false

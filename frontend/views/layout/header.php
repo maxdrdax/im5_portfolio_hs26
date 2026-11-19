@@ -6,6 +6,8 @@ $signet = get_global_logo_signet();
 $menu = get_menu_by_slug('main');
 $email = get_global_email();
 $socials = get_global_socials();
+// Effekte im Menü (Globals): Maus-Strömung im Farbverlauf, Text-Scramble beim Hover
+$effects = get_global_menu_effects();
 
 // «Kontakt» im Header = Eintrag aus «main», der auf die Seite «kontakt» verweist (CMS-Konzept D)
 $contact = null;
@@ -96,7 +98,7 @@ foreach ($backgrounds as $bg) {
 <?php if (!empty($menu)) : ?>
     <?php // inert: Geschlossen ist das Overlay für Tab-Taste und Screenreader nicht erreichbar (main.js entfernt es beim Öffnen) ?>
     <?php // data-menu-fixed: gemeinsamer Hintergrund, der beim Hover nicht wechselt (main.js) ?>
-    <div class="menu-overlay" id="menu-overlay" data-menu<?php if ($menu_bg) : ?> data-menu-fixed<?php endif; ?><?php if (!$has_media) : ?> data-menu-glow<?php endif; ?> inert>
+    <div class="menu-overlay" id="menu-overlay" data-menu<?php if ($menu_bg) : ?> data-menu-fixed<?php endif; ?><?php if (!$has_media) : ?> data-menu-glow<?php endif; ?><?php if (!$effects['flow']) : ?> data-menu-no-flow<?php endif; ?> inert>
         <?php // Hintergründe: gemeinsam oder einer pro Menüpunkt (Crossfade per CSS). Bilder laden erst beim ersten Öffnen (data-src). ?>
         <div class="menu-backgrounds" aria-hidden="true">
             <?php if (!$has_media) : ?>
@@ -134,8 +136,8 @@ foreach ($backgrounds as $bg) {
                         <a class="menu-link" href="<?= esc_url($item['url']) ?>" data-menu-target="<?= esc_attr($item['ID']) ?>"<?php if ($item['current']) : ?> aria-current="page"<?php endif; ?><?php if ($item['target'] === '_blank') : ?> target="_blank" rel="noopener"<?php endif; ?>>
                             <span class="menu-nr" aria-hidden="true"><?= esc_html(sprintf('%02d', $index + 1)) ?></span>
                             <span class="menu-word">
-                                <?php // Sichtbares Wort: wird beim Hover «gescrambelt» (main.js), darum für Screenreader ausgeblendet ?>
-                                <span class="menu-word-text" aria-hidden="true" data-scramble><?= esc_html($item['title']) ?></span>
+                                <?php // Sichtbares Wort: wird beim Hover «gescrambelt» (main.js, nur mit data-scramble), darum für Screenreader ausgeblendet ?>
+                                <span class="menu-word-text" aria-hidden="true"<?php if ($effects['scramble']) : ?> data-scramble<?php endif; ?>><?= esc_html($item['title']) ?></span>
                                 <?php // Für Screenreader: immer das richtige Wort ?>
                                 <span class="screen-reader-text"><?= esc_html($item['title']) ?></span>
                             </span>

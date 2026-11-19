@@ -1229,6 +1229,18 @@ if (siteHeader && menuToggle && menu) {
     let glowFrame = null;
     let glowElapsed = 0;
     let glowLast = 0;
+    // Maus-Strömung (nur mit Maus und ohne «Bewegung reduzieren»). Einheiten wie im Shader:
+    // 1 = Bildschirmhöhe, Ursprung unten links (WebGL zählt y von unten)
+    const glowPointer = {
+        // data-menu-no-flow: in den Globals ausgeschaltet (header.php)
+        enabled: canHover && !reducedMotion && !menu.hasAttribute('data-menu-no-flow'),
+        x: 0, y: 0, // geglättete Position
+        tx: 0, ty: 0, // Zielposition (aktuelle Maus)
+        vx: 0, vy: 0, // geglättete Geschwindigkeit → Richtung, in die die Bänder mitgezogen werden
+        strength: 0, // 0–1: blendet den Effekt weich ein und aus
+        target: 0, // 1 = Maus im Menü, 0 = draussen
+        ready: false,
+    };
 
     const GLOW_VERTEX = 'attribute vec2 p; void main() { gl_Position = vec4(p, 0.0, 1.0); }';
     const GLOW_FRAGMENT = `
@@ -1241,6 +1253,9 @@ if (siteHeader && menuToggle && menu) {
         uniform vec2 u_res;
         uniform float u_time;
         uniform vec3 u_base; // Seitenhintergrund aus CSS (--color-black)
+        uniform vec2 u_mouse; // Mausposition (1 = Bildschirmhöhe)
+        uniform vec2 u_vel; // Mausgeschwindigkeit, geglättet
+        uniform float u_hover; // Stärke des Maus-Effekts 0–1
 
         // Zufallswert pro Rasterpunkt, ohne sin() (sin ist auf manchen GPUs ungenau → Flimmern)
         float hash(vec2 p) {
@@ -1272,6 +1287,17 @@ if (siteHeader && menuToggle && menu) {
         void main() {
             vec2 uv = gl_FragCoord.xy / u_res.y * 1.1;
             float t = u_time * 0.045;
+
+            // Maus-Strömung: Rund um den Mauszeiger (weicher Kreis, exp-Abfall) wird die Fläche
+            // 1. leicht verdreht (Wirbel) und 2. entgegen der Mausbewegung verschoben → die Bänder
+            // werden in Bewegungsrichtung mitgezogen, wie ein Finger in Flüssigkeit
+            vec2 m = u_mouse * 1.1;
+            vec2 d = uv - m;
+            float falloff = exp(-dot(d, d) / 0.08) * u_hover;
+            // in Ruhe nur ein Hauch Drehung, bei schneller Bewegung deutlich mehr
+            float angle = falloff * (0.25 + length(u_vel) * 4.0);
+            uv = m + mat2(cos(angle), sin(angle), -sin(angle), cos(angle)) * d;
+            uv -= u_vel * 1.1 * falloff * 1.6;
 
             // zweimal verzerren → fliessende Bänder
             vec2 q = vec2(fbm(uv + vec2(0.0, t)), fbm(uv + vec2(5.2, 1.3) - t));
@@ -1333,7 +1359,14 @@ if (siteHeader && menuToggle && menu) {
         gl.enableVertexAttribArray(position);
         gl.vertexAttribPointer(position, 2, gl.FLOAT, false, 0, 0);
 
-        glowGl = { canvas, gl, res: gl.getUniformLocation(program, 'u_res') };
+        glowGl = {
+            canvas,
+            gl,
+            res: gl.getUniformLocation(program, 'u_res'),
+            mouse: gl.getUniformLocation(program, 'u_mouse'),
+            vel: gl.getUniformLocation(program, 'u_vel'),
+            hover: gl.getUniformLocation(program, 'u_hover'),
+        };
         glowTime = gl.getUniformLocation(program, 'u_time');
 
         // Grundfarbe aus der CSS-Variable --color-black lesen (z. B. "#1D1C1C" → 0–1 pro Kanal),
@@ -1363,7 +1396,7 @@ if (siteHeader && menuToggle && menu) {
     };
 
     const glowDraw = () => {
-        const { canvas, gl, res } = glowGl;
+        const { canvas, gl, res, mouse, vel, hover } = glowGl;
         const scale = glowScale();
         const width = Math.max(1, Math.round(glow.clientWidth * scale));
         const height = Math.max(1, Math.round(glow.clientHeight * scale));
@@ -1374,12 +1407,62 @@ if (siteHeader && menuToggle && menu) {
         }
         gl.uniform2f(res, width, height);
         gl.uniform1f(glowTime, glowElapsed);
+        gl.uniform2f(mouse, glowPointer.x, glowPointer.y);
+        gl.uniform2f(vel, glowPointer.vx, glowPointer.vy);
+        gl.uniform1f(hover, glowPointer.strength);
         gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
     };
 
+    // Maus-Werte pro Frame weich nachführen. dt-abhängig, damit es auf 60-Hz- und 120-Hz-Bildschirmen
+    // gleich schnell wirkt. ease(0.15) heisst: pro 1/60 s 15 % des Wegs zum Ziel.
+    const glowUpdatePointer = (dt) => {
+        const p = glowPointer;
+        const ease = (base) => 1 - Math.pow(1 - base, dt * 60);
+        const prevX = p.x;
+        const prevY = p.y;
+        p.x += (p.tx - p.x) * ease(0.15);
+        p.y += (p.ty - p.y) * ease(0.15);
+        // Geschwindigkeit = Weg pro Frame, geglättet; klingt ab, sobald die Maus stillsteht
+        p.vx += ((p.x - prevX) * 6 - p.vx) * ease(0.1);
+        p.vy += ((p.y - prevY) * 6 - p.vy) * ease(0.1);
+        // zu schnelle Bewegungen begrenzen, sonst reisst das Muster auf
+        const speed = Math.hypot(p.vx, p.vy);
+        if (speed > 0.25) {
+            p.vx *= 0.25 / speed;
+            p.vy *= 0.25 / speed;
+        }
+        p.strength += (p.target - p.strength) * ease(0.05);
+    };
+
+    if (glow && glowPointer.enabled) {
+        menu.addEventListener('pointermove', (event) => {
+            if (event.pointerType !== 'mouse') {
+                return;
+            }
+            const rect = glow.getBoundingClientRect();
+            glowPointer.tx = (event.clientX - rect.left) / rect.height;
+            glowPointer.ty = (rect.bottom - event.clientY) / rect.height;
+            if (!glowPointer.ready) {
+                // erste Bewegung: direkt an die Maus springen, nicht von der Ecke her hineinziehen
+                glowPointer.ready = true;
+                glowPointer.x = glowPointer.tx;
+                glowPointer.y = glowPointer.ty;
+            }
+            glowPointer.target = 1;
+        });
+        // Maus verlässt das Fenster: Effekt klingt weich aus
+        menu.addEventListener('pointerleave', () => {
+            glowPointer.target = 0;
+        });
+    }
+
     const glowLoop = (now) => {
-        glowElapsed += (now - glowLast) / 1000;
+        const dt = Math.min((now - glowLast) / 1000, 0.1);
+        glowElapsed += dt;
         glowLast = now;
+        if (glowPointer.enabled) {
+            glowUpdatePointer(dt);
+        }
         glowDraw();
         glowFrame = requestAnimationFrame(glowLoop);
     };
@@ -1402,6 +1485,8 @@ if (siteHeader && menuToggle && menu) {
                 glowElapsed = 40;
                 glowDraw();
             } else if (glowFrame === null) {
+                // Maus-Effekt bei jedem Öffnen neu: startet erst mit der ersten Mausbewegung
+                Object.assign(glowPointer, { vx: 0, vy: 0, strength: 0, target: 0, ready: false });
                 // sofort ein Bild zeichnen, sonst ist der erste Frame schwarz
                 glowDraw();
                 glowLast = performance.now();

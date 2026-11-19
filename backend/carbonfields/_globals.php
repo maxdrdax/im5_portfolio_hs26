@@ -64,4 +64,13 @@ Container::make('theme_options', 'Globales')
             ->set_type(['video'])
             ->set_width(50)
             ->set_help_text('Optional. Kurzer Clip ohne Ton (ideal unter 5 MB). Das Bild bleibt Vorschau und Fallback.'),
+        // Effekte im Overlay-Menü einzeln ausschalten (leer = Effekt an)
+        Field::make('checkbox', 'menu_flow_off', 'Menü: Maus-Strömung ausschalten')
+            ->set_option_value('yes')
+            ->set_width(50)
+            ->set_help_text('Die Bänder des Farbverlaufs folgen dann nicht mehr der Maus (nur Desktop). Der Verlauf selbst bewegt sich weiter.'),
+        Field::make('checkbox', 'menu_scramble_off', 'Menü: Text-Scramble ausschalten')
+            ->set_option_value('yes')
+            ->set_width(50)
+            ->set_help_text('Die Menüpunkte wirbeln beim Hover nicht mehr durch zufällige Buchstaben.'),
     ]);

@@ -1,4 +1,6 @@
-# CMS-Konzept: Portfolio maxhutmacher.ch (v10)
+# CMS-Konzept: Portfolio maxhutmacher.ch (v11)
+
+> **Ergänzung v11:** Farbverlauf im Overlay-Menü reagiert auf die Maus (Strömung, nur Desktop). Neue Globals `menu_flow_off` und `menu_scramble_off`: Maus-Strömung und Text-Scramble einzeln ausschalten (leer = an).
 
 > **Änderung v10:** Overlay-Menü ohne Hintergrundbild/-video zeigt einen animierten Farbverlauf (WebGL) statt eines einfarbigen Hintergrunds. Keine neuen Felder (siehe D | Menus).
 
@@ -227,6 +229,7 @@ Impressum und Datenschutz.
 - Klick auf einen Menüpunkt: Das Menü bleibt offen, die neue Seite blendet weich darüber ein (Seitenübergang für die ganze Website).
 - `menu_image` ist der Hintergrund des Overlays beim Hover/Fokus auf den Menüpunkt (Crossfade). `menu_video` optional: läuft ohne Ton in Schleife, Bild ist Vorschau und Fallback. Ohne Bild: einfarbiger Hintergrund. (Seit v10 siehe nächster Punkt.)
 - Farbverlauf (v10): Ist weder bei den Menüeinträgen (`menu_image`, `menu_video`) noch in den Globals (`menu_bg_image`, `menu_bg_video`) ein Bild oder Video gesetzt, zeigt das Overlay einen animierten Farbverlauf statt eines einfarbigen Hintergrunds: fliessende, seidige Bänder auf dem Seitenhintergrund (`--color-black`, rund zwei Drittel der Fläche), in Grün und an den dichtesten Stellen hellem Mintgrün mit schimmernder Kante; Nummern der Menüpunkte weiss (Vorlage: ein Pinterest-Clip). Umsetzung als WebGL-Shader (Domain Warping), weil CSS Formen nicht organisch verbiegen kann. Läuft von selbst ohne Mausbewegung, auf Desktop und Handy, nur solange das Menü offen ist, mit halber Auflösung. Bei «Bewegung reduzieren» ein ruhiges Standbild; ohne WebGL weich driftende CSS-Bänder als Fallback. Sobald ein Bild oder Video gesetzt ist, gilt wieder das bisherige Verhalten. Verworfen: Verlauf folgt der Maus (gewünscht war eine eigene, ständige Bewegung) und reine CSS-Bänder (wirken wie Farbwolken, nicht wie Strömung).
+- Maus-Strömung (v11): Zusätzlich zur Eigenbewegung werden die Bänder rund um den Mauszeiger leicht verwirbelt und in Bewegungsrichtung mitgezogen (wie ein Finger in Flüssigkeit). Nur Desktop mit Maus, nicht bei «Bewegung reduzieren». Ausschaltbar in den Globals (`menu_flow_off`), ebenso das Text-Scramble der Menüpunkte (`menu_scramble_off`). Beide sind zum Ausprobieren gedacht; wird ein Effekt endgültig verworfen, fliegen Code und Checkbox raus.
 - Handy/Touch: Hintergrund zeigt den Eintrag der aktuellen Seite, sonst den ersten.
 - Carbon Fields zeigt die Felder bei allen Menüeinträgen an (auch `legals`); ausgegeben werden sie nur in `main`.
 - Ist in den Globals `menu_bg_image` (oder `menu_bg_video`) gesetzt, gilt dieser Hintergrund für das ganze Overlay; beim Hover wechselt er nicht. Leer = Hintergrund pro Menüpunkt (`menu_image`, `menu_video`).
@@ -252,6 +255,8 @@ Impressum und Datenschutz.
 | Projektseite: Titel «Prototyp» | prototype_title | text |
 | Menü-Hintergrundbild | menu_bg_image | image |
 | Menü-Hintergrundvideo (MP4) | menu_bg_video | file (video) |
+| Menü: Maus-Strömung ausschalten | menu_flow_off | checkbox |
+| Menü: Text-Scramble ausschalten | menu_scramble_off | checkbox |
 
 - Logo = Schriftzug «Max Hutmacher» im Header (Link auf Startseite). Copyright im Footer.
 - `site_private`: Aktiv = Besucher ohne Login werden zur Anmeldung umgeleitet, auch die REST-API ist gesperrt (Phase vor dem Livegang; Testzugänge mit der Rolle «Abonnent»). Beim Livegang ausschalten (Go-live-Checkliste).
