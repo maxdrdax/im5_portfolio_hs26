@@ -60,7 +60,13 @@
         text-box: trim-both cap alphabetic;
     }
 
+    /* Raster statt Flexbox: Beschriftung und Striche stehen auf derselben Grundlinie (baseline),
+       align-content zentriert die Zeile im 44-px-Feld (das kann Flexbox mit einer Zeile nicht). */
     .menu-toggle {
+        display: inline-grid;
+        grid-auto-flow: column;
+        align-items: baseline;
+        align-content: center;
         gap: var(--space-12);
         min-width: 44px;
         padding: 0;
@@ -122,76 +128,71 @@
         transition: opacity var(--bars-step) ease var(--bars-step), visibility 0s;
     }
 
-    /* Menü-Symbol: drei Striche, nach unten kürzer (wie ein Trichter), zentriert, runde Enden.
+    /* Menü-Symbol: drei gleich lange Striche mit runden Enden.
        Beim Öffnen werden oben und unten zum X, der mittlere blendet aus. */
     .menu-toggle-bars {
         position: relative;
         display: block;
-        /* 3 Striche à 3 px + 2 Abstände à 4 px */
+        /* Block so hoch wie die Grossbuchstaben (1cap) und mit der Unterkante auf der Grundlinie
+           (ohne Text gilt die Unterkante als Grundlinie): Er deckt sich genau mit «Menü».
+           Die Striche (3 × 3 px + 2 × 4 px = 17 px) sind um die Mitte verteilt und ragen oben und
+           unten etwas hinaus. So zählen sie beim Einmitten nicht mit und alles bleibt auf einer Höhe
+           mit Logo und Kontakt. */
         width: 22px;
-        height: 17px;
+        height: 1cap;
     }
 
+    /* Alle drei Striche liegen zuerst auf derselben Mitte (top gleich für alle) und werden dann mit
+       translate um genau 7 px (3 px Strich + 4 px Abstand) nach oben bzw. unten verschoben.
+       Warum nicht mit top: Der Browser rundet Positionen aus top auf ganze Bildschirmpixel, jeden
+       Strich einzeln. Auf dem Handy (hohe Pixeldichte, Mitte mit Kommastellen) werden die Abstände
+       dann ungleich. translate wird nicht gerundet, darum bleiben die Abstände immer gleich,
+       auch während der Animation. */
     .menu-toggle-bar {
+        --bar-y: 0px;
         position: absolute;
+        top: calc(50% - 1.5px);
         left: 50%;
+        width: 22px;
         height: 3px;
         border-radius: 3px;
         background-color: currentColor;
-        /* translate zentriert den Strich horizontal; rotate dreht ihn (zwei eigene Eigenschaften,
-           darum stören sie sich nicht gegenseitig) */
-        translate: -50% 0;
+        /* translate: horizontal zentrieren, vertikal verschieben; rotate dreht den Strich
+           (eigene Eigenschaften, darum stören sie sich nicht gegenseitig) */
+        translate: -50% var(--bar-y);
         /* Schliessen (X → Striche): erst zurückdrehen, dann auseinanderfahren */
         transition: rotate var(--bars-step) var(--menu-ease),
-            top var(--bars-step) var(--menu-ease) var(--bars-step),
-            width var(--bars-step) var(--menu-ease),
+            translate var(--bars-step) var(--menu-ease) var(--bars-step),
             opacity var(--bars-step) ease var(--bars-step);
 
         &:nth-child(1) {
-            top: 0;
-            width: 22px;
-        }
-
-        &:nth-child(2) {
-            top: 7px;
-            width: 15px;
+            --bar-y: -7px;
         }
 
         &:nth-child(3) {
-            top: 14px;
-            width: 9px;
+            --bar-y: 7px;
         }
     }
 
-    /* Hover (nur Maus) und Tastatur-Fokus, Menü geschlossen: alle Striche gleich lang */
+    /* Hover (nur Maus) und Tastatur-Fokus: Linie unter «Menü» bzw. «Schliessen» */
     .menu-toggle:focus-visible .menu-toggle-text::after {
         transform: scaleX(1);
-    }
-
-    .menu-toggle[aria-expanded="false"]:focus-visible .menu-toggle-bar {
-        width: 22px;
     }
 
     @media (hover: hover) {
         .menu-toggle:hover .menu-toggle-text::after {
             transform: scaleX(1);
         }
-
-        .menu-toggle[aria-expanded="false"]:hover .menu-toggle-bar {
-            width: 22px;
-        }
     }
 
-    /* Öffnen (Striche → X): erst in die Mitte fahren und gleich lang werden, dann drehen */
+    /* Öffnen (Striche → X): erst in die Mitte fahren, dann drehen */
     .menu-toggle[aria-expanded="true"] .menu-toggle-bar {
-        transition: top var(--bars-step) var(--menu-ease),
-            width var(--bars-step) var(--menu-ease),
+        transition: translate var(--bars-step) var(--menu-ease),
             opacity var(--bars-step) ease,
             rotate var(--bars-step) var(--menu-ease) var(--bars-step);
 
         &:nth-child(1) {
-            top: 7px;
-            width: 22px;
+            --bar-y: 0px;
             rotate: 45deg;
         }
 
@@ -200,8 +201,7 @@
         }
 
         &:nth-child(3) {
-            top: 7px;
-            width: 22px;
+            --bar-y: 0px;
             rotate: -45deg;
         }
     }
@@ -676,81 +676,11 @@ html {
         opacity: 1;
     }
 
-    /* Aufbau: Signet links | Menü-Symbol Mitte | Kontakt rechts.
-       Raster mit drei Spalten: links und rechts gleich breit (1fr), so steht das Symbol genau in der Mitte.
-       display: contents: Die Gruppe .header-actions verschwindet für das Layout, Kontakt und Button
-       werden direkt Teil des Rasters (im HTML bleiben sie zusammen).
-       header[...] statt nur [...]: etwas spezifischer, weil main.css (später geladen) display: flex setzt. */
-    header[data-layout="header"] {
-        display: grid;
-        grid-template-columns: 1fr auto 1fr;
-
-        .header-actions {
-            display: contents;
-        }
-
-        .logo-link {
-            grid-column: 1;
-            justify-self: start;
-        }
-
-        .menu-toggle {
-            grid-column: 2;
-            grid-row: 1;
-        }
-
-        /* Kontakt bleibt bei offenem Menü sichtbar: Ohne Beschriftung «Schliessen» braucht es
-           seinen Platz nicht (stärker als die Regel body.menu-open weiter oben) */
-        body.menu-open & .header-link {
-            opacity: 1;
-            visibility: visible;
-        }
-
-        /* Kontakt als Button: dünne Linie, ganz abgerundet, ohne Unterstreichung */
-        .header-link {
-            grid-column: 3;
-            grid-row: 1;
-            justify-self: end;
-            min-height: 40px;
-            padding-inline: var(--space-16);
-            border: 1px solid currentColor;
-            border-radius: 999px;
-
-            &::after {
-                display: none;
-            }
-
-            /* Aktive Seite (Kontakt): Button ausgefüllt, wie die Linie auf dem Desktop */
-            &[aria-current="page"] {
-                background-color: var(--color-white);
-                color: var(--color-black);
-            }
-        }
-
-        /* Menü-Symbol grösser, damit es neben Signet und Kontakt nicht untergeht.
-           scale vergrössert nur die Darstellung (Striche, X-Animation bleiben gleich) */
-        .menu-toggle-bars {
-            scale: 1.4;
-        }
-
-        /* Kontakt-Button etwas kleiner (Schrift 14 px) */
-        .header-link {
-            min-height: 36px;
-            padding-inline: var(--space-12);
-            font: var(--font-caption);
-            letter-spacing: var(--tracking-caps);
-            text-transform: uppercase;
-        }
-
-        /* Nur das Symbol: Beschriftung «Menü»/«Schliessen» bleibt für Screenreader vorhanden */
-        .menu-toggle-label {
-            position: absolute;
-            width: 1px;
-            height: 1px;
-            overflow: hidden;
-            clip-path: inset(50%);
-            white-space: nowrap;
-        }
+    /* Aufbau: Signet links | «Menü» + Symbol rechts (wie auf dem Desktop, nur ohne Kontakt).
+       Kontakt steht im Overlay-Menü und im Footer, im schmalen Header wäre es ein zweiter Button.
+       display: none blendet ihn auch für Screenreader aus (sonst doppelt mit dem Menüpunkt). */
+    [data-layout="header"] .header-link {
+        display: none;
     }
 }
 

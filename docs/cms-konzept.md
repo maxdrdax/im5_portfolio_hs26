@@ -212,7 +212,7 @@ Impressum und Datenschutz.
 ## D | Menus
 | Name | Slug | Hierarchiestufen | Einträge |
 |---|---|---|---|
-| Hauptnavigation | main | 1 | Start, Projekte, Fotos, Über mich, Kontakt (Overlay-Menü; «Kontakt» zusätzlich im Header) |
+| Hauptnavigation | main | 1 | Start, Projekte, Fotos, Über mich, Kontakt (Overlay-Menü; «Kontakt» zusätzlich im Header, nur Desktop) |
 | Rechtliches | legals | 1 | Impressum, Datenschutz (Footer) |
 
 ### Felder am Menüeintrag (nur Hauptnavigation `main`)
@@ -223,7 +223,7 @@ Impressum und Datenschutz.
 
 - Header: Logo links, rechts «Kontakt» (auf dem Desktop sichtbar, solange das Menü geschlossen ist) und Button «Menü»/«Schliessen». Die Hauptnavigation steht nicht mehr im Header, sondern im Overlay.
 - Header auf allen Seiten fix oben, ohne Linie, Schrift weiss. Über Bild-Heros (`hero_image`, Projekt-Hero) liegt ein weicher dunkler Verlauf oben im Bild für die Lesbarkeit. Sobald der Hero aus dem Bild ist (und auf Seiten ohne Hero), liegt Milchglas hinter dem Header (Seitenfarbe halbtransparent + Blur), damit der Inhalt darunter nicht scharf neben der Navigation steht (vor allem auf dem Handy). Auf Tablet und Handy (bis 1024 px) liegt das Milchglas immer hinter dem Header, auch über dem Hero; der Verlauf im Hero entfällt dort. Verworfen: Glas-Effekt schon ganz oben über dem Hero (deckt das Bild ab), Ausblenden beim Runterscrollen (unruhig, besonders auf dem Handy) und Farbumkehr (`mix-blend-mode: difference`, auf mittleren Tönen zu wenig Kontrast).
-- Tablet und Handy (bis 1024 px): Signet links, Menü-Symbol (ohne Beschriftung, für Screenreader vorhanden) in der Mitte, «Kontakt» als umrandeter, abgerundeter Button rechts (bleibt auch bei offenem Menü sichtbar; auf der Kontaktseite ausgefüllt).
+- Tablet und Handy (bis 1024 px): Signet links, Menü-Button rechts (Beschriftung «Menü»/«Schliessen» links neben dem Symbol wie auf dem Desktop; drei gleich lange Striche mit runden Enden). Kein «Kontakt» im Header (steht im Overlay-Menü und im Footer). Verworfen: Kontakt als umrandeter Button rechts und Menü-Symbol in der Mitte (zwei Buttons im schmalen Header wirken unruhig).
 - «Kontakt» im Header = Eintrag aus `main`, der auf die Seite `kontakt` verweist (kein eigenes Feld).
 - Overlay-Menü: Vollbild, Menüpunkte gross mit fortlaufender Nummer (01, 02 …). «Start» (Startseite) ist der erste Punkt. Weitere Seiten lassen sich in Design > Menüs ergänzen; bei vielen Punkten oder niedrigem Fenster wird die Schrift kleiner, damit alle auf den Bildschirm passen. Aktive Seite bleibt weiss (nur für Screenreader markiert, `aria-current`). Unten E-Mail und Socials aus den Globals.
 - Klick auf einen Menüpunkt: Das Menü bleibt offen, die neue Seite blendet weich darüber ein (Seitenübergang für die ganze Website).
