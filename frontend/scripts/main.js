@@ -58,8 +58,7 @@ document.querySelectorAll('[data-filter-group]').forEach((group) => {
 // Sonst bleibt ein Loch. Darum platziert dieses Script die Kacheln selbst (feste Zeile und Spalte):
 // 1. Immer die erste freie Zelle füllen, mit der nächsten Kachel, die in die Lücke passt.
 // 2. Passt keine, wird die nächste Kachel verkleinert (schmaler bzw. weniger hoch), bis sie passt.
-// 3. Letzte Zeile: Kacheln, die darüber hinausragen, kürzen; bleibt die Zeile unvollständig,
-//    teilen sich die Kacheln dieser Zeile die ganze Breite.
+// 3. Letzte Zeile: Kacheln, die darüber hinausragen, kürzen. Lücken in der letzten Zeile bleiben.
 // «Grösse im Raster» ist damit eine Wunschgrösse. Ohne JavaScript gilt weiter das CSS-Raster.
 
 // Wunschgrösse pro data-size: [Spalten, Zeilen] (Panorama = ganze Breite)
@@ -150,34 +149,15 @@ const layoutGrid = (grid) => {
         placed.push(tile);
     }
 
-    // 3. Letzte Zeile = Zeile der zuletzt platzierten Kachel
+    // 3. Letzte Zeile = Zeile der zuletzt platzierten Kachel. Kacheln, die darunter hinausragen, kürzen,
+    // damit freie Zellen nur in der letzten Zeile liegen. Diese Lücken bleiben (stören am Ende nicht;
+    // Strecken auf die ganze Breite hat einzelne Fotos zu stark zugeschnitten).
     const lastRow = placed[placed.length - 1].row;
     placed.forEach((t) => {
         if (t.row + t.h - 1 > lastRow) {
             t.h = lastRow - t.row + 1;
         }
     });
-    cells = [];
-    placed.forEach(occupy);
-    const rowIncomplete = [...Array(cols).keys()].some((col) => isFree(lastRow, col));
-    if (rowIncomplete) {
-        // Hohe Kacheln von oben enden eine Zeile früher, die Kacheln der letzten Zeile teilen sich die Breite
-        placed.forEach((t) => {
-            if (t.row < lastRow && t.row + t.h - 1 >= lastRow) {
-                t.h = lastRow - t.row;
-            }
-        });
-        const rowTiles = placed.filter((t) => t.row === lastRow).sort((a, b) => a.col - b.col);
-        let extra = cols - rowTiles.reduce((sum, t) => sum + t.w, 0);
-        for (let i = 0; extra > 0; i++, extra--) {
-            rowTiles[i % rowTiles.length].w++;
-        }
-        let start = 0;
-        rowTiles.forEach((t) => {
-            t.col = start;
-            start += t.w;
-        });
-    }
 
     // Platzierung schreiben (Zeilen und Spalten im CSS zählen ab 1)
     placed.forEach((t) => {
@@ -233,6 +213,26 @@ document.querySelectorAll('.photo-grid, .gallery-grid').forEach((grid) => {
             update();
         }
     }).observe(grid);
+});
+
+// -> Bilder und Videos schützen: kein Rechtsklick-Menü («Bild speichern unter») und kein Herausziehen
+// Nur eine Hürde, kein echter Schutz: Was der Browser anzeigt, lässt sich immer per Screenshot kopieren.
+// Ausnahme: Bilder in Links (z. B. Highlights, Projektliste). Dort bleibt das Menü, damit
+// «Link in neuem Tab öffnen» und «Link kopieren» weiter funktionieren.
+const PROTECTED_MEDIA = 'img, video, canvas';
+const isProtectedMedia = (target) => target instanceof Element
+    && target.closest(PROTECTED_MEDIA)
+    && !target.closest('a');
+
+document.addEventListener('contextmenu', (event) => {
+    if (isProtectedMedia(event.target)) {
+        event.preventDefault();
+    }
+});
+document.addEventListener('dragstart', (event) => {
+    if (isProtectedMedia(event.target)) {
+        event.preventDefault();
+    }
 });
 
 // -> Scroll-Pfeil: scrollt so weit, dass der Hero ganz unter dem Header verschwindet

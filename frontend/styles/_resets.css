@@ -32,3 +32,11 @@ h3 {
 img {
     vertical-align: bottom;
 }
+/* Bilder und Videos schützen (ergänzt main.js): auf iPhone/iPad kein «Bild sichern» per langem Drücken,
+   kein Herausziehen, nicht markierbar. Bilder in Links ausgenommen (Linkvorschau bleibt). */
+img:not(a img),
+video:not(a video) {
+    -webkit-touch-callout: none;
+    -webkit-user-drag: none;
+    user-select: none;
+}
