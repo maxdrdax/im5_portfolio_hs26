@@ -53,6 +53,169 @@ document.querySelectorAll('[data-filter-group]').forEach((group) => {
     }
 });
 
+// -> Raster ohne Löcher (Foto-Raster und Galerie «Raster»)
+// CSS «dense» rückt Kacheln in Lücken nach, aber nur, wenn eine passende Kachel übrig ist.
+// Sonst bleibt ein Loch. Darum platziert dieses Script die Kacheln selbst (feste Zeile und Spalte):
+// 1. Immer die erste freie Zelle füllen, mit der nächsten Kachel, die in die Lücke passt.
+// 2. Passt keine, wird die nächste Kachel verkleinert (schmaler bzw. weniger hoch), bis sie passt.
+// 3. Letzte Zeile: Kacheln, die darüber hinausragen, kürzen; bleibt die Zeile unvollständig,
+//    teilen sich die Kacheln dieser Zeile die ganze Breite.
+// «Grösse im Raster» ist damit eine Wunschgrösse. Ohne JavaScript gilt weiter das CSS-Raster.
+
+// Wunschgrösse pro data-size: [Spalten, Zeilen] (Panorama = ganze Breite)
+const GRID_TILE_SIZES = {
+    small: [1, 1],
+    wide: [2, 1],
+    tall: [1, 2],
+    large: [2, 2],
+    panorama: [Infinity, 2],
+};
+
+const layoutGrid = (grid) => {
+    const items = [...grid.children];
+    // Frühere Platzierung entfernen (z. B. nach Filterwechsel oder neuer Fensterbreite)
+    items.forEach((item) => {
+        item.style.removeProperty('grid-column');
+        item.style.removeProperty('grid-row');
+    });
+
+    const cols = getComputedStyle(grid).gridTemplateColumns.split(' ').length;
+    if (cols < 2) {
+        return; // Handy einspaltig: keine Löcher möglich
+    }
+
+    // Sichtbare Kacheln (Filter blendet mit «hidden» aus) mit Wunschgrösse
+    const queue = items
+        .filter((item) => !item.hidden)
+        .map((item) => {
+            const [w, h] = GRID_TILE_SIZES[item.dataset.size] || [1, 1];
+            return { item, w: Math.min(w, cols), h, wantW: Math.min(w, cols) };
+        });
+    if (!queue.length) {
+        return;
+    }
+
+    // Belegung: cells[Zeile][Spalte] = Kachel
+    let cells = [];
+    const isFree = (r, c) => c >= 0 && c < cols && !cells[r]?.[c];
+    const fits = (r, c, w, h) => {
+        for (let rr = r; rr < r + h; rr++) {
+            for (let cc = c; cc < c + w; cc++) {
+                if (!isFree(rr, cc)) return false;
+            }
+        }
+        return true;
+    };
+    const occupy = (t) => {
+        for (let rr = t.row; rr < t.row + t.h; rr++) {
+            cells[rr] = cells[rr] || [];
+            for (let cc = t.col; cc < t.col + t.w; cc++) {
+                cells[rr][cc] = t;
+            }
+        }
+    };
+
+    // 1. und 2.: Zelle für Zelle füllen
+    const placed = [];
+    let r = 0;
+    let c = 0;
+    while (queue.length) {
+        while (!isFree(r, c)) {
+            c++;
+            if (c >= cols) {
+                c = 0;
+                r++;
+            }
+        }
+        // Freie Breite ab dieser Zelle in dieser Zeile
+        let free = 0;
+        while (isFree(r, c + free)) {
+            free++;
+        }
+
+        let index = queue.findIndex((t) => fits(r, c, t.w, t.h));
+        let tile;
+        if (index >= 0) {
+            tile = queue.splice(index, 1)[0];
+        } else {
+            tile = queue.shift();
+            tile.w = Math.min(tile.w, free);
+            while (tile.h > 1 && !fits(r, c, tile.w, tile.h)) {
+                tile.h--;
+            }
+        }
+        tile.row = r;
+        tile.col = c;
+        occupy(tile);
+        placed.push(tile);
+    }
+
+    // 3. Letzte Zeile = Zeile der zuletzt platzierten Kachel
+    const lastRow = placed[placed.length - 1].row;
+    placed.forEach((t) => {
+        if (t.row + t.h - 1 > lastRow) {
+            t.h = lastRow - t.row + 1;
+        }
+    });
+    cells = [];
+    placed.forEach(occupy);
+    const rowIncomplete = [...Array(cols).keys()].some((col) => isFree(lastRow, col));
+    if (rowIncomplete) {
+        // Hohe Kacheln von oben enden eine Zeile früher, die Kacheln der letzten Zeile teilen sich die Breite
+        placed.forEach((t) => {
+            if (t.row < lastRow && t.row + t.h - 1 >= lastRow) {
+                t.h = lastRow - t.row;
+            }
+        });
+        const rowTiles = placed.filter((t) => t.row === lastRow).sort((a, b) => a.col - b.col);
+        let extra = cols - rowTiles.reduce((sum, t) => sum + t.w, 0);
+        for (let i = 0; extra > 0; i++, extra--) {
+            rowTiles[i % rowTiles.length].w++;
+        }
+        let start = 0;
+        rowTiles.forEach((t) => {
+            t.col = start;
+            start += t.w;
+        });
+    }
+
+    // Platzierung schreiben (Zeilen und Spalten im CSS zählen ab 1)
+    placed.forEach((t) => {
+        t.item.style.gridColumn = `${t.col + 1} / span ${t.w}`;
+        t.item.style.gridRow = `${t.row + 1} / span ${t.h}`;
+    });
+
+    // Breiter als gewünscht? Dann dem Browser die neue Breite sagen («sizes»),
+    // damit er aus dem srcset eine genügend grosse Bildversion lädt.
+    placed.forEach((t) => {
+        const img = t.item.querySelector('img[srcset]');
+        if (img && t.w > t.wantW) {
+            img.sizes = `${t.item.offsetWidth}px`;
+        }
+    });
+};
+
+document.querySelectorAll('.photo-grid, .gallery-grid').forEach((grid) => {
+    layoutGrid(grid);
+
+    // Neu berechnen, wenn der Filter Kacheln aus- oder einblendet (Attribut «hidden»).
+    // Läuft vor dem nächsten Bild, also auch innerhalb des weichen Filterwechsels (View Transition).
+    new MutationObserver(() => layoutGrid(grid)).observe(grid, {
+        subtree: true,
+        attributes: true,
+        attributeFilter: ['hidden'],
+    });
+
+    // Neu berechnen, wenn sich die Breite ändert (Fenstergrösse, Handy drehen)
+    let lastWidth = grid.clientWidth;
+    new ResizeObserver(() => {
+        if (grid.clientWidth !== lastWidth) {
+            lastWidth = grid.clientWidth;
+            layoutGrid(grid);
+        }
+    }).observe(grid);
+});
+
 // -> Scroll-Pfeil: scrollt so weit, dass der Hero ganz unter dem Header verschwindet
 document.querySelectorAll('[data-scroll-next]').forEach((button) => {
     button.addEventListener('click', () => {

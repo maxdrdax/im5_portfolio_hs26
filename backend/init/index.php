@@ -16,6 +16,9 @@ require_once __DIR__ . '/_link-previews.php';
 // -> Galerie: Feld «Darstellung in der Galerie» (Füllen/Einpassen) an Bildern und Videos in der Mediathek
 require_once __DIR__ . '/_gallery-fit.php';
 
+// -> Fotos: mehrere Bilder aus der Mediathek auf einmal als Foto anlegen (Mehrfachaktion)
+require_once __DIR__ . '/_photo-import.php';
+
 // -> Yoast SEO: Vorschaubild und Beschreibung für Projekte aus Carbon Fields (zum Testen auskommentierbar)
 require_once __DIR__ . '/_seo.php';
 

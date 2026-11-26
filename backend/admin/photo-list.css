@@ -11,6 +11,53 @@
     border-radius: 4px;
 }
 
+/* Schnellbearbeitung: Vorschaubild links neben den Feldern */
+.inline-edit-row .photo-quick-thumb {
+    float: left;
+    width: 160px;
+    height: 160px;
+    margin: 0 16px 12px 0;
+    object-fit: contain;
+    background: #f0f0f1;
+    border-radius: 4px;
+}
+
+/* Seite «Alle bearbeiten» */
+.photo-bulk__actions {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    clear: both;
+}
+
+.photo-bulk__table td {
+    vertical-align: top;
+}
+
+.photo-bulk__col-image {
+    width: 136px;
+}
+
+.photo-bulk__thumb {
+    display: block;
+    width: 120px;
+    height: 120px;
+    object-fit: contain;
+    background: #f0f0f1;
+    border-radius: 4px;
+}
+
+.photo-bulk__term {
+    display: block;
+    margin-bottom: 4px;
+}
+
+.photo-bulk__status {
+    display: inline-block;
+    margin-top: 6px;
+    color: #b32d2e;
+}
+
 .wp-list-table .column-photo_size,
 .wp-list-table .column-photo_focus {
     width: 14%;

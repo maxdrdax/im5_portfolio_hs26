@@ -32,7 +32,12 @@ add_action('manage_photo_posts_custom_column', function (string $column, int $po
             $image_id = (int) carbon_get_post_meta($post_id, 'image');
             if ($image_id) {
                 // wp_get_attachment_image() erzeugt ein vollständiges, escaptes <img> (inkl. srcset)
-                echo wp_get_attachment_image($image_id, 'xxs', false, ['class' => 'photo-thumb', 'alt' => '']);
+                // data-preview: grössere Version für die Vorschau in der Schnellbearbeitung (photo-list.js)
+                echo wp_get_attachment_image($image_id, 'xxs', false, [
+                    'class' => 'photo-thumb',
+                    'alt' => '',
+                    'data-preview' => (string) wp_get_attachment_image_url($image_id, 's'),
+                ]);
             }
             break;
 
@@ -111,7 +116,9 @@ add_action('save_post_photo', function (int $post_id): void {
 // -> CSS und JS nur auf der Übersicht «Fotos» laden
 add_action('admin_enqueue_scripts', function (string $hook): void {
     $screen = get_current_screen();
-    if ($hook !== 'edit.php' || !$screen || $screen->post_type !== 'photo') {
+    $is_list = $hook === 'edit.php' && $screen && $screen->post_type === 'photo';
+    $is_bulk = $hook === 'photo_page_photo-bulk-edit'; // Seite «Alle bearbeiten» (_photo-bulk-edit.php)
+    if (!$is_list && !$is_bulk) {
         return;
     }
     $dir = get_template_directory();
@@ -123,6 +130,9 @@ add_action('admin_enqueue_scripts', function (string $hook): void {
         [],
         (string) filemtime($dir . '/backend/admin/photo-list.css')
     );
+    if (!$is_list) {
+        return;
+    }
     // Abhängigkeit «inline-edit-post»: das QuickEdit-Script von WordPress
     wp_enqueue_script(
         'portfolio-admin-photo-list',

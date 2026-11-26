@@ -34,5 +34,16 @@
         if (focusSelect && focus) {
             focusSelect.value = focus;
         }
+
+        // Vorschaubild links in der Schnellbearbeitung (grössere Version aus data-preview)
+        const thumb = row.querySelector('.photo-thumb');
+        const firstCol = editRow.querySelector('fieldset');
+        if (thumb && firstCol && !editRow.querySelector('.photo-quick-thumb')) {
+            const preview = document.createElement('img');
+            preview.className = 'photo-quick-thumb';
+            preview.src = thumb.dataset.preview || thumb.src;
+            preview.alt = '';
+            firstCol.before(preview);
+        }
     };
 })();

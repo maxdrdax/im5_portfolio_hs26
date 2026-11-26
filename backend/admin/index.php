@@ -6,6 +6,7 @@
  */
 
 require_once __DIR__ . '/_photo-list.php';
+require_once __DIR__ . '/_photo-bulk-edit.php';
 require_once __DIR__ . '/_nav-menus.php';
 require_once __DIR__ . '/_media-size.php';
 require_once __DIR__ . '/_media-cleanup.php';
