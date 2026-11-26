@@ -53,7 +53,7 @@ document.querySelectorAll('[data-filter-group]').forEach((group) => {
     }
 });
 
-// -> Raster ohne Löcher (Foto-Raster und Galerie «Raster»)
+// -> Raster ohne Löcher (Projektgalerie «Raster»; das Foto-Raster nutzt das automatische Layout weiter unten)
 // CSS «dense» rückt Kacheln in Lücken nach, aber nur, wenn eine passende Kachel übrig ist.
 // Sonst bleibt ein Loch. Darum platziert dieses Script die Kacheln selbst (feste Zeile und Spalte):
 // 1. Immer die erste freie Zelle füllen, mit der nächsten Kachel, die in die Lücke passt.
@@ -164,7 +164,185 @@ const layoutGrid = (grid) => {
         t.item.style.gridColumn = `${t.col + 1} / span ${t.w}`;
         t.item.style.gridRow = `${t.row + 1} / span ${t.h}`;
     });
+};
 
+// -> Foto-Raster: automatisches Layout pro Filter
+// Die Kachelgrössen sind nicht fest, sondern werden für die gerade sichtbaren Fotos neu gewählt.
+// So sieht jeder Filter durchdacht aus, ohne dass man pro Kategorie etwas einstellt.
+// Ablauf (Strahlsuche, engl. beam search): Die Fotos werden der Reihe nach in die erste freie Zelle gesetzt.
+// Für jeden Schritt werden mehrere Möglichkeiten ausprobiert (eines der nächsten 3 Fotos, jede erlaubte Grösse),
+// bewertet und nur die besten 40 Zwischenstände weiterverfolgt. Am Ende gewinnt die beste Anordnung.
+// Löcher in der Mitte sind ausgeschlossen: Die erste freie Zelle wird immer gefüllt (1 × 1 passt immer).
+// Bewertung: grosse Kacheln +, Zuschnitt −, Wunschgrösse aus dem Backend +, grosse Kacheln kurz
+// nacheinander −, Foto vorgezogen −, am Ende leere Zellen (bei wenigen Fotos stärker) oder gekürzte Kacheln −.
+
+// Erlaubte Grössen pro Bildformat (Hochformat nie breit, Querformat nie hoch: sonst starker Zuschnitt)
+const GRID_CANDIDATES = {
+    // Panorama (3 × 2) passt zu 3:2 fast ohne Zuschnitt
+    landscape: ['wide', 'panorama', 'large', 'small'],
+    portrait: ['tall', 'small'],
+    square: ['large', 'small'],
+};
+// Bonus für grosse Kacheln (Fotos sollen gross wirken, wenn das Format es hergibt)
+const GRID_BIG_BONUS = { small: 0, wide: 2.5, tall: 2.5, large: 4, panorama: 4 };
+
+// Reine Rechnung ohne DOM (darum testbar). photos: [{ ratio: Breite / Höhe, wish: 'auto' | 'small' | … }]
+// Rückgabe: [{ index, row, col, w, h }] mit index = Position in photos.
+const planGridLayout = (photos, { cols, colW, rowH, gap, beamWidth = 40, lookahead = 3 }) => {
+    const full = (1 << cols) - 1;
+    // Seitenverhältnis einer Kachel aus w Spalten und h Zeilen (inkl. Abstände dazwischen)
+    const tileRatio = (w, h) => (w * colW + (w - 1) * gap) / (h * rowH + (h - 1) * gap);
+
+    // Erlaubte Grössen pro Foto: Wunschgrösse zuerst, gleiche Masse nur einmal
+    const options = photos.map((photo) => {
+        const format = photo.ratio > 1.1 ? 'landscape' : photo.ratio < 0.9 ? 'portrait' : 'square';
+        let names = GRID_CANDIDATES[format];
+        if (photo.wish && photo.wish !== 'auto' && GRID_TILE_SIZES[photo.wish]) {
+            names = [photo.wish, ...names.filter((name) => name !== photo.wish)];
+        }
+        const sizes = [];
+        names.forEach((name) => {
+            const [w, h] = GRID_TILE_SIZES[name];
+            const size = { name, w: Math.min(w, cols), h };
+            if (!sizes.some((s) => s.w === size.w && s.h === size.h)) {
+                sizes.push(size);
+            }
+        });
+        return sizes;
+    });
+
+    // Belegung als Bitmaske pro Zeile (Bit c = Spalte c belegt)
+    const firstFree = (rows) => {
+        for (let r = 0; ; r++) {
+            const mask = rows[r] || 0;
+            if (mask !== full) {
+                for (let c = 0; c < cols; c++) {
+                    if (!(mask & (1 << c))) return [r, c];
+                }
+            }
+        }
+    };
+    const bitsOf = (c, w) => ((1 << w) - 1) << c;
+    const fits = (rows, r, c, w, h) => {
+        if (c + w > cols) return false;
+        for (let rr = r; rr < r + h; rr++) {
+            if ((rows[rr] || 0) & bitsOf(c, w)) return false;
+        }
+        return true;
+    };
+    const occupy = (rows, r, c, w, h) => {
+        const next = rows.slice();
+        for (let rr = r; rr < r + h; rr++) {
+            next[rr] = (next[rr] || 0) | bitsOf(c, w);
+        }
+        return next;
+    };
+
+    // Bewertung eines einzelnen Schritts
+    const stepScore = (photo, size, skipped, step, lastBig) => {
+        const ratio = tileRatio(size.w, size.h);
+        const crop = 1 - Math.min(ratio, photo.ratio) / Math.max(ratio, photo.ratio);
+        let score = (GRID_BIG_BONUS[size.name] || 0) - crop * 10 - skipped * 1.5;
+        if (photo.wish === size.name) score += 3;
+        // Grosse Kacheln (Gross, Panorama) höchstens etwa jedes fünfte Foto, sonst wirkt es unruhig
+        if (size.w * size.h >= 4 && step - lastBig < 5) score -= 6;
+        return score;
+    };
+
+    // Strahlsuche: last = zuletzt gesetzte Kachel mit Verweis auf die davor (spart Kopien)
+    let beam = [{ rows: [], remaining: photos.map((_, i) => i), score: 0, lastBig: -99, last: null }];
+    for (let step = 0; step < photos.length; step++) {
+        const next = [];
+        beam.forEach((state) => {
+            const [r, c] = firstFree(state.rows);
+            const limit = Math.min(lookahead, state.remaining.length);
+            for (let k = 0; k < limit; k++) {
+                const index = state.remaining[k];
+                options[index].forEach((size) => {
+                    if (!fits(state.rows, r, c, size.w, size.h)) return;
+                    const big = size.w * size.h >= 4;
+                    next.push({
+                        rows: occupy(state.rows, r, c, size.w, size.h),
+                        remaining: state.remaining.filter((_, i) => i !== k),
+                        score: state.score + stepScore(photos[index], size, k, step, state.lastBig),
+                        lastBig: big ? step : state.lastBig,
+                        last: { tile: { index, row: r, col: c, w: size.w, h: size.h }, prev: state.last },
+                    });
+                });
+            }
+        });
+        next.sort((a, b) => b.score - a.score);
+        beam = next.slice(0, beamWidth);
+    }
+
+    // Ende bewerten: Kacheln unter der letzten Zeile kürzen (−3), leere Zellen in der letzten Zeile.
+    // Bei wenigen Fotos fällt eine halbe letzte Reihe stärker auf, darum wiegt sie dann mehr.
+    const emptyPenalty = 2 + 12 / photos.length;
+    let best = null;
+    beam.forEach((state) => {
+        const tiles = [];
+        for (let node = state.last; node; node = node.prev) {
+            tiles.unshift({ ...node.tile });
+        }
+        const lastRow = Math.max(...tiles.map((t) => t.row));
+        let score = state.score;
+        let lastRowMask = 0;
+        tiles.forEach((t) => {
+            if (t.row + t.h - 1 > lastRow) {
+                t.h = lastRow - t.row + 1;
+                score -= 3;
+            }
+            if (t.row + t.h - 1 === lastRow) {
+                lastRowMask |= bitsOf(t.col, t.w);
+            }
+        });
+        for (let c = 0; c < cols; c++) {
+            if (!(lastRowMask & (1 << c))) score -= emptyPenalty;
+        }
+        if (!best || score > best.score) {
+            best = { score, tiles };
+        }
+    });
+    return best ? best.tiles : [];
+};
+
+// Foto-Raster im Browser: sichtbare Fotos messen, planen, Platzierung schreiben
+const layoutAutoGrid = (grid) => {
+    const items = [...grid.children];
+    items.forEach((item) => {
+        item.style.removeProperty('grid-column');
+        item.style.removeProperty('grid-row');
+    });
+
+    const style = getComputedStyle(grid);
+    const cols = style.gridTemplateColumns.split(' ').length;
+    if (cols < 2) {
+        return; // Handy einspaltig: Grösse aus data-size (CSS)
+    }
+    const visible = items.filter((item) => !item.hidden);
+    if (!visible.length) {
+        return;
+    }
+
+    // Masse des Rasters: Spaltenbreite aus der Breite, Zeilenhöhe = Spaltenbreite × --photo-row-ratio (CSS)
+    const gap = parseFloat(style.columnGap) || 0;
+    const colW = (grid.clientWidth - gap * (cols - 1)) / cols;
+    const rowH = colW * (parseFloat(style.getPropertyValue('--photo-row-ratio')) || 1);
+
+    const photos = visible.map((item) => {
+        const img = item.querySelector('img');
+        const ratio = img ? img.getAttribute('width') / img.getAttribute('height') : 0;
+        return {
+            ratio: Number.isFinite(ratio) && ratio > 0 ? ratio : 1.5,
+            wish: item.dataset.wish || 'auto',
+        };
+    });
+
+    planGridLayout(photos, { cols, colW, rowH, gap }).forEach((t) => {
+        const item = visible[t.index];
+        item.style.gridColumn = `${t.col + 1} / span ${t.w}`;
+        item.style.gridRow = `${t.row + 1} / span ${t.h}`;
+    });
 };
 
 // -> Bildgrösse im Raster: «sizes» = Breite, die das Bild wirklich braucht
@@ -190,9 +368,14 @@ const updateGridImageSizes = (grid) => {
     });
 };
 
+// Foto-Raster: automatisches Layout pro Filter. Galerie «Raster»: Platzierung ohne Löcher (feste Grössen).
 document.querySelectorAll('.photo-grid, .gallery-grid').forEach((grid) => {
     const update = () => {
-        layoutGrid(grid);
+        if (grid.classList.contains('photo-grid')) {
+            layoutAutoGrid(grid);
+        } else {
+            layoutGrid(grid);
+        }
         updateGridImageSizes(grid);
     };
     update();

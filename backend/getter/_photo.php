@@ -48,9 +48,13 @@ function get_photo_by_id(int $id): array
         }
     }
 
-    // Kachelgrösse: gewählter Wert oder automatisch aus dem Format
-    $size = carbon_get_post_meta($id, 'grid_size');
-    if ($size === 'auto' || !array_key_exists($size, get_photo_size_options())) {
+    // Wunschgrösse aus dem Backend (auto, small, wide …). main.js wählt damit pro Filter die beste Anordnung.
+    $wish = carbon_get_post_meta($id, 'grid_size');
+    $wish = array_key_exists($wish, get_photo_size_options()) ? $wish : 'auto';
+
+    // Kachelgrösse ohne JavaScript (und auf dem Handy): gewählter Wert oder automatisch aus dem Format
+    $size = $wish;
+    if ($size === 'auto') {
         $size = ['landscape' => 'wide', 'portrait' => 'tall', 'square' => 'small'][$format];
     }
 
@@ -66,6 +70,7 @@ function get_photo_by_id(int $id): array
         'image' => $image,
         'format' => $format,
         'size' => $size,
+        'wish' => $wish,
         'focus' => $focus,
         'categories' => get_term_list($id, 'photo_category'),
     ];

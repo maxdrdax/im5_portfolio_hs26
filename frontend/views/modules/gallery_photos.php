@@ -40,8 +40,10 @@ foreach ($photos as $photo) {
 
     <ul class="photo-grid">
         <?php foreach ($photos as $photo) : ?>
-            <?php // data-size: Kachelgrösse im Raster, data-focus: sichtbarer Bildausschnitt (beides im CSS) ?>
-            <li class="photo" data-size="<?= esc_attr($photo['size']) ?>" data-focus="<?= esc_attr($photo['focus']) ?>"
+            <?php // data-size: Kachelgrösse ohne JavaScript/Handy, data-wish: Wunschgrösse für das automatische Layout (main.js),
+                  // data-focus: sichtbarer Bildausschnitt, data-format: Hoch-/Querformat (beides CSS) ?>
+            <li class="photo" data-size="<?= esc_attr($photo['size']) ?>" data-wish="<?= esc_attr($photo['wish']) ?>"
+                data-focus="<?= esc_attr($photo['focus']) ?>" data-format="<?= esc_attr($photo['format']) ?>"
                 data-categories="<?= esc_attr(implode(' ', array_column($photo['categories'], 'slug'))) ?>">
                 <img src="<?= esc_url($photo['image']['src']) ?>" alt="<?= esc_attr($photo['image']['alt']) ?>"
                      <?php if (!empty($photo['image']['srcset'])) : ?>srcset="<?= esc_attr($photo['image']['srcset']) ?>" sizes="<?= esc_attr($sizes_attr[$photo['size']]) ?>"<?php endif; ?>

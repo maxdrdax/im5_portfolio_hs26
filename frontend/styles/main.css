@@ -1571,6 +1571,12 @@ mark {
         }
 
         /* Bildausschnitt (Feld «Bildausschnitt») */
+        /* Hochformat mit «Mitte» (Standard): oberes Drittel statt genaue Mitte sichtbar lassen.
+           Bei Menschen und Street liegt der Kopf fast immer dort (Drittel-Regel), so wird er nicht abgeschnitten. */
+        &[data-format="portrait"][data-focus="center"] img {
+            object-position: center 30%;
+        }
+
         &[data-focus="top"] img {
             object-position: center top;
         }
