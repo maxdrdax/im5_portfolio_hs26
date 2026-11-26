@@ -22,6 +22,7 @@
 - [ ] 🔴 Ich habe nur Nutzer:innen in meinem Backend, welche wirklich auch Zugang dazu brauchen. 
 - [ ] 🔴 Ich habe unter Globales «Website nur für angemeldete Benutzer» ausgeschaltet und Testzugänge (Rolle «Abonnent») gelöscht.
 - [ ] 🟠 Ich habe [Updraft-Plus](#updraft-plus) installiert und konfiguriert.
+- [ ] 🟠 Eine Woche nach dem Livegang ohne Probleme: HSTS in `backend/init/_security.php` von `max-age=86400` (1 Tag) auf `max-age=31536000` (1 Jahr) erhöhen.
 
 ### Performance
 - [ ] 🟠 Ich habe mit Google Lighthouse einen Performance-Check durchgeführt und wo nötig Optimierungen vorgenommen.

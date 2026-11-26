@@ -10,6 +10,9 @@ require_once __DIR__ . '/_theme.php';
 // -> Website nur für angemeldete Benutzer (Schalter in Globales)
 require_once __DIR__ . '/_private.php';
 
+// -> Sicherheits-Header (Clickjacking-Schutz, nosniff, HSTS usw.)
+require_once __DIR__ . '/_security.php';
+
 // -> Vorschaubilder für «Weiterführende Informationen» automatisch holen (beim Speichern eines Projekts)
 require_once __DIR__ . '/_link-previews.php';
 

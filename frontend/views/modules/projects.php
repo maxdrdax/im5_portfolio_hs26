@@ -38,7 +38,7 @@ foreach ($projects as $project) {
                             <?php if ($project['cover']) : ?>
                                 <img src="<?= esc_url($project['cover']['src']) ?>" alt="<?= esc_attr($project['cover']['alt']) ?>"
                                      width="<?= esc_attr($project['cover']['width'] ?? '') ?>" height="<?= esc_attr($project['cover']['height'] ?? '') ?>"
-                                     loading="<?= $index === 0 ? 'eager' : 'lazy' ?>">
+                                     loading="lazy" decoding="async">
                             <?php endif; ?>
                             <?php get_template_part('frontend/views/teaser/video', null, [
                                 'video' => $project['cover_video'],
