@@ -12,6 +12,13 @@ add_action('after_setup_theme', function () {
     add_theme_support('html5', ['gallery', 'caption', 'style', 'script']);
 });
 
+// -> Grösste Bildversion im srcset: WordPress bietet standardmässig nur Bilder bis 2048 px an.
+// Grosse Kacheln im Foto-Raster brauchen auf Retina-Bildschirmen mehr. 2560 px = grösste Datei,
+// die WordPress beim Hochladen behält (grössere Originale verkleinert es auf 2560 px, «-scaled»).
+add_filter('max_srcset_image_width', function (): int {
+    return 2560;
+});
+
 // -> Styles und Scripts im Frontend laden
 add_action('wp_enqueue_scripts', function () {
     $dir = get_template_directory();

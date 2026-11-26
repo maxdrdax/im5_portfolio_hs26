@@ -97,7 +97,7 @@ function render_photo_bulk_edit_page(): void
     $only_uncategorized = isset($_GET['uncategorized']);
     $ids = get_photo_bulk_ids($only_uncategorized);
     $terms = get_terms(['taxonomy' => 'photo_category', 'hide_empty' => false]);
-    $terms = is_wp_error($terms) ? [] : $terms;
+    $terms = is_wp_error($terms) ? [] : sort_terms_by_order($terms);
     $base_url = admin_url('edit.php?post_type=photo&page=' . PHOTO_BULK_SLUG);
     ?>
     <div class="wrap photo-bulk">

@@ -1,0 +1,24 @@
+/* Fotos > Kategorien: Griff zum Ziehen */
+.wp-list-table .column-term_order {
+    width: 28px;
+}
+
+.term-order-handle {
+    color: #8c8f94;
+    cursor: move;
+}
+
+.term-order-handle:hover {
+    color: #1d2327;
+}
+
+/* Gezogene Zeile hervorheben, Platzhalter als leere Fläche */
+#the-list .ui-sortable-helper {
+    background: #fff;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+#the-list .ui-sortable-placeholder {
+    visibility: visible !important;
+    background: #f0f0f1;
+}

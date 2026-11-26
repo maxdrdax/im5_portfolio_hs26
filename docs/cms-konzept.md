@@ -101,6 +101,7 @@ Inhalt unter dem Kopf (Titel, Eckdaten) als Module: verschieben, weglassen, erg�
 | Projektkategorie | project_category | project | Video, Animation, Print, Fotos, Digital |
 | Fotokategorie | photo_category | photo | Menschen, Natur, Architektur, Street |
 
+- Reihenfolge der Fotokategorien (v13): per Drag-and-Drop in Fotos > Kategorien (Griff links, speichert sofort). Gespeichert als Term Meta `sort_order` (kein Carbon-Feld, kein Eingabefeld). Bestimmt die Reihenfolge der Filter auf der Seite Fotos (nach «Alle») und im Backend (Mehrfachaktion, «Alle Fotos»). Neue Kategorie kommt ans Ende. Projektkategorien bleiben alphabetisch. Verworfen: Plugin (eigener Code genügt, `jquery-ui-sortable` ist in WordPress enthalten) und Zahlenfeld pro Kategorie (umständlich, jede Kategorie einzeln öffnen).
 - «Ausgewählte Projekte» und «Alle» sind Standardfilter im Theme, keine Begriffe. «Ausgewählte Projekte» zeigt Projekte mit `featured` und ist beim Laden aktiv (gibt es keine, ist «Alle» aktiv). «Alle» zeigt alles.
 - Schreibweise der Kategorie: «Fotos» (entschieden).
 - Ordner in der Mediathek: Plugin «Folders» (Premio, Gratis-Version) mit Drag-and-Drop. Eigene Taxonomie `media_folder` verworfen (Drag-and-Drop in der Kachelansicht wäre aufwendig und bei WordPress-Updates anfällig).

@@ -235,7 +235,23 @@ function get_term_list(int $post_id, string $taxonomy): array
     }, $terms);
 }
 
-// -> Alle verwendeten Begriffe einer Taxonomie laden (für Filterlisten)
+// -> Begriffe nach der Reihenfolge «sort_order» sortieren (Term Meta, gesetzt per Drag-and-Drop
+// in Fotos > Kategorien, siehe backend/admin/_term-order.php)
+// Ohne Wert ans Ende; bei gleichem oder ohne Wert alphabetisch.
+// Taxonomien ohne Reihenfolge (z. B. Projektkategorien) bleiben dadurch alphabetisch.
+function sort_terms_by_order(array $terms): array
+{
+    $order = function (WP_Term $term): int {
+        $value = (int) get_term_meta($term->term_id, 'sort_order', true);
+        return $value > 0 ? $value : PHP_INT_MAX;
+    };
+    usort($terms, function (WP_Term $a, WP_Term $b) use ($order): int {
+        return [$order($a), $a->name] <=> [$order($b), $b->name];
+    });
+    return $terms;
+}
+
+// -> Alle verwendeten Begriffe einer Taxonomie laden (für Filterlisten), in der eingestellten Reihenfolge
 function get_taxonomy_terms(string $taxonomy): array
 {
     $terms = get_terms([
@@ -250,7 +266,7 @@ function get_taxonomy_terms(string $taxonomy): array
             'name' => $term->name,
             'slug' => $term->slug,
         ];
-    }, $terms);
+    }, sort_terms_by_order($terms));
 }
 
 // -> Video-Link (YouTube/Vimeo) in einen Embed-Code umwandeln (oEmbed)

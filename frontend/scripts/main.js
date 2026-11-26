@@ -185,22 +185,41 @@ const layoutGrid = (grid) => {
         t.item.style.gridRow = `${t.row + 1} / span ${t.h}`;
     });
 
-    // Breiter als gewünscht? Dann dem Browser die neue Breite sagen («sizes»),
-    // damit er aus dem srcset eine genügend grosse Bildversion lädt.
-    placed.forEach((t) => {
-        const img = t.item.querySelector('img[srcset]');
-        if (img && t.w > t.wantW) {
-            img.sizes = `${t.item.offsetWidth}px`;
+};
+
+// -> Bildgrösse im Raster: «sizes» = Breite, die das Bild wirklich braucht
+// sizes sagt dem Browser, wie breit ein Bild angezeigt wird; daraus wählt er die Datei im srcset.
+// Mit object-fit: cover wird das Bild zugeschnitten: Ein Querformat in einer hohen Kachel wird nach der
+// Höhe skaliert und ist dann breiter als die Kachel. Ohne diese Rechnung lädt der Browser eine zu kleine
+// Version (unscharf). Pixeldichte (Retina) rechnet der Browser selbst dazu.
+const updateGridImageSizes = (grid) => {
+    grid.querySelectorAll('img[srcset]').forEach((img) => {
+        const tile = img.parentElement;
+        const tileWidth = tile.offsetWidth;
+        const tileHeight = tile.offsetHeight;
+        const ratio = img.getAttribute('width') / img.getAttribute('height');
+        if (!tileWidth || !tileHeight || !ratio) {
+            return; // ausgeblendet oder ohne Masse
         }
+        const contain = getComputedStyle(img).objectFit === 'contain';
+        // cover: Bild deckt die ganze Kachel ab; contain: Bild passt ganz hinein
+        const needed = contain
+            ? Math.min(tileWidth, tileHeight * ratio)
+            : Math.max(tileWidth, tileHeight * ratio);
+        img.sizes = `${Math.ceil(needed)}px`;
     });
 };
 
 document.querySelectorAll('.photo-grid, .gallery-grid').forEach((grid) => {
-    layoutGrid(grid);
+    const update = () => {
+        layoutGrid(grid);
+        updateGridImageSizes(grid);
+    };
+    update();
 
     // Neu berechnen, wenn der Filter Kacheln aus- oder einblendet (Attribut «hidden»).
     // Läuft vor dem nächsten Bild, also auch innerhalb des weichen Filterwechsels (View Transition).
-    new MutationObserver(() => layoutGrid(grid)).observe(grid, {
+    new MutationObserver(update).observe(grid, {
         subtree: true,
         attributes: true,
         attributeFilter: ['hidden'],
@@ -211,7 +230,7 @@ document.querySelectorAll('.photo-grid, .gallery-grid').forEach((grid) => {
     new ResizeObserver(() => {
         if (grid.clientWidth !== lastWidth) {
             lastWidth = grid.clientWidth;
-            layoutGrid(grid);
+            update();
         }
     }).observe(grid);
 });

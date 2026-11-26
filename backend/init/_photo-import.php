@@ -17,7 +17,7 @@ add_filter('bulk_actions-upload', function (array $actions): array {
     }
     $group = ['create_photos' => 'Ohne Kategorie'];
     $terms = get_terms(['taxonomy' => 'photo_category', 'hide_empty' => false]);
-    foreach (is_wp_error($terms) ? [] : $terms as $term) {
+    foreach (is_wp_error($terms) ? [] : sort_terms_by_order($terms) as $term) {
         // Aktion «create_photos__12» = anlegen mit Kategorie-ID 12
         $group['create_photos__' . $term->term_id] = $term->name;
     }
